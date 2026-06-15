@@ -5,6 +5,7 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export type MatchedModelCardProps = {
   model: {
@@ -16,12 +17,13 @@ export type MatchedModelCardProps = {
 
 export function MatchedModelCard({ model }: MatchedModelCardProps) {
   const isLangfuseModel = !model.projectId;
+  const { t } = useI18n();
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-          Matched Model
+          {t("models.matchedModel")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -37,7 +39,7 @@ export function MatchedModelCard({ model }: MatchedModelCardProps) {
         </div>
         <div className="space-y-1">
           <div className="text-muted-foreground text-xs font-medium">
-            Pattern:
+            {t("models.pattern")}:
           </div>
           <code className="bg-muted/50 block rounded p-2 text-xs break-all">
             {model.matchPattern}

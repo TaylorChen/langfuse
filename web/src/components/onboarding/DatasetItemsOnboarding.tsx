@@ -15,6 +15,7 @@ import { NewDatasetItemForm } from "@/src/features/datasets/components/NewDatase
 import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface DatasetItemEntryPointRowProps {
   icon: React.ReactNode;
@@ -38,6 +39,7 @@ const DatasetItemEntryPointRow = ({
   comingSoon = false,
   docPopup,
 }: DatasetItemEntryPointRowProps) => {
+  const { translateText } = useI18n();
   const disabled = !hasAccess || comingSoon;
   return (
     <div
@@ -63,17 +65,24 @@ const DatasetItemEntryPointRow = ({
       }
       title={
         !hasAccess
-          ? "You don't have access to this feature, please contact your administrator"
+          ? translateText(
+              "You don't have access to this feature, please contact your administrator",
+            )
           : undefined
       }
     >
       <div className="flex items-center">{icon}</div>
       <div className="flex flex-1 flex-col gap-1">
-        <h3 className="font-semibold">{title}</h3>
+        <h3 className="font-semibold">{translateText(title)}</h3>
         <div className="flex items-center gap-1">
-          <p className="text-muted-foreground text-sm">{description}</p>
+          <p className="text-muted-foreground text-sm">
+            {translateText(description)}
+          </p>
           {docPopup && (
-            <DocPopup description={docPopup.description} href={docPopup.href} />
+            <DocPopup
+              description={translateText(docPopup.description)}
+              href={docPopup.href}
+            />
           )}
         </div>
       </div>
@@ -89,6 +98,7 @@ export const DatasetItemsOnboarding = ({
   datasetId: string;
 }) => {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isNewItemDialogOpen, setIsNewItemDialogOpen] = useState(false);
 
@@ -99,8 +109,10 @@ export const DatasetItemsOnboarding = ({
 
   return (
     <SplashScreen
-      title="Add items to your dataset"
-      description="Datasets are collections of specific edge cases and underrepresented patterns used to evaluate your application."
+      title={translateText("Add items to your dataset")}
+      description={translateText(
+        "Datasets are collections of specific edge cases and underrepresented patterns used to evaluate your application.",
+      )}
     >
       <div className="flex flex-col gap-4">
         <CsvUploadDialog
@@ -143,7 +155,7 @@ export const DatasetItemsOnboarding = ({
           </DialogTrigger>
           <DialogContent size="lg">
             <DialogHeader>
-              <DialogTitle>Create dataset item</DialogTitle>
+              <DialogTitle>{translateText("Create dataset item")}</DialogTitle>
             </DialogHeader>
             <NewDatasetItemForm
               projectId={projectId}

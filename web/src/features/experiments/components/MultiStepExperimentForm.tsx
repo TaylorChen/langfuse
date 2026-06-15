@@ -32,7 +32,7 @@ import { getFinalModelParams } from "@/src/utils/getFinalModelParams";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import {
-  CreateExperimentData,
+  createExperimentDataSchema,
   type CreateExperiment,
 } from "@/src/features/experiments/types";
 import {
@@ -40,6 +40,7 @@ import {
   generateDefaultExperimentDescription,
   generateDatasetRunName,
 } from "@/src/features/experiments/util";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // Import step components
 import { PromptModelStep } from "./steps/PromptModelStep";
@@ -80,6 +81,7 @@ export const MultiStepExperimentForm = ({
   }) => Promise<void>;
 }) => {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const [activeStep, setActiveStep] = useState("prompt");
   const [selectedPromptName, setSelectedPromptName] = useState<string>(
     promptDefault?.name ?? "",
@@ -99,11 +101,11 @@ export const MultiStepExperimentForm = ({
   );
 
   const steps = [
-    { id: "prompt", label: "Prompt & Model" },
-    { id: "dataset", label: "Dataset" },
-    { id: "evaluators", label: "Evaluators" },
-    { id: "details", label: "Experiment run details" },
-    { id: "review", label: "Review" },
+    { id: "prompt", label: translateText("Prompt & Model") },
+    { id: "dataset", label: translateText("Dataset") },
+    { id: "evaluators", label: translateText("Evaluators") },
+    { id: "details", label: translateText("Experiment run details") },
+    { id: "review", label: translateText("Review") },
   ];
 
   const hasEvalReadAccess = useHasProjectAccess({
@@ -117,7 +119,7 @@ export const MultiStepExperimentForm = ({
   });
 
   const form = useForm({
-    resolver: zodResolver(CreateExperimentData),
+    resolver: zodResolver(createExperimentDataSchema(translateText)),
     defaultValues: {
       promptId: "",
       datasetId: "",
@@ -228,8 +230,8 @@ export const MultiStepExperimentForm = ({
     onSuccess: handleExperimentSuccess ?? (() => {}),
     onError: (error) => {
       showErrorToast(
-        error.message || "Failed to trigger dataset run",
-        "Please try again.",
+        error.message || translateText("Failed to trigger dataset run"),
+        translateText("Please try again."),
       );
     },
     onSettled: handleExperimentSettled ?? (() => {}),
@@ -437,18 +439,19 @@ export const MultiStepExperimentForm = ({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Run Experiment</DialogTitle>
+        <DialogTitle>{translateText("Run Experiment")}</DialogTitle>
         <DialogDescription>
-          Run an experiment to evaluate prompts and model configurations against
-          a dataset. See{" "}
+          {translateText(
+            "Run an experiment to evaluate prompts and model configurations against a dataset. See",
+          )}{" "}
           <Link
             href="https://langfuse.com/docs/evaluation/dataset-runs/native-run"
             target="_blank"
             className="underline"
           >
-            documentation
+            {translateText("documentation")}
           </Link>{" "}
-          to learn more.
+          {translateText("to learn more.")}
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
@@ -546,7 +549,7 @@ export const MultiStepExperimentForm = ({
                 disabled={activeStep === "prompt"}
               >
                 <ChevronLeft className="mr-2 h-4 w-4" />
-                Previous
+                {translateText("Previous")}
               </Button>
 
               <div className="flex gap-2">
@@ -562,7 +565,7 @@ export const MultiStepExperimentForm = ({
                       }
                     }}
                   >
-                    Next
+                    {translateText("Next")}
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
@@ -575,7 +578,7 @@ export const MultiStepExperimentForm = ({
                     }
                     loading={form.formState.isSubmitting}
                   >
-                    Run Experiment
+                    {translateText("Run Experiment")}
                   </Button>
                 )}
               </div>

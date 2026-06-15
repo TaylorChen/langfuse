@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/components/ui/popover";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface ComboboxOption<
   T extends string | number | boolean | { id: string },
@@ -91,6 +92,7 @@ export function Combobox<T extends string | number | boolean | { id: string }>({
   className,
   name,
 }: ComboboxProps<T>) {
+  const { translateText } = useI18n();
   const [open, setOpen] = React.useState(false);
 
   const selectedOption = React.useMemo(() => {
@@ -122,20 +124,28 @@ export function Combobox<T extends string | number | boolean | { id: string }>({
           <span className="truncate">
             {selectedOption
               ? (selectedOption.label ?? String(selectedOption.value))
-              : placeholder}
+              : translateText(placeholder)}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
         <Command>
-          <CommandInput placeholder={searchPlaceholder} className="text-xs" />
+          <CommandInput
+            placeholder={translateText(searchPlaceholder)}
+            className="text-xs"
+          />
           <CommandList>
-            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandEmpty>{translateText(emptyText)}</CommandEmpty>
             {isGroupedOptions(options) ? (
               // Render with groups
               options.map((group, groupIndex) => (
-                <CommandGroup key={groupIndex} heading={group.heading}>
+                <CommandGroup
+                  key={groupIndex}
+                  heading={
+                    group.heading ? translateText(group.heading) : undefined
+                  }
+                >
                   {group.options.map((option) => (
                     <CommandItem
                       key={

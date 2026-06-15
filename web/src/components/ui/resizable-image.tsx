@@ -10,6 +10,7 @@ import { captureException } from "@sentry/nextjs";
 import { useSession } from "next-auth/react";
 import { buildResizableImageSrc } from "./resizable-image.utils";
 import { getSafeImageUrl } from "@/src/components/ui/safe-url";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * Implemented customLoader as we cannot whitelist user provided image domains
@@ -67,6 +68,7 @@ export const ResizableImage = ({
   isDefaultVisible?: boolean;
   shouldValidateImageSource?: boolean;
 }) => {
+  const { translateText } = useI18n();
   const safeSrc = getSafeImageUrl(src);
   const [isZoomedIn, setIsZoomedIn] = useState(true);
   const [hasFetchError, setHasFetchError] = useState(false);
@@ -85,7 +87,9 @@ export const ResizableImage = ({
     return (
       <ImageErrorDisplay
         src={src}
-        displayError="Images not rendered on public traces and observations"
+        displayError={translateText(
+          "Images not rendered on public traces and observations",
+        )}
       />
     );
   }
@@ -93,12 +97,16 @@ export const ResizableImage = ({
   if (isValidImage.isLoading && isImageVisible) {
     return (
       <Skeleton className="h-8 w-1/2 items-center p-2 text-xs">
-        <span className="opacity-80">Loading image...</span>
+        <span className="opacity-80">{translateText("Loading image...")}</span>
       </Skeleton>
     );
   }
 
-  const displayError = `Cannot load image. ${src.includes("http") ? "Http images are not rendered in Langfuse for security reasons" : "Invalid image URL"}`;
+  const displayError = src.includes("http")
+    ? translateText(
+        "Cannot load image. Http images are not rendered in Langfuse for security reasons",
+      )
+    : translateText("Cannot load image. Invalid image URL");
 
   return (
     <div>
@@ -116,7 +124,7 @@ export const ResizableImage = ({
               <Image
                 loader={customLoader}
                 src={safeSrc}
-                alt={alt ?? `Markdown Image-${Math.random()}`}
+                alt={alt ?? translateText("Markdown image")}
                 loading="lazy"
                 width={0}
                 height={0}
@@ -144,14 +152,14 @@ export const ResizableImage = ({
           ) : (
             <div className="bg-muted/30 text-muted-foreground/60 flex w-full items-center gap-2 rounded border border-dashed p-2 text-xs">
               <Button
-                title="Render image"
+                title={translateText("Render image")}
                 type="button"
                 size="sm"
                 variant="secondary"
                 onClick={() => setIsImageVisible(!isImageVisible)}
                 disabled={!safeSrc}
               >
-                Load Image
+                {translateText("Load Image")}
               </Button>
               <div className="flex min-w-0 flex-1 items-center overflow-hidden">
                 {safeSrc ? (

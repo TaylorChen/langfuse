@@ -12,6 +12,7 @@ import {
 import { usePriceUnitMultiplier } from "@/src/features/models/hooks/usePriceUnitMultiplier";
 import { getMaxDecimals } from "@/src/features/models/utils";
 import { type PriceUnit } from "@/src/features/models/validation";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const PriceBreakdownTooltip = ({
   modelName,
@@ -24,6 +25,7 @@ export const PriceBreakdownTooltip = ({
   priceUnit: PriceUnit;
   rowHeight: RowHeight;
 }) => {
+  const { translateText } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const { priceUnitMultiplier } = usePriceUnitMultiplier();
 
@@ -42,7 +44,7 @@ export const PriceBreakdownTooltip = ({
   return (
     <>
       {Object.keys(prices).length === 0 ? (
-        <p>No prices</p>
+        <p>{translateText("No prices")}</p>
       ) : Object.keys(prices).length <= (rowHeight === "m" ? 4 : 2) ? (
         <div className="grid w-full grid-cols-[2fr_3fr] gap-x-2">
           {Object.entries(prices).map(([type, price]) => (
@@ -74,20 +76,26 @@ export const PriceBreakdownTooltip = ({
               onClick={() => setIsOpen(!isOpen)}
             >
               <InfoIcon className="h-3 w-3" />
-              {Object.keys(prices).length} prices set
+              {translateText("{count} prices set", {
+                count: String(Object.keys(prices).length),
+              })}
             </TooltipTrigger>
             <TooltipContent className="min-w-64 grow p-4">
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
-                  <span className="font-semibold">Price breakdown</span>
+                  <span className="font-semibold">
+                    {translateText("Price breakdown")}
+                  </span>
                   <span className="font-mono text-xs font-medium">
                     {modelName}
                   </span>
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between font-mono text-xs font-semibold">
-                    <span className="mr-4">Usage Type</span>
-                    <span>Price {priceUnit}</span>
+                    <span className="mr-4">{translateText("Usage Type")}</span>
+                    <span>
+                      {translateText("Price {priceUnit}", { priceUnit })}
+                    </span>
                   </div>
                   {Object.entries(prices).map(([usageType, price]) => (
                     <div

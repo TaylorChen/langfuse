@@ -15,6 +15,7 @@ import {
   projectRoleAccessRights,
 } from "@/src/features/rbac/constants/projectAccessRights";
 import { orderedRoles } from "@/src/features/rbac/constants/orderedRoles";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const RoleSelectItem = ({
   role,
@@ -23,38 +24,61 @@ export const RoleSelectItem = ({
   role: Role;
   isProjectRole?: boolean;
 }) => {
+  const { translateText } = useI18n();
   const isProjectNoneRole = role === Role.NONE && isProjectRole;
   const isOrgNoneRole = role === Role.NONE && !isProjectRole;
-  const orgScopes = reduceScopesToListItems(organizationRoleAccessRights, role);
-  const projectScopes = reduceScopesToListItems(projectRoleAccessRights, role);
+  const orgScopes = reduceScopesToListItems(
+    organizationRoleAccessRights,
+    role,
+    translateText,
+  );
+  const projectScopes = reduceScopesToListItems(
+    projectRoleAccessRights,
+    role,
+    translateText,
+  );
 
   return (
     <HoverCard openDelay={0} closeDelay={0}>
       <HoverCardTrigger asChild>
         <SelectItem value={role} className="max-w-56">
           <span>
-            {formatRole(role)}
-            {isProjectNoneRole ? " (keep default role)" : ""}
+            {translateText(formatRole(role))}
+            {isProjectNoneRole
+              ? ` (${translateText("keep default role")})`
+              : ""}
           </span>
         </SelectItem>
       </HoverCardTrigger>
       <HoverCardPortal>
         <HoverCardContent hideWhenDetached={true} align="center" side="right">
           {isProjectNoneRole ? (
-            <div className="text-xs">{projectNoneRoleComment}</div>
+            <div className="text-xs">
+              {translateText(projectNoneRoleComment)}
+            </div>
           ) : isOrgNoneRole ? (
-            <div className="text-xs">{orgNoneRoleComment}</div>
+            <div className="text-xs">{translateText(orgNoneRoleComment)}</div>
           ) : (
             <>
-              <div className="font-bold">Role: {formatRole(role)}</div>
-              <p className="mt-2 text-xs font-semibold">Organization Scopes</p>
+              <div className="font-bold">
+                {translateText("Role: {role}", {
+                  role: translateText(formatRole(role)),
+                })}
+              </div>
+              <p className="mt-2 text-xs font-semibold">
+                {translateText("Organization Scopes")}
+              </p>
               <ul className="list-inside list-disc text-xs">{orgScopes}</ul>
-              <p className="mt-2 text-xs font-semibold">Project Scopes</p>
+              <p className="mt-2 text-xs font-semibold">
+                {translateText("Project Scopes")}
+              </p>
               <ul className="list-inside list-disc text-xs">{projectScopes}</ul>
               <p className="mt-2 border-t pt-2 text-xs">
-                Note:{" "}
-                <span className="text-muted-foreground">Muted scopes</span> are
-                inherited from lower role.
+                {translateText("Note:")}{" "}
+                <span className="text-muted-foreground">
+                  {translateText("Muted scopes")}
+                </span>{" "}
+                {translateText("are inherited from lower role.")}
               </p>
             </>
           )}
@@ -67,6 +91,7 @@ export const RoleSelectItem = ({
 const reduceScopesToListItems = (
   accessRights: Record<string, string[]>,
   role: Role,
+  translateText: (text: string) => string,
 ) => {
   const currentRoleLevel = orderedRoles[role];
   const lowerRole = Object.entries(orderedRoles).find(
@@ -111,7 +136,7 @@ const reduceScopesToListItems = (
       })}
     </>
   ) : (
-    <li>None</li>
+    <li>{translateText("None")}</li>
   );
 };
 

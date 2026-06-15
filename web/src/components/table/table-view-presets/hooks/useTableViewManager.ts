@@ -19,6 +19,7 @@ import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePos
 import { validateOrderBy, validateFilters } from "../validation";
 import { isSystemPresetId } from "../components/data-table-view-presets-drawer";
 import type { FilterStateMigration } from "@/src/features/filters/lib/filter-config";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface TableStateUpdaters {
   setColumnOrder: (columnOrder: string[]) => void;
@@ -90,6 +91,7 @@ export function useTableViewManager({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const pendingFiltersRef = useRef<FilterState | null>(null);
   const pendingFiltersPreviousStateRef = useRef<FilterState | null>(null);
 
@@ -264,8 +266,10 @@ export function useTableViewManager({
         validFilters.length !== viewData.filters.length
       ) {
         showErrorToast(
-          "Outdated view",
-          "This view is outdated. Some old filters or ordering may have been ignored. Please update your view.",
+          translateText("Outdated view"),
+          translateText(
+            "This view is outdated. Some old filters or ordering may have been ignored. Please update your view.",
+          ),
           "WARNING",
         );
       }
@@ -329,6 +333,7 @@ export function useTableViewManager({
       validationContext,
       currentFilterState,
       currentExpandedFilters,
+      translateText,
     ],
   );
 
@@ -401,13 +406,18 @@ export function useTableViewManager({
     setIsInitialized(true);
     setIsLoading(false);
     handleSetViewId(null);
-    showErrorToast("Error applying view", selectedViewError.message, "WARNING");
+    showErrorToast(
+      translateText("Error applying view"),
+      selectedViewError.message,
+      "WARNING",
+    );
   }, [
     disabled,
     isSelectedViewError,
     selectedViewError,
     selectedViewId,
     handleSetViewId,
+    translateText,
   ]);
 
   // Observe when filter state propagates from saved view

@@ -16,8 +16,10 @@ import {
 } from "./StructuredOutputSchemaSection";
 import { Variables } from "./Variables";
 import { MessagePlaceholders } from "./MessagePlaceholders";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const ConfigurationDropdowns: React.FC = () => {
+  const { translateText } = useI18n();
   const { containerRef, width, isVeryCompact, isCompact } =
     usePlaygroundWindowSize();
   const {
@@ -39,6 +41,11 @@ export const ConfigurationDropdowns: React.FC = () => {
     IconComponent: React.ComponentType<{ className?: string }>,
     abbreviation?: string,
   ) => {
+    const translatedFullText = translateText(fullText);
+    const translatedAbbreviation = abbreviation
+      ? translateText(abbreviation)
+      : translatedFullText;
+
     if (isVeryCompact) {
       return <IconComponent className="h-3 w-3" />;
     }
@@ -46,14 +53,14 @@ export const ConfigurationDropdowns: React.FC = () => {
       return (
         <>
           <IconComponent className="h-3 w-3" />
-          <span className="text-sm">{abbreviation ?? fullText}</span>
+          <span className="text-sm">{translatedAbbreviation}</span>
         </>
       );
     }
     return (
       <>
         <IconComponent className="h-3 w-3" />
-        <span className="text-sm">{fullText}</span>
+        <span className="text-sm">{translatedFullText}</span>
       </>
     );
   };
@@ -80,9 +87,11 @@ export const ConfigurationDropdowns: React.FC = () => {
             style={toolsPopoverWidth ? { width: toolsPopoverWidth } : undefined}
           >
             <div className="mb-3">
-              <h4 className="mb-1 text-sm font-medium">Tools</h4>
+              <h4 className="mb-1 text-sm font-medium">
+                {translateText("Tools")}
+              </h4>
               <p className="text-muted-foreground text-xs">
-                Configure tools for your model to use.
+                {translateText("Configure tools for your model to use.")}
               </p>
             </div>
             {toolsCount > 0 ? (
@@ -92,7 +101,7 @@ export const ConfigurationDropdowns: React.FC = () => {
             ) : (
               <div className="mb-3">
                 <p className="text-muted-foreground text-xs">
-                  No tools attached.
+                  {translateText("No tools attached.")}
                 </p>
               </div>
             )}
@@ -117,9 +126,11 @@ export const ConfigurationDropdowns: React.FC = () => {
           </PopoverTrigger>
           <PopoverContent className="w-80 p-4" align="start">
             <div className="mb-3">
-              <h4 className="mb-1 text-sm font-medium">Structured Output</h4>
+              <h4 className="mb-1 text-sm font-medium">
+                {translateText("Structured Output")}
+              </h4>
               <p className="text-muted-foreground text-xs">
-                Configure JSON schema for structured output.
+                {translateText("Configure JSON schema for structured output.")}
               </p>
             </div>
             {structuredOutputSchema ? (
@@ -129,7 +140,7 @@ export const ConfigurationDropdowns: React.FC = () => {
             ) : (
               <div className="mb-3">
                 <p className="text-muted-foreground text-xs">
-                  No schema provided.
+                  {translateText("No schema provided.")}
                 </p>
               </div>
             )}
@@ -155,10 +166,12 @@ export const ConfigurationDropdowns: React.FC = () => {
           <PopoverContent className="w-80 p-4" align="start">
             <div className="mb-3">
               <h4 className="mb-1 text-sm font-medium">
-                Variables & Message Placeholders
+                {translateText("Variables & Message Placeholders")}
               </h4>
               <p className="text-muted-foreground text-xs">
-                Configure variables and message placeholders for your prompts.
+                {translateText(
+                  "Configure variables and message placeholders for your prompts.",
+                )}
               </p>
             </div>
             {variablesCount > 0 ? (
@@ -168,12 +181,14 @@ export const ConfigurationDropdowns: React.FC = () => {
               >
                 <div className="space-y-4">
                   <div>
-                    <h5 className="mb-2 text-xs font-medium">Variables</h5>
+                    <h5 className="mb-2 text-xs font-medium">
+                      {translateText("Variables")}
+                    </h5>
                     <Variables />
                   </div>
                   <div>
                     <h5 className="mb-2 text-xs font-medium">
-                      Message Placeholders
+                      {translateText("Message Placeholders")}
                     </h5>
                     <MessagePlaceholders />
                   </div>
@@ -182,7 +197,9 @@ export const ConfigurationDropdowns: React.FC = () => {
             ) : (
               <div className="mb-3">
                 <p className="text-muted-foreground text-xs">
-                  No variables or message placeholders defined.
+                  {translateText(
+                    "No variables or message placeholders defined.",
+                  )}
                 </p>
               </div>
             )}

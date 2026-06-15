@@ -31,6 +31,7 @@ import {
   type InAppAgentMessageRole,
 } from "./InAppAgentMessage";
 import type { InAppAgentMessageFeedbackValue } from "@/src/ee/features/in-app-agent/schema";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const AUTO_SCROLL_THRESHOLD_PX = 50;
 const SCROLL_DIRECTION_TOLERANCE_PX = 1;
@@ -108,6 +109,7 @@ export type InAppAgentWindowProps = {
 } & InAppAgentWindowCloseButtonProps;
 
 export function InAppAgentWindow(props: InAppAgentWindowProps) {
+  const { translateText } = useI18n();
   const {
     conversations,
     error,
@@ -184,7 +186,7 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
 
   return (
     <section
-      aria-label="Assistant"
+      aria-label={translateText("Assistant")}
       className={cn(
         "bg-background flex min-w-0 flex-col overflow-hidden rounded-xl border shadow/5",
         isExpanded
@@ -194,9 +196,11 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
     >
       <header className="bg-header flex min-h-11.25 shrink-0 items-center justify-between gap-2 border-b px-3 py-1">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <p className="shrink-0 truncate text-sm font-semibold">Assistant</p>
+          <p className="shrink-0 truncate text-sm font-semibold">
+            {translateText("Assistant")}
+          </p>
           <span className="text-muted-foreground rounded border px-1.5 py-1 text-xs leading-none font-medium">
-            Beta
+            {translateText("Beta")}
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
@@ -209,12 +213,14 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                 className="size-6 shrink-0"
                 onClick={onNewConversation}
                 disabled={isInputDisabled}
-                aria-label="Start new conversation"
+                aria-label={translateText("Start new conversation")}
               >
                 <Plus className="size-3" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Start new conversation</TooltipContent>
+            <TooltipContent>
+              {translateText("Start new conversation")}
+            </TooltipContent>
           </Tooltip>
           <DropdownMenu>
             <Tooltip delayDuration={100} disableHoverableContent>
@@ -226,13 +232,15 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                     size="icon"
                     className="size-6 shrink-0"
                     disabled={isInputDisabled}
-                    aria-label="Conversation history"
+                    aria-label={translateText("Conversation history")}
                   >
                     <History className="size-3" />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
-              <TooltipContent>Conversation history</TooltipContent>
+              <TooltipContent>
+                {translateText("Conversation history")}
+              </TooltipContent>
             </Tooltip>
             <DropdownMenuContent
               align="end"
@@ -241,11 +249,13 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                 typeof zIndex === "number" ? { zIndex: zIndex + 1 } : undefined
               }
             >
-              <DropdownMenuLabel>Recent conversations</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {translateText("Recent conversations")}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {conversations.length === 0 ? (
                 <DropdownMenuItem disabled>
-                  No conversations yet
+                  {translateText("No conversations yet")}
                 </DropdownMenuItem>
               ) : (
                 conversations.map((conversation) => (
@@ -258,7 +268,8 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                     )}
                     onSelect={() => onSelectConversation(conversation.id)}
                   >
-                    {conversation.title?.trim() || "Untitled conversation"}
+                    {conversation.title?.trim() ||
+                      translateText("Untitled conversation")}
                   </DropdownMenuItem>
                 ))
               )}
@@ -269,7 +280,9 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                     disabled={isLoadingMoreConversations}
                     onSelect={onLoadMoreConversations}
                   >
-                    {isLoadingMoreConversations ? "Loading..." : "Load more"}
+                    {isLoadingMoreConversations
+                      ? translateText("Loading...")
+                      : translateText("Load more")}
                   </DropdownMenuItem>
                 </>
               ) : null}
@@ -282,7 +295,11 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                 variant="ghost"
                 size="icon"
                 className="size-6"
-                aria-label={isExpanded ? "Collapse window" : "Expand window"}
+                aria-label={
+                  isExpanded
+                    ? translateText("Collapse window")
+                    : translateText("Expand window")
+                }
                 onClick={() => onExpandedChange(!isExpanded)}
               >
                 {isExpanded ? (
@@ -293,7 +310,9 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {isExpanded ? "Collapse window" : "Expand window"}
+              {isExpanded
+                ? translateText("Collapse window")
+                : translateText("Expand window")}
             </TooltipContent>
           </Tooltip>
           {props.showCloseButton !== false ? (
@@ -304,13 +323,15 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                   variant="ghost"
                   size="icon"
                   className="size-6"
-                  aria-label="Minimize assistant"
+                  aria-label={translateText("Minimize assistant")}
                   onClick={props.onClose}
                 >
                   <Minus className="size-3" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Minimize assistant</TooltipContent>
+              <TooltipContent>
+                {translateText("Minimize assistant")}
+              </TooltipContent>
             </Tooltip>
           ) : null}
         </div>
@@ -352,13 +373,14 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                   <BotMessageSquare className="text-muted-foreground mx-auto h-8 w-8" />
                 </div>
                 <p className="text-muted-foreground mt-4 text-sm">
-                  Welcome to the Langfuse Assistant
+                  {translateText("Welcome to the Langfuse Assistant")}
                 </p>
                 <p className="text-muted-foreground/60 mt-2 max-w-xs text-center text-sm leading-relaxed">
-                  I can help you with any questions you have about Langfuse or
-                  assist you in exploring your data.
+                  {translateText(
+                    "I can help you with any questions you have about Langfuse or assist you in exploring your data.",
+                  )}
                   <br />
-                  What do you want to do?
+                  {translateText("What do you want to do?")}
                 </p>
                 <div className="mt-6 flex max-w-sm flex-wrap items-center justify-center gap-2">
                   {CONVERSATION_STARTERS.map(([label, message]) => (
@@ -374,7 +396,7 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                       disabled={isInputDisabled}
                       onClick={() => submitInput(message)}
                     >
-                      {label}
+                      {translateText(label)}
                     </button>
                   ))}
                 </div>
@@ -473,8 +495,8 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                 }
               }}
               disabled={isInputDisabled}
-              aria-label="Ask the assistant a question"
-              placeholder="Ask the assistant a question..."
+              aria-label={translateText("Ask the assistant a question")}
+              placeholder={translateText("Ask the assistant a question...")}
               rows={1}
               className={cn(
                 "bg-background placeholder:text-muted-foreground w-full flex-1 resize-none overflow-y-auto rounded-md text-sm leading-5 disabled:cursor-not-allowed disabled:opacity-60",
@@ -488,7 +510,7 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                 type="submit"
                 size="icon"
                 className="h-8 w-8 rounded-md border"
-                aria-label="Send message"
+                aria-label={translateText("Send message")}
                 disabled={isInputDisabled || !input.trim()}
               >
                 <SendHorizontal className="h-4 w-4" />
@@ -500,13 +522,14 @@ export function InAppAgentWindow(props: InAppAgentWindowProps) {
                 <Button
                   type="submit"
                   className="h-8 w-fit rounded-md px-3"
-                  aria-label="Send message"
+                  aria-label={translateText("Send message")}
                   disabled={isInputDisabled || !input.trim()}
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
                 >
-                  Send <SendHorizontal className="ml-2 h-4 w-4" />
+                  {translateText("Send")}{" "}
+                  <SendHorizontal className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             )}

@@ -13,6 +13,7 @@ import type {
   CsvColumnPreview,
   FieldMapping,
 } from "@/src/features/datasets/lib/csv/types";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const MIN_CHUNK_SIZE = 1;
 const CHUNK_START_SIZE = 50;
@@ -66,6 +67,7 @@ type UseCsvImportOptions = {
 };
 
 export function useCsvImport(options: UseCsvImportOptions) {
+  const { translateText } = useI18n();
   const [progress, setProgress] = useState<ImportProgress>({
     totalItems: 0,
     processedItems: 0,
@@ -85,7 +87,10 @@ export function useCsvImport(options: UseCsvImportOptions) {
 
     if (!csvFile) return false;
     if (csvFile.size > MAX_FILE_SIZE_BYTES) {
-      showErrorToast("File too large", "Maximum file size is 10MB");
+      showErrorToast(
+        translateText("File too large"),
+        translateText("Maximum file size is 10MB"),
+      );
       return false;
     }
 
@@ -146,7 +151,11 @@ export function useCsvImport(options: UseCsvImportOptions) {
               (col) => !headerMap.has(col),
             );
             if (missingColumns.length > 0) {
-              throw new Error(`Missing columns: ${missingColumns.join(", ")}`);
+              throw new Error(
+                translateText("Missing columns: {columns}", {
+                  columns: missingColumns.join(", "),
+                }),
+              );
             }
           },
           onRow: (row, _, index) => {
@@ -191,7 +200,13 @@ export function useCsvImport(options: UseCsvImportOptions) {
               });
             } catch (error) {
               throw new Error(
-                `Error processing row ${index + 1}: ${error instanceof Error ? error.message : "Unknown error"}`,
+                translateText("Error processing row {row}: {message}", {
+                  row: index + 1,
+                  message:
+                    error instanceof Error
+                      ? error.message
+                      : translateText("Unknown error"),
+                }),
               );
             }
           },
@@ -241,11 +256,16 @@ export function useCsvImport(options: UseCsvImportOptions) {
         status: "not-started",
       });
       if (error instanceof Error && processedCount === 0) {
-        showErrorToast("Failed to import all dataset items", error.message);
+        showErrorToast(
+          translateText("Failed to import all dataset items"),
+          error.message,
+        );
       } else {
         showErrorToast(
-          "Failed to import all dataset items",
-          `Please try again starting from row ${processedCount + 1}.`,
+          translateText("Failed to import all dataset items"),
+          translateText("Please try again starting from row {row}.", {
+            row: processedCount + 1,
+          }),
         );
       }
       return false;

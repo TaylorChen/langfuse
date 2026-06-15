@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useBillingInformation } from "./useBillingInformation";
 import { useIsCloudBillingAvailable } from "@/src/ee/features/billing/utils/isCloudBilling";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type InvoiceRow = {
   id: string;
@@ -29,6 +30,7 @@ type InvoiceRow = {
 };
 
 export function BillingInvoiceTable() {
+  const { translateText } = useI18n();
   const { organization } = useBillingInformation();
   const isCloudBillingAvailable = useIsCloudBillingAvailable();
   const shouldShowTable =
@@ -113,7 +115,7 @@ export function BillingInvoiceTable() {
     {
       accessorKey: "created",
       id: "created",
-      header: "Date",
+      header: translateText("Date"),
       cell: ({ row }) => {
         const value = row.getValue("created") as InvoiceRow["created"];
         if (!value) return undefined;
@@ -128,7 +130,7 @@ export function BillingInvoiceTable() {
     {
       accessorKey: "status",
       id: "status",
-      header: "Status",
+      header: translateText("Status"),
       size: 100,
       cell: ({ row }) => {
         const status = (row.getValue("status") as string | null)?.toLowerCase();
@@ -145,7 +147,7 @@ export function BillingInvoiceTable() {
     {
       accessorKey: "breakdown.subscriptionCents",
       id: "subscription",
-      header: "Subscription",
+      header: translateText("Subscription"),
       size: 100,
       cell: ({ row }) => {
         const cents = row.original.breakdown?.subscriptionCents ?? 0;
@@ -155,7 +157,7 @@ export function BillingInvoiceTable() {
     {
       accessorKey: "breakdown.usageCents",
       id: "usage",
-      header: "Usage",
+      header: translateText("Usage"),
       size: 90,
       cell: ({ row }) => {
         const cents = row.original.breakdown?.usageCents ?? 0;
@@ -165,7 +167,7 @@ export function BillingInvoiceTable() {
     {
       accessorKey: "breakdown.discountCents",
       id: "discounts",
-      header: "Discounts",
+      header: translateText("Discounts"),
       size: 90,
       cell: ({ row }) => {
         const cents = row.original.breakdown?.discountCents ?? 0;
@@ -175,7 +177,7 @@ export function BillingInvoiceTable() {
     {
       accessorKey: "breakdown.taxCents",
       id: "tax",
-      header: "Tax",
+      header: translateText("Tax"),
       size: 90,
       cell: ({ row }) => {
         const cents = row.original.breakdown?.taxCents ?? 0;
@@ -185,7 +187,7 @@ export function BillingInvoiceTable() {
     {
       accessorKey: "breakdown.totalCents",
       id: "total",
-      header: "Total",
+      header: translateText("Total"),
       size: 90,
       cell: ({ row }) => {
         const cents = row.original.breakdown?.totalCents ?? 0;
@@ -195,7 +197,7 @@ export function BillingInvoiceTable() {
     {
       accessorKey: "actions",
       id: "actions",
-      header: "Actions",
+      header: translateText("Actions"),
       size: 160,
       cell: ({ row }) => {
         const { hostedInvoiceUrl, invoicePdfUrl } = row.original;
@@ -204,7 +206,8 @@ export function BillingInvoiceTable() {
             {hostedInvoiceUrl ? (
               <a href={hostedInvoiceUrl} target="_blank" rel="noreferrer">
                 <Button size="sm" variant="ghost">
-                  <ExternalLink className="mr-1 h-4 w-4" /> View
+                  <ExternalLink className="mr-1 h-4 w-4" />{" "}
+                  {translateText("View")}
                 </Button>
               </a>
             ) : null}
@@ -282,7 +285,9 @@ export function BillingInvoiceTable() {
   return (
     <div className="space-y-0">
       <div className="flex items-center justify-between pt-4">
-        <h3 className="text-large font-medium">Invoice History</h3>
+        <h3 className="text-large font-medium">
+          {translateText("Invoice History")}
+        </h3>
       </div>
       <DataTableToolbar columns={columns} />
       <DataTable

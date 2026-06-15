@@ -5,6 +5,7 @@ import {
   TooltipContent,
 } from "@/src/components/ui/tooltip";
 import { RagasLogoIcon } from "@/src/features/evals/components/ragas-logo";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { UserCircle2Icon } from "lucide-react";
 
 function MaintainerIcon({ maintainer }: { maintainer: string }) {
@@ -18,12 +19,14 @@ function MaintainerIcon({ maintainer }: { maintainer: string }) {
 }
 
 export function MaintainerTooltip({ maintainer }: { maintainer: string }) {
+  const { translateText } = useI18n();
+
   return (
     <Tooltip>
       <TooltipTrigger>
         <MaintainerIcon maintainer={maintainer} />
       </TooltipTrigger>
-      <TooltipContent>{maintainer}</TooltipContent>
+      <TooltipContent>{translateText(maintainer)}</TooltipContent>
     </Tooltip>
   );
 }

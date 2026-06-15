@@ -1,6 +1,7 @@
 export interface ServerTraceDownloadParams {
   traceId: string;
   projectId: string;
+  fallbackErrorMessage?: string;
 }
 
 export function buildTraceDownloadUrl({
@@ -47,7 +48,7 @@ function downloadBlob(params: { blob: Blob; filename: string }) {
 export async function downloadServerTraceAsJson(
   params: ServerTraceDownloadParams,
 ) {
-  const { traceId, projectId } = params;
+  const { traceId, projectId, fallbackErrorMessage } = params;
   const response = await fetch(buildTraceDownloadUrl({ traceId, projectId }), {
     method: "GET",
     credentials: "same-origin",
@@ -58,7 +59,7 @@ export async function downloadServerTraceAsJson(
     throw new Error(
       hasErrorMessage(errorBody)
         ? errorBody.message
-        : "Failed to download trace JSON",
+        : (fallbackErrorMessage ?? "Failed to download trace JSON"),
     );
   }
 

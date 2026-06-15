@@ -13,6 +13,7 @@ import { Chart } from "@/src/features/widgets/chart-library/Chart";
 import { barListToDataPoints } from "@/src/features/dashboard/lib/chart-data-adapters";
 import { traceViewQuery } from "@/src/features/dashboard/lib/dashboard-utils";
 import { useScheduledDashboardExecuteQuery } from "@/src/hooks/useDashboardQueryScheduler";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type BarChartDataPoint = {
   name: string;
@@ -38,6 +39,7 @@ export const UserChart = ({
   metricsVersion?: ViewVersion;
   schedulerId?: string;
 }) => {
+  const { translateText } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
   const maxNumberOfEntries = { collapsed: 5, expanded: 20 } as const;
 
@@ -143,7 +145,9 @@ export const UserChart = ({
         .filter((item) => item.userId !== undefined)
         .map((item) => {
           return {
-            name: (item.userId as string | null | undefined) ?? "Unknown",
+            name:
+              (item.userId as string | null | undefined) ??
+              translateText("Unknown"),
             value: item.sum_totalCost ? Number(item.sum_totalCost) : 0,
           };
         })
@@ -190,7 +194,7 @@ export const UserChart = ({
   return (
     <DashboardCard
       className={className}
-      title="User consumption"
+      title={translateText("User consumption")}
       isLoading={isLoading || user.isPending}
     >
       <TabComponent
@@ -254,8 +258,10 @@ export const UserChart = ({
         maxLength={maxNumberOfEntries.collapsed}
         expandText={
           transformedCost.length > maxNumberOfEntries.expanded
-            ? `Show top ${maxNumberOfEntries.expanded}`
-            : "Show all"
+            ? translateText("Show top {count}", {
+                count: maxNumberOfEntries.expanded,
+              })
+            : translateText("Show all")
         }
       />
     </DashboardCard>

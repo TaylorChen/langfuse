@@ -13,6 +13,7 @@ import { Switch } from "@/src/components/ui/switch";
 import inAppAgentDarkIllustration from "../assets/in-app-agent-dark.svg";
 import inAppAgentLightIllustration from "../assets/in-app-agent-light.svg";
 import { Button } from "@/src/components/ui/button";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const IN_APP_AGENT_PREVIEW_ITEM = {
   id: "in-app-agent",
@@ -45,6 +46,7 @@ export function FeaturePreviewModal({
   onOpenChange,
   inAppAgent,
 }: FeaturePreviewModalProps) {
+  const { translateText } = useI18n();
   const inAppAgentToggleDisabled = inAppAgent.isToggling === true;
 
   return (
@@ -57,10 +59,10 @@ export function FeaturePreviewModal({
       >
         <DialogHeader>
           <DialogTitle className="text-foreground text-lg font-semibold">
-            {FEATURE_PREVIEW_MODAL_TITLE}
+            {translateText(FEATURE_PREVIEW_MODAL_TITLE)}
           </DialogTitle>
           <DialogDescription className="mt-0">
-            {FEATURE_PREVIEW_MODAL_SUBTITLE}
+            {translateText(FEATURE_PREVIEW_MODAL_SUBTITLE)}
           </DialogDescription>
         </DialogHeader>
 
@@ -73,10 +75,12 @@ export function FeaturePreviewModal({
               >
                 <span className="min-w-0">
                   <span className="block text-sm font-medium">
-                    {IN_APP_AGENT_PREVIEW_ITEM.sidebarLabel}
+                    {translateText(IN_APP_AGENT_PREVIEW_ITEM.sidebarLabel)}
                   </span>
                   <span className="text-muted-foreground mt-1 line-clamp-2 block text-xs">
-                    {inAppAgent.enabled ? "Enabled" : "Available"}
+                    {translateText(
+                      inAppAgent.enabled ? "Enabled" : "Available",
+                    )}
                   </span>
                 </span>
               </button>
@@ -93,10 +97,10 @@ export function FeaturePreviewModal({
             <div className="flex items-start justify-between gap-6">
               <div>
                 <h2 className="text-foreground text-xl font-semibold">
-                  {IN_APP_AGENT_PREVIEW_ITEM.title}
+                  {translateText(IN_APP_AGENT_PREVIEW_ITEM.title)}
                 </h2>
                 <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-5">
-                  {IN_APP_AGENT_PREVIEW_ITEM.description}
+                  {translateText(IN_APP_AGENT_PREVIEW_ITEM.description)}
                 </p>
                 <Button asChild className="mt-4">
                   <a
@@ -104,7 +108,7 @@ export function FeaturePreviewModal({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Give feedback
+                    {translateText("Give feedback")}
                   </a>
                 </Button>
               </div>
@@ -113,7 +117,9 @@ export function FeaturePreviewModal({
                   checked={inAppAgent.enabled}
                   disabled={inAppAgentToggleDisabled}
                   onCheckedChange={inAppAgent.onToggle}
-                  aria-label={`Toggle ${IN_APP_AGENT_PREVIEW_ITEM.title}`}
+                  aria-label={translateText("Toggle {item}", {
+                    item: IN_APP_AGENT_PREVIEW_ITEM.title,
+                  })}
                 />
               </div>
             </div>
@@ -121,7 +127,7 @@ export function FeaturePreviewModal({
             <PreviewMockupPanel />
 
             <p className="text-muted-foreground mt-5 text-sm leading-5">
-              {IN_APP_AGENT_PREVIEW_ITEM.details}
+              {translateText(IN_APP_AGENT_PREVIEW_ITEM.details)}
             </p>
           </section>
         </DialogBody>
@@ -131,16 +137,21 @@ export function FeaturePreviewModal({
 }
 
 function PreviewMockupPanel() {
+  const { translateText } = useI18n();
+  const imageAlt = translateText(
+    "Langfuse Assistant connects traces, scores, and prompts to answer project questions.",
+  );
+
   return (
     <div className="border-border bg-muted/30 mt-6 overflow-hidden rounded-2xl border shadow-inner">
       <Image
         src={inAppAgentLightIllustration}
-        alt="Langfuse Assistant connects traces, scores, and prompts to answer project questions."
+        alt={imageAlt}
         className="block h-auto w-full dark:hidden"
       />
       <Image
         src={inAppAgentDarkIllustration}
-        alt="Langfuse Assistant connects traces, scores, and prompts to answer project questions."
+        alt={imageAlt}
         className="hidden h-auto w-full dark:block"
       />
     </div>

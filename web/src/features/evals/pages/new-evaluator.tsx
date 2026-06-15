@@ -18,6 +18,7 @@ import { useIsCodeEvalEnabled } from "@/src/features/evals/hooks/useIsCodeEvalEn
 import { shouldShowEvalTemplate } from "@/src/features/evals/utils/code-eval-template-utils";
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
 import { Button } from "@/src/components/ui/button";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // Multi-step setup process
 // 0. Set up default model (optional, only if no default model exists): /project/:projectId/evals/new
@@ -25,6 +26,7 @@ import { Button } from "@/src/components/ui/button";
 // 2. Configure Evaluator: /project/:projectId/evals/new?evaluator=:evaluatorId
 export default function NewEvaluatorPage() {
   const router = useRouter();
+  const { translateText } = useI18n();
   const projectId = router.query.projectId as string;
   const evaluatorId = router.query.evaluator as string | undefined;
   const codeEvalCapabilities = useIsCodeEvalEnabled();
@@ -107,7 +109,7 @@ export default function NewEvaluatorPage() {
   const stepInt = evaluatorId ? 2 : canSkipDefaultModel ? 1 : 0;
 
   if (!hasAccess) {
-    return <div>You do not have access to this page.</div>;
+    return <div>{translateText("You do not have access to this page.")}</div>;
   }
 
   return (
@@ -115,10 +117,10 @@ export default function NewEvaluatorPage() {
       withPadding
       scrollable
       headerProps={{
-        title: "Set up evaluator",
+        title: translateText("Set up evaluator"),
         breadcrumb: [
           {
-            name: "Running Evaluators",
+            name: translateText("Running Evaluators"),
             href: `/project/${projectId}/evals`,
           },
         ],
@@ -136,7 +138,7 @@ export default function NewEvaluatorPage() {
                       : "text-foreground font-semibold",
                   )}
                 >
-                  0. Set up default model
+                  {translateText("0. Set up default model")}
                   {stepInt > 0 && (
                     <Check className="ml-1 inline-block h-3 w-3" />
                   )}
@@ -156,7 +158,7 @@ export default function NewEvaluatorPage() {
                   : "text-foreground font-semibold",
               )}
             >
-              1. Select Evaluator
+              {translateText("1. Select Evaluator")}
               {stepInt > 1 && <Check className="ml-1 inline-block h-3 w-3" />}
             </BreadcrumbPage>
           </BreadcrumbItem>
@@ -170,7 +172,7 @@ export default function NewEvaluatorPage() {
               )}
             >
               <div className="flex flex-row">
-                2. Run Evaluator
+                {translateText("2. Run Evaluator")}
                 {currentTemplate && (
                   <div className="flex flex-row gap-2">
                     <span>
@@ -205,11 +207,15 @@ export default function NewEvaluatorPage() {
             {hasNewerTemplate && latestTemplate && currentTemplate ? (
               <Alert variant="info">
                 <Info className="h-4 w-4" />
-                <AlertTitle>Selected Evaluator has been updated</AlertTitle>
+                <AlertTitle>
+                  {translateText("Selected Evaluator has been updated")}
+                </AlertTitle>
                 <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <span>
-                    Click to use the latest version of your evaluator{" "}
-                    {latestTemplate.name}.
+                    {translateText(
+                      "Click to use the latest version of your evaluator {name}.",
+                      { name: latestTemplate.name },
+                    )}
                   </span>
                   <Button
                     type="button"
@@ -218,7 +224,7 @@ export default function NewEvaluatorPage() {
                     className="w-fit"
                     onClick={handleUseUpdatedEvaluator}
                   >
-                    Use updated evaluator
+                    {translateText("Use updated evaluator")}
                   </Button>
                 </AlertDescription>
               </Alert>

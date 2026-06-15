@@ -48,6 +48,7 @@ import { TraceLogView } from "../TraceLogView/TraceLogView";
 import { TRACE_VIEW_CONFIG } from "@/src/components/trace/config/trace-view-config";
 import ScoresTable from "@/src/components/table/use-cases/scores";
 import { getMostRecentCorrection } from "@/src/features/corrections/utils/getMostRecentCorrection";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface TraceDetailViewProps {
   trace: Omit<WithStringifiedMetadata<TraceDomain>, "input" | "output"> & {
@@ -68,6 +69,8 @@ export function TraceDetailView({
   corrections,
   projectId,
 }: TraceDetailViewProps) {
+  const { t, translateText } = useI18n();
+
   // Tab and view state from URL (via SelectionContext)
   const { selectedTab, setSelectedTab } = useSelection();
   const utils = api.useUtils();
@@ -233,23 +236,29 @@ export function TraceDetailView({
         {showTabsBar && (
           <TooltipProvider>
             <TabsBarList>
-              <TabsBarTrigger value="preview">Preview</TabsBarTrigger>
+              <TabsBarTrigger value="preview">
+                {translateText("Preview")}
+              </TabsBarTrigger>
               {showLogViewTab && (
                 <TabsBarTrigger value="log">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span>Log View</span>
+                      <span>{translateText("Log View")}</span>
                     </TooltipTrigger>
                     <TooltipContent className="text-xs">
                       {isLogViewVirtualized
-                        ? `Shows all ${observations.length} observations with virtualization enabled.`
-                        : "Shows all observations concatenated. Great for quickly scanning through them."}
+                        ? t("traceLog.logViewDescriptionVirtualized", {
+                            count: observations.length,
+                          })
+                        : t("traceLog.logViewDescription")}
                     </TooltipContent>
                   </Tooltip>
                 </TabsBarTrigger>
               )}
               {showScoresTab && (
-                <TabsBarTrigger value="scores">Scores</TabsBarTrigger>
+                <TabsBarTrigger value="scores">
+                  {translateText("Scores")}
+                </TabsBarTrigger>
               )}
 
               {/* View toggle (Formatted/JSON) - show for preview and log tabs when pretty view available */}
@@ -281,7 +290,7 @@ export function TraceDetailView({
                         value="pretty"
                         className="h-fit px-1 text-xs"
                       >
-                        Formatted
+                        {translateText("Formatted")}
                       </TabsTrigger>
                       {selectedTab === "log" && isLogViewVirtualized ? (
                         <HoverCard openDelay={200}>
@@ -299,14 +308,15 @@ export function TraceDetailView({
                             className="w-64 text-sm"
                             sideOffset={8}
                           >
-                            <p className="font-medium">JSON view unavailable</p>
+                            <p className="font-medium">
+                              {t("traceLog.jsonViewUnavailable")}
+                            </p>
                             <p className="text-muted-foreground mt-1">
-                              Disabled for traces with{" "}
-                              {
-                                TRACE_VIEW_CONFIG.logView
-                                  .virtualizationThreshold
-                              }
-                              + observations to maintain performance.
+                              {t("traceLog.jsonViewUnavailableDescription", {
+                                count:
+                                  TRACE_VIEW_CONFIG.logView
+                                    .virtualizationThreshold,
+                              })}
                             </p>
                           </HoverCardContent>
                         </HoverCard>
@@ -330,7 +340,7 @@ export function TraceDetailView({
                           onCheckedChange={handleBetaToggle}
                         />
                         <span className="text-muted-foreground text-xs">
-                          Beta
+                          {translateText("Beta")}
                         </span>
                       </div>
                     )}
@@ -358,7 +368,7 @@ export function TraceDetailView({
                 <div
                   className={`px-2 pt-2 text-sm font-medium ${currentView !== "pretty" ? "shrink-0" : ""}`}
                 >
-                  Tags
+                  {translateText("Tags")}
                 </div>
                 <div
                   className={`flex flex-wrap gap-x-1 gap-y-1 px-2 pb-2 ${currentView !== "pretty" ? "shrink-0" : ""}`}

@@ -27,6 +27,7 @@ import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { getFormattedPayload } from "@/src/features/experiments/utils/format";
 import { type Prisma } from "@langfuse/shared";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const RemoteExperimentTriggerSchema = z.object({
   payload: z.string(),
@@ -50,6 +51,7 @@ export const RemoteExperimentTriggerModal = ({
   };
   setShowTriggerModal: (show: boolean) => void;
 }) => {
+  const { translateText } = useI18n();
   const hasDatasetAccess = useHasProjectAccess({
     projectId,
     scope: "datasets:CUD",
@@ -72,21 +74,26 @@ export const RemoteExperimentTriggerModal = ({
       onSuccess: (data) => {
         if (data.success && data.skipped) {
           showErrorToast(
-            "Trigger is disabled",
-            "Enable the trigger in settings to run remote experiments.",
+            translateText("Trigger is disabled"),
+            translateText(
+              "Enable the trigger in settings to run remote experiments.",
+            ),
             "WARNING",
           );
         } else if (data.success) {
           showSuccessToast({
-            title: "Remote experiment triggered",
-            description:
+            title: translateText("Remote experiment triggered"),
+            description: translateText(
               "Your remote experiment may take a few minutes to complete.",
+            ),
           });
         } else {
           showErrorToast(
-            "Failed to trigger remote experiment",
+            translateText("Failed to trigger remote experiment"),
             data.error ||
-              "Please try again or check your remote experiment configuration.",
+              translateText(
+                "Please try again or check your remote experiment configuration.",
+              ),
           );
         }
         setShowTriggerModal(false);
@@ -99,7 +106,7 @@ export const RemoteExperimentTriggerModal = ({
         JSON.parse(data.payload);
       } catch {
         form.setError("payload", {
-          message: "Invalid JSON format",
+          message: translateText("Invalid JSON format"),
         });
         return;
       }
@@ -124,12 +131,16 @@ export const RemoteExperimentTriggerModal = ({
           onClick={() => setShowTriggerModal(false)}
           className="inline-block self-start"
         >
-          ← Back
+          ← {translateText("Back")}
         </Button>
-        <DialogTitle>Run remote dataset run</DialogTitle>
+        <DialogTitle>{translateText("Run remote dataset run")}</DialogTitle>
         <DialogDescription>
-          This action will send the following information to{" "}
-          <strong>{remoteExperimentConfig.url}</strong>.
+          {translateText(
+            "This action will send the following information to {url}.",
+            {
+              url: remoteExperimentConfig.url,
+            },
+          )}
         </DialogDescription>
       </DialogHeader>
 
@@ -142,11 +153,14 @@ export const RemoteExperimentTriggerModal = ({
                 name="payload"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Config</FormLabel>
+                    <FormLabel>{translateText("Config")}</FormLabel>
                     <FormDescription>
-                      Confirm the config you want to send to the remote dataset
-                      run URL along with the{" "}
-                      <strong>{dataset.data?.name}</strong> dataset information.
+                      {translateText(
+                        "Confirm the config you want to send to the remote dataset run URL along with the {datasetName} dataset information.",
+                        {
+                          datasetName: dataset.data?.name,
+                        },
+                      )}
                     </FormDescription>
                     <FormControl>
                       <CodeMirrorEditor
@@ -173,7 +187,7 @@ export const RemoteExperimentTriggerModal = ({
                 onClick={() => setShowTriggerModal(false)}
                 disabled={runRemoteExperimentMutation.isPending}
               >
-                Cancel
+                {translateText("Cancel")}
               </Button>
               <Button
                 type="submit"
@@ -184,7 +198,7 @@ export const RemoteExperimentTriggerModal = ({
                     <Spinner size="sm" />
                   </div>
                 )}
-                Run
+                {translateText("Run")}
               </Button>
             </div>
           </DialogFooter>

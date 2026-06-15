@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,19 +25,21 @@ import { isEmailVerifiedWithinCutoff } from "@/src/features/auth-credentials/lib
 import Link from "next/link";
 import { ErrorPage } from "@/src/components/error-page";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
-import { passwordSchema } from "@/src/features/auth/lib/signupSchema";
+import { createPasswordSchema } from "@/src/features/auth/lib/signupSchema";
 import { useLangfuseCloudRegion } from "@/src/features/organizations/hooks";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
-const resetPasswordSchema = z
-  .object({
-    email: z.email(),
-    password: passwordSchema,
-    confirmPassword: passwordSchema,
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+const createResetPasswordSchema = (translateText: (text: string) => string) =>
+  z
+    .object({
+      email: z.email(translateText("Invalid email address")),
+      password: createPasswordSchema(translateText),
+      confirmPassword: createPasswordSchema(translateText),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: translateText("Passwords do not match"),
+      path: ["confirmPassword"],
+    });
 
 export function ResetPasswordPage({
   passwordResetAvailable,
@@ -47,12 +49,17 @@ export function ResetPasswordPage({
   const session = useSession();
   const router = useRouter();
   const { isLangfuseCloud, region } = useLangfuseCloudRegion();
+  const { t, translateText } = useI18n();
   const [formError, setFormError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showResetPasswordEmailButton, setShowResetPasswordEmailButton] =
     useState(false);
 
   const capture = usePostHogClientCapture();
+  const resetPasswordSchema = useMemo(
+    () => createResetPasswordSchema(translateText),
+    [translateText],
+  );
 
   // Detect set mode: user exists but has no password (signup email verification flow)
   const isSetMode = session.data?.user?.hasPassword === false;
@@ -102,7 +109,7 @@ export function ResetPasswordPage({
           setFormError(error.message);
         } else {
           console.error(error);
-          setFormError("An unknown error occurred");
+          setFormError(t("auth.resetPassword.unknownError"));
         }
       });
   }
@@ -110,21 +117,27 @@ export function ResetPasswordPage({
   if (!passwordResetAvailable)
     return (
       <ErrorPage
-        title="Not available"
-        message="Password reset is not configured on this instance"
+        title={t("auth.resetPassword.notAvailableTitle")}
+        message={t("auth.resetPassword.notAvailableMessage")}
         additionalButton={{
-          label: "Setup instructions",
+          label: t("auth.resetPassword.setupInstructions"),
           href: "https://langfuse.com/self-hosting/security/authentication-and-sso#auth-email-password",
         }}
       />
     );
 
-  const title = isSetMode ? "Set your password" : "Reset your password";
-  const pageTitle = isSetMode ? "Set Password" : "Reset Password";
-  const submitLabel = isSetMode ? "Set password" : "Update Password";
+  const title = isSetMode
+    ? t("auth.resetPassword.setTitle")
+    : t("auth.resetPassword.resetTitle");
+  const pageTitle = isSetMode
+    ? t("auth.resetPassword.setPageTitle")
+    : t("auth.resetPassword.resetPageTitle");
+  const submitLabel = isSetMode
+    ? t("auth.resetPassword.setSubmit")
+    : t("auth.resetPassword.updateSubmit");
   const successMessage = isSetMode
-    ? "Password set successfully. Redirecting ..."
-    : "Password successfully updated. Redirecting ...";
+    ? t("auth.resetPassword.setSuccess")
+    : t("auth.resetPassword.updateSuccess");
 
   return (
     <>
@@ -144,7 +157,7 @@ export function ResetPasswordPage({
               <Button asChild variant="ghost">
                 <Link href="/auth/sign-in">
                   <ArrowLeft className="mr-2 h-3 w-3" />
-                  Back to sign in
+                  {t("auth.resetPassword.backToSignIn")}
                 </Link>
               </Button>
             </div>
@@ -163,7 +176,9 @@ export function ResetPasswordPage({
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>
+                        {t("auth.resetPassword.emailLabel")}
+                      </FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -174,7 +189,7 @@ export function ResetPasswordPage({
                             {...field}
                           />
                           {emailVerified.verified && (
-                            <span title="Email verified">
+                            <span title={t("auth.resetPassword.emailVerified")}>
                               <ShieldCheck className="text-muted-green absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 transform" />
                             </span>
                           )}
@@ -192,7 +207,9 @@ export function ResetPasswordPage({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            {isSetMode ? "Password" : "New Password"}
+                            {isSetMode
+                              ? t("auth.resetPassword.passwordLabel")
+                              : t("auth.resetPassword.newPasswordLabel")}
                           </FormLabel>
                           <FormControl>
                             <PasswordInput
@@ -211,8 +228,8 @@ export function ResetPasswordPage({
                         <FormItem>
                           <FormLabel>
                             {isSetMode
-                              ? "Confirm Password"
-                              : "Confirm New Password"}
+                              ? t("auth.resetPassword.confirmPasswordLabel")
+                              : t("auth.resetPassword.confirmNewPasswordLabel")}
                           </FormLabel>
                           <FormControl>
                             <PasswordInput
@@ -272,11 +289,9 @@ export function ResetPasswordPage({
         </div>
         {!isSetMode && session.status !== "authenticated" && (
           <div className="text-muted-foreground mx-auto mt-10 max-w-lg text-center text-xs">
-            You will only receive an email if an account with this email exists
-            and you have signed up with email and password. If you used an
-            authentication provider like Google, Gitlab, Okta, or GitHub, please{" "}
+            {t("auth.resetPassword.emailNotice")}{" "}
             <Link href="/auth/sign-in" className="underline">
-              sign in
+              {t("auth.resetPassword.emailNoticeSignIn")}
             </Link>
             .
           </div>

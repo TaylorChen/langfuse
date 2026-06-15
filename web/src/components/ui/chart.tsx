@@ -9,6 +9,7 @@ import type {
 } from "recharts";
 
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -174,6 +175,13 @@ const ChartTooltipContent = React.forwardRef<
     ref,
   ) => {
     const { config } = useChart();
+    const { translateText } = useI18n();
+
+    const translateLabel = React.useCallback(
+      (value: React.ReactNode) =>
+        typeof value === "string" ? translateText(value) : value,
+      [translateText],
+    );
 
     const displayPayload = React.useMemo(() => {
       if (!payload?.length || !sortPayloadByValue) return payload ?? [];
@@ -194,7 +202,7 @@ const ChartTooltipContent = React.forwardRef<
       const itemConfig = getPayloadConfigFromPayload(config, item, key);
       const value =
         !labelKey && typeof label === "string"
-          ? config[label as keyof typeof config]?.label || label
+          ? translateLabel(config[label as keyof typeof config]?.label) || label
           : itemConfig?.label;
 
       if (labelFormatter) {
@@ -218,6 +226,7 @@ const ChartTooltipContent = React.forwardRef<
       labelClassName,
       config,
       labelKey,
+      translateLabel,
     ]);
 
     if (!active || !payload?.length) {
@@ -294,7 +303,7 @@ const ChartTooltipContent = React.forwardRef<
                             ? nameFormatter(
                                 String(item.name ?? item.dataKey ?? ""),
                               )
-                            : itemConfig?.label || item.name}
+                            : translateLabel(itemConfig?.label) || item.name}
                         </span>
                       </div>
                       {item.value !== undefined && item.value !== null && (

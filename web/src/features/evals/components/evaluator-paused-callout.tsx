@@ -14,6 +14,7 @@ import {
 import { AlertTriangle, ExternalLinkIcon, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type EvaluatorPausedCalloutProps = {
   projectId: string;
@@ -31,27 +32,29 @@ const DEFAULT_BLOCK_MESSAGE =
 function getResolutionActionLabel(params: {
   blockReason: EvaluatorBlockReason;
   templateId?: string | null;
+  translateText: (text: string) => string;
 }) {
-  const { blockReason, templateId } = params;
+  const { blockReason, templateId, translateText } = params;
 
   if (
     blockReason === EvaluatorBlockReason.LLM_CONNECTION_AUTH_INVALID ||
     blockReason === EvaluatorBlockReason.LLM_CONNECTION_MISSING
   ) {
-    return "Open LLM connections";
+    return translateText("Open LLM connections");
   }
 
   if (templateId) {
-    return "Open evaluator template";
+    return translateText("Open evaluator template");
   }
 
-  return "Open evaluators";
+  return translateText("Open evaluators");
 }
 
 export function EvaluatorPausedCallout({
   projectId,
   evalConfig,
 }: EvaluatorPausedCalloutProps) {
+  const { translateText } = useI18n();
   const utils = api.useUtils();
   const calloutId = `eval-config-paused-${evalConfig.id}`;
 
@@ -59,12 +62,12 @@ export function EvaluatorPausedCallout({
     onSuccess: async () => {
       await utils.evals.invalidate();
       showSuccessToast({
-        title: "Evaluator reactivated",
-        description: "The evaluator is active again.",
+        title: translateText("Evaluator reactivated"),
+        description: translateText("The evaluator is active again."),
       });
     },
     onError: (error) => {
-      showErrorToast("Reactivation failed", error.message);
+      showErrorToast(translateText("Reactivation failed"), error.message);
     },
   });
 
@@ -83,8 +86,11 @@ export function EvaluatorPausedCallout({
   const resolutionActionLabel = getResolutionActionLabel({
     blockReason,
     templateId: evalConfig.evalTemplate?.id,
+    translateText,
   });
-  const blockMessage = evalConfig.blockMessage ?? DEFAULT_BLOCK_MESSAGE;
+  const blockMessage = evalConfig.blockMessage
+    ? translateText(evalConfig.blockMessage)
+    : translateText(DEFAULT_BLOCK_MESSAGE);
   const blockedAt = new Date(evalConfig.blockedAt);
   const blockedAtLabel = Number.isNaN(blockedAt.getTime())
     ? null
@@ -102,7 +108,7 @@ export function EvaluatorPausedCallout({
 
         <div className="min-w-0 flex-1">
           <h3 className="text-foreground text-base leading-5 font-medium">
-            Evaluator paused
+            {translateText("Evaluator paused")}
           </h3>
 
           <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-2 text-sm leading-5">
@@ -113,7 +119,9 @@ export function EvaluatorPausedCallout({
               <Fragment>
                 <span className="bg-border h-1 w-1 rounded-full" />
                 <span title={blockedAt.toLocaleString()}>
-                  Paused {blockedAtLabel}
+                  {translateText("Paused {blockedAtLabel}", {
+                    blockedAtLabel,
+                  })}
                 </span>
               </Fragment>
             ) : null}
@@ -151,7 +159,7 @@ export function EvaluatorPausedCallout({
               className="h-8 px-3"
             >
               <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
-              Reactivate
+              {translateText("Reactivate")}
             </Button>
           </div>
         </div>

@@ -40,6 +40,7 @@ import { MaintainerTooltip } from "@/src/features/evals/components/maintainer-to
 import { env } from "@/src/env.mjs";
 import { useIsCodeEvalEnabled } from "@/src/features/evals/hooks/useIsCodeEvalEnabled";
 import { shouldShowEvalTemplate } from "@/src/features/evals/utils/code-eval-template-utils";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type TemplateSelectorProps = {
   projectId: string;
@@ -68,6 +69,7 @@ export const TemplateSelector = ({
   className,
   disabled = false,
 }: TemplateSelectorProps) => {
+  const { translateText } = useI18n();
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [search, setSearch] = useState("");
   const codeEvalCapabilities = useIsCodeEvalEnabled();
@@ -167,8 +169,11 @@ export const TemplateSelector = ({
             <div className="flex items-center gap-1 overflow-hidden">
               <span className="mr-1 truncate">
                 {activeTemplates.length > 0
-                  ? `${activeTemplates.length} active evaluators`
-                  : "Select evaluators"}
+                  ? translateText("{count} active evaluators").replace(
+                      "{count}",
+                      String(activeTemplates.length),
+                    )
+                  : translateText("Select evaluators")}
               </span>
             </div>
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -177,7 +182,7 @@ export const TemplateSelector = ({
         <PopoverContent className="w-[300px] p-0" align="start">
           <InputCommand>
             <InputCommandInput
-              placeholder="Search evaluators..."
+              placeholder={translateText("Search evaluators...")}
               className="h-9"
               value={search}
               onValueChange={setSearch}
@@ -194,13 +199,15 @@ export const TemplateSelector = ({
             >
               <InputCommandList className="max-h-full overflow-visible overflow-x-hidden">
                 {!hasResults && (
-                  <InputCommandEmpty>No evaluator found.</InputCommandEmpty>
+                  <InputCommandEmpty>
+                    {translateText("No evaluator found.")}
+                  </InputCommandEmpty>
                 )}
 
                 {filteredTemplates.custom.length > 0 && (
                   <>
                     <InputCommandGroup
-                      heading="Custom evaluators"
+                      heading={translateText("Custom evaluators")}
                       className="max-h-full"
                     >
                       {filteredTemplates.custom.map(([name, templateData]) => {
@@ -231,7 +238,7 @@ export const TemplateSelector = ({
                             {name}
                             {isLegacy && (
                               <Badge variant="outline" className="ml-2 text-xs">
-                                legacy
+                                {translateText("legacy")}
                               </Badge>
                             )}
                             {isInvalid && (
@@ -240,7 +247,11 @@ export const TemplateSelector = ({
                                   <AlertCircle className="ml-1 h-4 w-4 text-yellow-500" />
                                 </TooltipTrigger>
                                 <TooltipContent className="max-h-[50dvh] overflow-y-auto text-xs break-normal whitespace-normal">
-                                  <p>Requires project-level evaluation model</p>
+                                  <p>
+                                    {translateText(
+                                      "Requires project-level evaluation model",
+                                    )}
+                                  </p>
                                   <Link
                                     href={`/project/${projectId}/evals/default-model`}
                                     className="mt-2 flex items-center gap-1 text-blue-600 hover:underline"
@@ -248,17 +259,19 @@ export const TemplateSelector = ({
                                     rel="noopener noreferrer"
                                   >
                                     <ExternalLinkIcon className="h-3 w-3" />
-                                    Configure default model
+                                    {translateText("Configure default model")}
                                   </Link>
                                 </TooltipContent>
                               </Tooltip>
                             )}
                             {isInactive && (
                               <div
-                                title="The evaluator has been used in the past but is currently paused. It will not run against outputs created in this dataset run. You can reactivate it if you wish"
+                                title={translateText(
+                                  "The evaluator has been used in the past but is currently paused. It will not run against outputs created in this dataset run. You can reactivate it if you wish",
+                                )}
                                 className="text-muted-foreground ml-2 text-xs"
                               >
-                                Paused
+                                {translateText("Paused")}
                               </div>
                             )}
                             {isActive && (
@@ -271,8 +284,10 @@ export const TemplateSelector = ({
                                 className="ml-auto"
                                 title={
                                   isInvalid
-                                    ? "Configure default model first"
-                                    : "Configure evaluator"
+                                    ? translateText(
+                                        "Configure default model first",
+                                      )
+                                    : translateText("Configure evaluator")
                                 }
                                 disabled={isInvalid || disabled}
                               >
@@ -291,7 +306,7 @@ export const TemplateSelector = ({
 
                 {filteredTemplates.langfuse.length > 0 && (
                   <InputCommandGroup
-                    heading="Langfuse managed evaluators"
+                    heading={translateText("Langfuse managed evaluators")}
                     className="max-h-full min-h-0"
                   >
                     {filteredTemplates.langfuse.map(([name, templateData]) => {
@@ -323,7 +338,7 @@ export const TemplateSelector = ({
                           />
                           {isLegacy && (
                             <Badge variant="outline" className="ml-2 text-xs">
-                              legacy
+                              {translateText("legacy")}
                             </Badge>
                           )}
                           {isInvalid && (
@@ -332,7 +347,11 @@ export const TemplateSelector = ({
                                 <AlertCircle className="ml-1 h-4 w-4 text-yellow-500" />
                               </TooltipTrigger>
                               <TooltipContent className="max-h-[50dvh] overflow-y-auto text-xs break-normal whitespace-normal">
-                                <p>Requires project-level evaluation model</p>
+                                <p>
+                                  {translateText(
+                                    "Requires project-level evaluation model",
+                                  )}
+                                </p>
                                 <Link
                                   href={`/project/${projectId}/evals/default-model`}
                                   className="mt-2 flex items-center gap-1 text-blue-600 hover:underline"
@@ -340,17 +359,19 @@ export const TemplateSelector = ({
                                   rel="noopener noreferrer"
                                 >
                                   <ExternalLinkIcon className="h-3 w-3" />
-                                  Configure default model
+                                  {translateText("Configure default model")}
                                 </Link>
                               </TooltipContent>
                             </Tooltip>
                           )}
                           {isInactive && (
                             <div
-                              title="The evaluator has been used in the past but is currently paused. It will not run against outputs created in this dataset run. You can reactivate it if you wish"
+                              title={translateText(
+                                "The evaluator has been used in the past but is currently paused. It will not run against outputs created in this dataset run. You can reactivate it if you wish",
+                              )}
                               className="text-muted-foreground ml-2 text-xs"
                             >
-                              Paused
+                              {translateText("Paused")}
                             </div>
                           )}
                           {isActive && (
@@ -363,8 +384,10 @@ export const TemplateSelector = ({
                               }
                               title={
                                 isInvalid
-                                  ? "Configure default model first"
-                                  : "Configure evaluator"
+                                  ? translateText(
+                                      "Configure default model first",
+                                    )
+                                  : translateText("Configure evaluator")
                               }
                               disabled={isInvalid || disabled}
                             >
@@ -388,7 +411,7 @@ export const TemplateSelector = ({
                       );
                     }}
                   >
-                    Create custom evaluator
+                    {translateText("Create custom evaluator")}
                     <ExternalLink className="ml-auto h-4 w-4" />
                   </InputCommandItem>
                   {!hasDefaultModel && (
@@ -401,7 +424,7 @@ export const TemplateSelector = ({
                         );
                       }}
                     >
-                      Configure default model
+                      {translateText("Configure default model")}
                       <ExternalLink className="ml-auto h-4 w-4" />
                     </InputCommandItem>
                   )}

@@ -17,6 +17,7 @@ import {
   TableBody,
   TableCell,
 } from "@/src/components/ui/table";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface SelectDashboardDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ export function SelectDashboardDialog({
   onSelectDashboard,
   onSkip,
 }: SelectDashboardDialogProps) {
+  const { translateText } = useI18n();
   const [selectedDashboardId, setSelectedDashboardId] = useState<string | null>(
     null,
   );
@@ -68,27 +70,33 @@ export function SelectDashboardDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>Select dashboard to add widget to</DialogTitle>
+          <DialogTitle>
+            {translateText("Select dashboard to add widget to")}
+          </DialogTitle>
         </DialogHeader>
         <DialogBody>
           <div className="mt-4 max-h-[400px] overflow-y-auto">
             {dashboards.isLoading ? (
-              <div className="py-8 text-center">Loading dashboards...</div>
+              <div className="py-8 text-center">
+                {translateText("Loading dashboards...")}
+              </div>
             ) : dashboards.isError ? (
               <div className="text-destructive py-8 text-center">
-                Error: {dashboards.error.message}
+                {translateText("Error: {message}", {
+                  message: dashboards.error.message,
+                })}
               </div>
             ) : dashboards.data?.dashboards.length === 0 ? (
               <div className="text-muted-foreground py-8 text-center">
-                No dashboards found.
+                {translateText("No dashboards found.")}
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Updated</TableHead>
+                    <TableHead>{translateText("Name")}</TableHead>
+                    <TableHead>{translateText("Description")}</TableHead>
+                    <TableHead>{translateText("Updated")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -127,10 +135,10 @@ export function SelectDashboardDialog({
         </DialogBody>
         <DialogFooter className="mt-4 flex justify-between">
           <Button variant="outline" onClick={handleSkip}>
-            Skip
+            {translateText("Skip")}
           </Button>
           <Button onClick={handleAdd} disabled={!selectedDashboardId}>
-            Add to Dashboard
+            {translateText("Add to Dashboard")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -64,6 +64,7 @@ import {
   getDescendantIds,
 } from "@/src/components/trace/lib/trace-aggregation";
 import TagList from "@/src/features/tag/components/TagList";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface ObservationDetailViewProps {
   observation: ObservationReturnTypeWithMetadata;
@@ -76,6 +77,8 @@ export function ObservationDetailView({
   projectId,
   traceId,
 }: ObservationDetailViewProps) {
+  const { t, translateText } = useI18n();
+
   // Tab and view state from URL (via SelectionContext)
   const {
     selectedTab: globalSelectedTab,
@@ -314,20 +317,26 @@ export function ObservationDetailView({
         {showTabsBar && (
           <TooltipProvider>
             <TabsBarList>
-              <TabsBarTrigger value="preview">Preview</TabsBarTrigger>
+              <TabsBarTrigger value="preview">
+                {translateText("Preview")}
+              </TabsBarTrigger>
               {showScoresTab && (
-                <TabsBarTrigger value="scores">Scores</TabsBarTrigger>
+                <TabsBarTrigger value="scores">
+                  {translateText("Scores")}
+                </TabsBarTrigger>
               )}
               {showLogViewTab && (
                 <TabsBarTrigger value="log">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span>Log View</span>
+                      <span>{translateText("Log View")}</span>
                     </TooltipTrigger>
                     <TooltipContent className="text-xs">
                       {isLogViewVirtualized
-                        ? `Shows all ${observations.length} observations with virtualization enabled.`
-                        : "Shows all observations concatenated. Great for quickly scanning through them."}
+                        ? t("traceLog.logViewDescriptionVirtualized", {
+                            count: observations.length,
+                          })
+                        : t("traceLog.logViewDescription")}
                     </TooltipContent>
                   </Tooltip>
                 </TabsBarTrigger>
@@ -362,7 +371,7 @@ export function ObservationDetailView({
                         value="pretty"
                         className="h-fit px-1 text-xs"
                       >
-                        Formatted
+                        {translateText("Formatted")}
                       </TabsTrigger>
                       {selectedTab === "log" && isLogViewVirtualized ? (
                         <HoverCard openDelay={200}>
@@ -382,14 +391,15 @@ export function ObservationDetailView({
                             className="w-64 text-sm"
                             sideOffset={8}
                           >
-                            <p className="font-medium">JSON view unavailable</p>
+                            <p className="font-medium">
+                              {t("traceLog.jsonViewUnavailable")}
+                            </p>
                             <p className="text-muted-foreground mt-1">
-                              Disabled for traces with{" "}
-                              {
-                                TRACE_VIEW_CONFIG.logView
-                                  .virtualizationThreshold
-                              }
-                              + observations to maintain performance.
+                              {t("traceLog.jsonViewUnavailableDescription", {
+                                count:
+                                  TRACE_VIEW_CONFIG.logView
+                                    .virtualizationThreshold,
+                              })}
                             </p>
                           </HoverCardContent>
                         </HoverCard>
@@ -413,7 +423,7 @@ export function ObservationDetailView({
                           onCheckedChange={handleBetaToggle}
                         />
                         <span className="text-muted-foreground text-xs">
-                          Beta
+                          {translateText("Beta")}
                         </span>
                       </div>
                     )}
@@ -442,7 +452,7 @@ export function ObservationDetailView({
                   <div
                     className={`px-2 pt-2 text-sm font-medium ${currentView !== "pretty" ? "shrink-0" : ""}`}
                   >
-                    Tags
+                    {translateText("Tags")}
                   </div>
                   <div
                     className={`flex flex-wrap gap-x-1 gap-y-1 px-2 pb-2 ${currentView !== "pretty" ? "shrink-0" : ""}`}

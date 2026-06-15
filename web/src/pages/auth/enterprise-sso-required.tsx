@@ -19,6 +19,8 @@ import {
 import { Input } from "@/src/components/ui/input";
 import { env } from "@/src/env.mjs";
 import { captureException } from "@sentry/nextjs";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
+import { LanguageSwitcher } from "@/src/features/i18n/LanguageSwitcher";
 
 const enterpriseSsoFormSchema = z.object({
   email: z.email(),
@@ -43,6 +45,7 @@ const PROVIDER_LABELS: Record<string, string> = {
 
 export default function EnterpriseSsoRequiredPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -83,7 +86,7 @@ export default function EnterpriseSsoRequiredPage() {
 
     const domain = values.email.split("@")[1]?.toLowerCase();
     if (!domain) {
-      form.setError("email", { message: "Invalid email address" });
+      form.setError("email", { message: t("auth.enterpriseSso.invalidEmail") });
       setLoading(false);
       return;
     }
@@ -109,47 +112,44 @@ export default function EnterpriseSsoRequiredPage() {
       }
 
       if (response.status === 404) {
-        setError(
-          "We couldn't find a custom Enterprise SSO configuration for this domain. Double-check your company email or contact your administrator.",
-        );
+        setError(t("auth.enterpriseSso.notFound"));
         return;
       }
 
       const data = (await response.json().catch(() => null)) as {
         message?: string;
       } | null;
-      setError(
-        data?.message ??
-          "Unable to start the Enterprise SSO sign-in flow. Please try again.",
-      );
+      setError(data?.message ?? t("auth.enterpriseSso.startError"));
     } catch (err) {
       captureException(err);
-      setError(
-        "Something went wrong while checking your Enterprise SSO configuration. Please try again.",
-      );
+      setError(t("auth.enterpriseSso.checkError"));
     } finally {
       setLoading(false);
     }
   }
 
   const description = friendlyProviderName
-    ? `You tried signing in with ${friendlyProviderName}, but this domain requires your company's custom Enterprise SSO.`
-    : "This domain requires your company's custom Enterprise SSO.";
+    ? t("auth.enterpriseSso.descriptionWithProvider", {
+        provider: friendlyProviderName,
+      })
+    : t("auth.enterpriseSso.description");
 
   return (
     <>
       <Head>
-        <title>Enterprise SSO Required | Langfuse</title>
+        <title>{t("auth.enterpriseSso.pageTitle")}</title>
       </Head>
       <div className="min-h-screen-with-banner bg-background flex flex-col justify-center px-6 py-12 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <LangfuseIcon className="mx-auto" />
+          <div className="mt-4 flex justify-center">
+            <LanguageSwitcher />
+          </div>
           <h1 className="text-primary mt-6 text-center text-2xl font-bold">
-            Use your Enterprise SSO
+            {t("auth.enterpriseSso.heading")}
           </h1>
           <p className="text-muted-foreground mt-2 text-center text-sm leading-6">
-            {description} Enter your company email so we can send you to the
-            correct identity provider.
+            {description} {t("auth.enterpriseSso.prompt")}
           </p>
         </div>
 
@@ -161,7 +161,7 @@ export default function EnterpriseSsoRequiredPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("auth.signIn.emailLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="jsdoe@example.com"
@@ -181,7 +181,7 @@ export default function EnterpriseSsoRequiredPage() {
                 loading={loading}
                 disabled={loading}
               >
-                Continue with Enterprise SSO
+                {t("auth.enterpriseSso.submit")}
               </Button>
             </form>
           </Form>
@@ -189,14 +189,14 @@ export default function EnterpriseSsoRequiredPage() {
             <div className="text-destructive mt-4 text-center text-sm font-medium">
               {error}
               <br />
-              Contact{" "}
+              {t("auth.enterpriseSso.contactPrefix")}{" "}
               <a
                 href="mailto:support@langfuse.com"
                 className="text-primary-accent hover:text-hover-primary-accent"
               >
                 support@langfuse.com
               </a>{" "}
-              if this keeps happening.
+              {t("auth.enterpriseSso.contactSuffix")}
             </div>
           ) : null}
           <div className="text-muted-foreground mt-6 text-center text-sm">
@@ -204,13 +204,13 @@ export default function EnterpriseSsoRequiredPage() {
               href="/auth/sign-in"
               className="text-primary-accent hover:text-hover-primary-accent"
             >
-              Back to other sign-in options
+              {t("auth.enterpriseSso.backToOptions")}
             </Link>
           </div>
         </div>
 
         <div className="text-muted-foreground mt-4 text-center text-xs">
-          Need help? Contact{" "}
+          {t("auth.enterpriseSso.needHelp")}{" "}
           <a
             href="mailto:support@langfuse.com"
             className="text-primary-accent hover:text-hover-primary-accent"

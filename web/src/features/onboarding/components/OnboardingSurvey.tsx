@@ -13,10 +13,12 @@ import { Input } from "@/src/components/ui/input";
 import { LangfuseIcon } from "@/src/components/LangfuseLogo";
 import { useSurveyForm } from "../hooks/useSurveyForm";
 import type { SurveyFormData } from "../lib/surveyTypes";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function OnboardingSurvey() {
   const router = useRouter();
   const { form, handleSubmit } = useSurveyForm();
+  const { translateText } = useI18n();
 
   const handleSkipButton = useCallback(() => {
     router.push("/");
@@ -67,12 +69,14 @@ export function OnboardingSurvey() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col gap-2">
                     <FormLabel className="text-xl font-semibold">
-                      Where did you hear about us?
+                      {translateText("Where did you hear about us?")}
                     </FormLabel>
                     <FormControl>
                       <Input
                         autoFocus
-                        placeholder="Colleague, Word of Mouth, X, Reddit, Event"
+                        placeholder={translateText(
+                          "Colleague, Word of Mouth, X, Reddit, Event",
+                        )}
                         {...field}
                         value={field.value ?? ""}
                       />
@@ -91,11 +95,11 @@ export function OnboardingSurvey() {
                   variant="ghost"
                   className="w-20"
                 >
-                  Skip
+                  {translateText("Skip")}
                 </Button>
               ) : (
                 <Button type="submit" variant="default" className="w-20">
-                  Finish
+                  {translateText("Finish")}
                 </Button>
               )}
             </div>

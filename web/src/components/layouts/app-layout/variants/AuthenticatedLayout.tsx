@@ -22,6 +22,7 @@ import type { NavigationItem } from "@/src/components/layouts/utilities/routes";
 import type { RouteGroup } from "@/src/components/layouts/routes";
 import dynamic from "next/dynamic";
 import { ControlledFeaturePreviewModal } from "@/src/features/feature-previews/components/ControlledFeaturePreviewModal";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const CommandMenu = dynamic(
   () =>
@@ -103,6 +104,7 @@ export function AuthenticatedLayout({
   onSignOut,
 }: AuthenticatedLayoutProps) {
   const { isLangfuseCloud, region: currentRegion } = useLangfuseCloudRegion();
+  const { t } = useI18n();
   const [featurePreviewOpen, setFeaturePreviewOpen] = useState(false);
 
   // Safe assertion: AuthenticatedLayout is only rendered after auth checks pass
@@ -138,12 +140,16 @@ export function AuthenticatedLayout({
       avatar: user.image ?? "",
     },
     items: [
-      { name: "Account Settings", href: "/account/settings" },
-      { name: "Theme", onClick: () => {}, content: <ThemeToggle /> },
+      { name: t("userMenu.accountSettings"), href: "/account/settings" },
+      {
+        name: t("userMenu.theme"),
+        onClick: () => {},
+        content: <ThemeToggle />,
+      },
       ...(hasFeaturePreviews
         ? [
             {
-              name: "Feature Preview",
+              name: t("userMenu.featurePreview"),
               onClick: () => setFeaturePreviewOpen(true),
             },
           ]
@@ -151,20 +157,20 @@ export function AuthenticatedLayout({
       ...(isLangfuseCloud
         ? [
             {
-              name: "Regions",
+              name: t("userMenu.regions"),
               subItems: regionMenuItems,
               content: (
                 <>
-                  Regions
+                  {t("userMenu.regions")}
                   <div className="ml-2 inline-flex rounded bg-black/5 p-1 text-xs dark:bg-white/10">
-                    Current: {currentRegion}
+                    {t("userMenu.currentRegion", { region: currentRegion })}
                   </div>
                 </>
               ),
             },
           ]
         : []),
-      { name: "Sign out", onClick: onSignOut },
+      { name: t("userMenu.signOut"), onClick: onSignOut },
     ],
   };
 

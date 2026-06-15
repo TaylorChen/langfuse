@@ -13,6 +13,7 @@ import { NewProjectForm } from "@/src/features/projects/components/NewProjectFor
 import { useQueryProjectOrOrganization } from "@/src/features/projects/hooks";
 import { createProjectRoute } from "@/src/features/setup/setupRoutes";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { Check } from "lucide-react";
 import { useRouter } from "next/router";
 
@@ -22,6 +23,7 @@ import { useRouter } from "next/router";
 export function SetupPage() {
   const { organization } = useQueryProjectOrOrganization();
   const router = useRouter();
+  const { translateText } = useI18n();
 
   // starts at 1 to align with breadcrumb
   const stepInt = organization ? 2 : 1;
@@ -29,15 +31,16 @@ export function SetupPage() {
   return (
     <ContainerPage
       headerProps={{
-        title: "Setup",
+        title: translateText("Setup"),
         help: {
-          description:
+          description: translateText(
             "Create a new organization. This will be used to manage your projects and teams.",
+          ),
         },
         ...(stepInt === 1 && {
           breadcrumb: [
             {
-              name: "Organizations",
+              name: translateText("Organizations"),
               href: "/",
             },
           ],
@@ -54,7 +57,7 @@ export function SetupPage() {
                   : "text-foreground font-semibold",
               )}
             >
-              1. Create Organization
+              {translateText("1. Create Organization")}
               {stepInt > 1 && <Check className="ml-1 inline-block h-3 w-3" />}
             </BreadcrumbPage>
           </BreadcrumbItem>
@@ -67,7 +70,7 @@ export function SetupPage() {
                   : "text-foreground font-semibold",
               )}
             >
-              2. Create Project
+              {translateText("2. Create Project")}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
@@ -77,9 +80,11 @@ export function SetupPage() {
           // 1. Create Org
           stepInt === 1 && (
             <div>
-              <Header title="New Organization" />
+              <Header title={translateText("New Organization")} />
               <p className="text-muted-foreground mb-4 text-sm">
-                Organizations are used to manage your projects and teams.
+                {translateText(
+                  "Organizations are used to manage your projects and teams.",
+                )}
               </p>
               <NewOrganizationForm
                 onSuccess={(orgId) => {
@@ -93,11 +98,11 @@ export function SetupPage() {
           // 2. Create Project
           stepInt === 2 && organization && (
             <div>
-              <Header title="New Project" />
+              <Header title={translateText("New Project")} />
               <p className="text-muted-foreground mb-4 text-sm">
-                Projects are used to group traces, datasets, evals and prompts.
-                Environments can be separated using the built-in environment
-                feature.
+                {translateText(
+                  "Projects are used to group traces, datasets, evals and prompts. Environments can be separated using the built-in environment feature.",
+                )}
               </p>
               <NewProjectForm
                 orgId={organization.id}

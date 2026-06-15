@@ -2,6 +2,7 @@ import { type ScoreDomain } from "@langfuse/shared";
 import { type WithStringifiedMetadata } from "@/src/utils/clientSideDomainTypes";
 import { AnnotationForm } from "@/src/features/scores/components/AnnotationForm";
 import { Separator } from "@/src/components/ui/separator";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface DualAnnotationContentProps {
   projectId: string;
@@ -25,13 +26,14 @@ export function DualAnnotationContent({
   const hasNonAnnotationScores = [...observationScores, ...traceScores].some(
     (score) => score.source !== "ANNOTATION",
   );
+  const { translateText } = useI18n();
 
   return (
     <div className="flex max-h-[95vh] flex-col gap-4 overflow-y-auto">
       {/* Observation-level scores */}
       <div>
         <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-          Observation Scores
+          {translateText("Observation Scores")}
         </div>
         <AnnotationForm
           serverScores={observationScores}
@@ -56,7 +58,7 @@ export function DualAnnotationContent({
       {/* Trace-level scores */}
       <div>
         <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-          Trace Scores
+          {translateText("Trace Scores")}
         </div>
         <AnnotationForm
           serverScores={traceScores}
@@ -77,8 +79,9 @@ export function DualAnnotationContent({
 
       {hasNonAnnotationScores && (
         <div className="text-muted-foreground text-xs">
-          API and eval scores are hidden from this annotation drawer. Add manual
-          annotations above.
+          {translateText(
+            "API and eval scores are hidden from this annotation drawer. Add manual annotations above.",
+          )}
         </div>
       )}
     </div>

@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const REFRESH_INTERVALS = [
   { label: "Off", value: null },
@@ -33,6 +34,11 @@ export function DataTableRefreshButton({
   setInterval,
 }: DataTableRefreshButtonProps) {
   const activeInterval = REFRESH_INTERVALS.find((i) => i.value === interval);
+  const { t } = useI18n();
+  const activeIntervalLabel =
+    activeInterval?.label === "Off"
+      ? t("table.off")
+      : (activeInterval?.label ?? t("table.off"));
 
   return (
     <div className="flex items-center">
@@ -42,7 +48,7 @@ export function DataTableRefreshButton({
         onClick={onRefresh}
         disabled={isRefreshing}
         className="rounded-r-none border-r-0"
-        title="Refresh"
+        title={t("table.refresh")}
       >
         <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
       </Button>
@@ -54,9 +60,7 @@ export function DataTableRefreshButton({
             className="w-auto rounded-l-none border-l-0 px-2"
           >
             <ChevronDown className="h-4 w-4" />
-            <span className="ml-1 text-sm">
-              {activeInterval?.label ?? "Off"}
-            </span>
+            <span className="ml-1 text-sm">{activeIntervalLabel}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -74,8 +78,8 @@ export function DataTableRefreshButton({
                 value={String(option.value)}
               >
                 {option.label === "Off"
-                  ? "Auto-refresh off"
-                  : `Every ${option.label}`}
+                  ? t("table.autoRefreshOff")
+                  : t("table.everyInterval", { interval: option.label })}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>

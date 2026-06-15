@@ -14,6 +14,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/src/components/ui/chart";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface HistogramDataPoint {
   binLabel: string;
@@ -25,12 +26,7 @@ interface HistogramDataPoint {
 
 const HistogramChart = ({
   data,
-  config = {
-    count: {
-      label: "Count",
-      color: "hsl(var(--chart-1))",
-    },
-  },
+  config,
   subtleFill = false,
   metricFormatter = (value, options) => formatMetric(value, options),
 }: {
@@ -39,6 +35,14 @@ const HistogramChart = ({
   subtleFill?: boolean;
   metricFormatter?: MetricFormatterFunction;
 }) => {
+  const { translateText } = useI18n();
+  const chartConfig = config ?? {
+    count: {
+      label: translateText("Count"),
+      color: "hsl(var(--chart-1))",
+    },
+  };
+
   const formatBinEdge = (value: number) =>
     toFullMetricString(metricFormatter(value, { style: "compact" }));
 
@@ -62,7 +66,9 @@ const HistogramChart = ({
 
     // Fallback: treat as regular data points with binLabel
     return data.map((item) => ({
-      binLabel: item.dimension || `Bin ${data.indexOf(item) + 1}`,
+      binLabel:
+        item.dimension ||
+        translateText("Bin {index}", { index: data.indexOf(item) + 1 }),
       count: (item.metric as number) || 0,
     }));
   };
@@ -72,14 +78,14 @@ const HistogramChart = ({
   if (!histogramData.length) {
     return (
       <div className="text-muted-foreground flex h-full items-center justify-center">
-        No data available
+        {translateText("No data available")}
       </div>
     );
   }
 
   return (
     <ChartContainer
-      config={config}
+      config={chartConfig}
       className="[&_.recharts-bar-rectangle:hover]:opacity-30 dark:[&_.recharts-bar-rectangle:hover]:opacity-100 dark:[&_.recharts-bar-rectangle:hover]:brightness-[3]"
     >
       <BarChart
@@ -122,8 +128,12 @@ const HistogramChart = ({
                   formatMetric(Number(v), { style: "compact" }),
                 )
               }
-              nameFormatter={(name) => (name === "count" ? "Count" : name)}
-              labelFormatter={(label) => `Bin: ${label}`}
+              nameFormatter={(name) =>
+                name === "count" ? translateText("Count") : name
+              }
+              labelFormatter={(label) =>
+                translateText("Bin: {label}", { label: String(label) })
+              }
             />
           )}
         />

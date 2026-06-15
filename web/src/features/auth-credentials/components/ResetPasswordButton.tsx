@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import { env } from "@/src/env.mjs";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function RequestResetPasswordEmailButton({
   email,
@@ -17,6 +18,7 @@ export function RequestResetPasswordEmailButton({
   variant?: "default" | "secondary";
   callbackUrl?: string;
 }) {
+  const { translateText } = useI18n();
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +49,7 @@ export function RequestResetPasswordEmailButton({
       if (res?.error) {
         setErrorMessage(
           res.error === "AccessDenied"
-            ? "This email is not associated with any account."
+            ? translateText("This email is not associated with any account.")
             : res.error,
         );
       } else if (res?.ok) {
@@ -55,7 +57,9 @@ export function RequestResetPasswordEmailButton({
       }
     } catch (error) {
       console.error("Error sending reset password email:", error);
-      setErrorMessage("An unexpected error occurred. Please try again.");
+      setErrorMessage(
+        translateText("An unexpected error occurred. Please try again."),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +80,9 @@ export function RequestResetPasswordEmailButton({
       window.location.href = url;
     } catch (error) {
       console.error("Error verifying code:", error);
-      setErrorMessage("An unexpected error occurred. Please try again.");
+      setErrorMessage(
+        translateText("An unexpected error occurred. Please try again."),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +93,7 @@ export function RequestResetPasswordEmailButton({
       {isEmailSent ? (
         <div>
           <label htmlFor="otp-code" className="mb-2 block text-sm font-medium">
-            Check your inbox for the code
+            {translateText("Check your inbox for the code")}
           </label>
           <Input
             id="otp-code"
@@ -96,7 +102,7 @@ export function RequestResetPasswordEmailButton({
             maxLength={6}
             value={code}
             onChange={(e) => setCode(e.target.value.trim())}
-            placeholder="One time passcode"
+            placeholder={translateText("One time passcode")}
             className="mb-8 w-full"
           />
           <Button
@@ -106,7 +112,7 @@ export function RequestResetPasswordEmailButton({
             disabled={!code || code.length !== 6}
             variant={variant}
           >
-            Verify code
+            {translateText("Verify code")}
           </Button>
         </div>
       ) : (
@@ -118,8 +124,8 @@ export function RequestResetPasswordEmailButton({
           variant={variant}
         >
           {session.status === "authenticated"
-            ? "Verify email to change password"
-            : "Request password reset"}
+            ? translateText("Verify email to change password")
+            : translateText("Request password reset")}
         </Button>
       )}
       {errorMessage && (

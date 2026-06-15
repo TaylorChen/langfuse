@@ -8,6 +8,7 @@ import { Button } from "@/src/components/ui/button";
 import { useInlineCommentSelectionOptional } from "../contexts/InlineCommentSelectionContext";
 import { MessageSquarePlus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface InlineCommentBubbleProps {
   onAddComment: () => void;
@@ -17,6 +18,7 @@ export function InlineCommentBubble({
   onAddComment,
 }: InlineCommentBubbleProps) {
   const context = useInlineCommentSelectionOptional();
+  const { translateText } = useI18n();
   const [position, setPosition] = useState<{
     top: number;
     left: number;
@@ -62,7 +64,7 @@ export function InlineCommentBubble({
         className="border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground border px-3 py-2.5 shadow-md"
       >
         <MessageSquarePlus className="h-3 w-3" />
-        <span className="ml-1">Comment</span>
+        <span className="ml-1">{translateText("Comment")}</span>
       </Button>
     </div>
   );

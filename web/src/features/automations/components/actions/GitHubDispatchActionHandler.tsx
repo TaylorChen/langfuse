@@ -9,15 +9,31 @@ import {
 } from "@langfuse/shared";
 import { z } from "zod";
 
+type TranslateText = (
+  text: string,
+  values?: Record<string, string | number | undefined>,
+) => string;
+
+const defaultTranslateText: TranslateText = (text) => text;
+
 // Define the form schema for GitHub dispatch actions
-export const GitHubDispatchActionFormSchema = z.object({
-  githubDispatch: z.object({
-    url: z.url("Invalid URL"),
-    eventType: z.string().min(1, "Event type is required").max(100),
-    githubToken: z.string(),
-    displayGitHubToken: z.string().optional(), // Display value for existing token
-  }),
-});
+export const createGitHubDispatchActionFormSchema = (
+  translateText: TranslateText = defaultTranslateText,
+) =>
+  z.object({
+    githubDispatch: z.object({
+      url: z.url(translateText("Invalid URL")),
+      eventType: z
+        .string()
+        .min(1, translateText("Event type is required"))
+        .max(100),
+      githubToken: z.string(),
+      displayGitHubToken: z.string().optional(), // Display value for existing token
+    }),
+  });
+
+export const GitHubDispatchActionFormSchema =
+  createGitHubDispatchActionFormSchema();
 
 type GitHubDispatchActionFormData = z.infer<
   typeof GitHubDispatchActionFormSchema
@@ -54,20 +70,26 @@ export class GitHubDispatchActionHandler implements BaseActionHandler<GitHubDisp
     };
   }
 
-  validateFormData(formData: GitHubDispatchActionFormData): {
+  validateFormData(
+    formData: GitHubDispatchActionFormData,
+    translateText: (
+      text: string,
+      values?: Record<string, string | number | undefined>,
+    ) => string = (text) => text,
+  ): {
     isValid: boolean;
     errors?: string[];
   } {
     const errors: string[] = [];
 
     if (!formData.githubDispatch?.url) {
-      errors.push("GitHub dispatch URL is required");
+      errors.push(translateText("GitHub dispatch URL is required"));
     }
 
     if (!formData.githubDispatch?.eventType) {
-      errors.push("Event type is required");
+      errors.push(translateText("Event type is required"));
     } else if (formData.githubDispatch.eventType.length > 100) {
-      errors.push("Event type must be 100 characters or less");
+      errors.push(translateText("Event type must be 100 characters or less"));
     }
 
     // Token is required only if there's no existing token (displayGitHubToken)
@@ -75,7 +97,7 @@ export class GitHubDispatchActionHandler implements BaseActionHandler<GitHubDisp
       !formData.githubDispatch?.githubToken &&
       !formData.githubDispatch?.displayGitHubToken
     ) {
-      errors.push("GitHub token is required");
+      errors.push(translateText("GitHub token is required"));
     }
 
     return {

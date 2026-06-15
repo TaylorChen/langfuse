@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { captureException } from "@sentry/nextjs";
 import { stripBasePath } from "@/src/utils/redirect";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const ErrorPage = ({
   title = "Error",
@@ -26,6 +27,7 @@ export const ErrorPage = ({
 }) => {
   const session = useSession();
   const router = useRouter();
+  const { t } = useI18n();
   const newTargetPath = stripBasePath(router.asPath || "/");
   // Only include targetPath if it's not the root (since "/" is the default anyway)
   const targetPathQuery =
@@ -36,14 +38,16 @@ export const ErrorPage = ({
   return (
     <div className="flex h-full flex-col items-center justify-center">
       <AlertCircle className="text-dark-red mb-4 h-12 w-12" />
-      <h1 className="mb-4 text-xl font-bold">{title}</h1>
+      <h1 className="mb-4 text-xl font-bold">
+        {title === "Error" ? t("common.error") : title}
+      </h1>
       <p className="mb-6 text-center">{message}</p>
       <div className="flex gap-3">
         {session.status === "unauthenticated" ? (
           <Button
             onClick={() => router.push(`/auth/sign-in${targetPathQuery}`)}
           >
-            Sign In
+            {t("common.signIn")}
           </Button>
         ) : null}
         {additionalButton ? (

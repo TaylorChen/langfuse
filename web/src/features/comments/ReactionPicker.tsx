@@ -7,6 +7,7 @@ import {
 import { SmilePlusIcon } from "lucide-react";
 import { useState } from "react";
 import { EmojiPicker } from "@ferrucc-io/emoji-picker";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface ReactionPickerProps {
   onEmojiSelect: (emoji: string) => void;
@@ -18,6 +19,7 @@ export function ReactionPicker({
   disabled = false,
 }: ReactionPickerProps) {
   const [open, setOpen] = useState(false);
+  const { translateText } = useI18n();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,7 +47,7 @@ export function ReactionPicker({
         >
           <EmojiPicker.Header className="border-b px-2 py-2">
             <EmojiPicker.Input
-              placeholder="Search emoji..."
+              placeholder={translateText("Search emoji...")}
               className="focus:border-primary w-full rounded border py-1 text-sm outline-hidden"
             />
           </EmojiPicker.Header>

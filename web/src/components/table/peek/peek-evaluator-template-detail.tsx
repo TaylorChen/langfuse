@@ -5,6 +5,7 @@ import { EvalTemplateForm } from "@/src/features/evals/components/template-form"
 import { MaintainerTooltip } from "@/src/features/evals/components/maintainer-tooltip";
 import { getMaintainer } from "@/src/features/evals/utils/typeHelpers";
 import { TablePeekView } from "@/src/components/table/peek";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const PeekViewEvaluatorTemplateDetail = ({
   projectId,
@@ -13,6 +14,7 @@ const PeekViewEvaluatorTemplateDetail = ({
 }) => {
   const router = useRouter();
   const peekId = router.query.peek as string | undefined;
+  const { translateText } = useI18n();
 
   const { data: template } = usePeekEvalTemplateData({
     templateId: peekId,
@@ -27,7 +29,9 @@ const PeekViewEvaluatorTemplateDetail = ({
     <div className="grid h-full flex-1 grid-rows-[auto_1fr] gap-2 overflow-hidden p-4 contain-layout">
       <div className="flex w-full flex-col items-start justify-between space-y-2 overflow-y-auto pb-4">
         <div className="border-border bg-muted/50 mb-1 w-full rounded-md border p-4">
-          <h3 className="mb-1 text-sm font-medium">Selected Evaluator</h3>
+          <h3 className="mb-1 text-sm font-medium">
+            {translateText("Selected Evaluator")}
+          </h3>
           <div className="flex items-center gap-2">
             <p className="text-muted-foreground text-sm">{template.name}</p>
             <MaintainerTooltip maintainer={getMaintainer(template)} />

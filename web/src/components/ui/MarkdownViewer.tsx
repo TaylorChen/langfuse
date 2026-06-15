@@ -52,6 +52,7 @@ import {
   getRenderedInlineMediaIds,
   getStandaloneMediaReferenceStrings,
 } from "@/src/components/ui/markdown-media.utils";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type ReactMarkdownNode = ReactMarkdownExtraProps["node"];
 type ReactMarkdownNodeChildren = Exclude<
@@ -210,6 +211,7 @@ function MarkdownRenderer({
   customCodeHeaderClassName?: string;
 }) {
   const promptReferenceProjectId = usePromptReferenceProjectId();
+  const { translateText } = useI18n();
 
   // Try to parse markdown content
 
@@ -396,7 +398,7 @@ function MarkdownRenderer({
       <>
         <div className="text-muted-foreground flex items-center gap-1 text-xs">
           <Info className="h-3 w-3" />
-          Markdown parsing failed. Displaying raw JSON.
+          {translateText("Markdown parsing failed. Displaying raw JSON.")}
         </div>
         <JSONView json={markdown} className="min-w-0" />
       </>
@@ -444,6 +446,7 @@ export function MarkdownView({
   const capture = usePostHogClientCapture();
   const { resolvedTheme: theme } = useTheme();
   const { setIsMarkdownEnabled } = useMarkdownContext();
+  const { translateText } = useI18n();
 
   const markdownContent =
     typeof markdown === "string" ? markdown : parseOpenAIContentParts(markdown);
@@ -569,7 +572,10 @@ export function MarkdownView({
                 <LangfuseMediaView mediaReferenceString={imageUrl} />
               ) : (
                 <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-                  <span title="<Base64 data URI>" className="h-4 w-4">
+                  <span
+                    title={translateText("<Base64 data URI>")}
+                    className="h-4 w-4"
+                  >
                     <ImageOff className="h-4 w-4" />
                   </span>
                   <span className="truncate text-sm">
@@ -602,7 +608,7 @@ export function MarkdownView({
       {remainingMedia.length > 0 && (
         <>
           <div className="text-muted-foreground mx-3 border-t px-2 py-1 text-xs">
-            Media
+            {translateText("Media")}
           </div>
           <div className="flex flex-wrap gap-2 p-4 pt-1">
             {remainingMedia.map((m) => (

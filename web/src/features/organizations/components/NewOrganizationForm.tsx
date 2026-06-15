@@ -13,14 +13,17 @@ import {
 import { Input } from "@/src/components/ui/input";
 import { api } from "@/src/utils/api";
 import { useSession } from "next-auth/react";
-import { organizationFormSchema } from "@/src/features/organizations/utils/organizationNameSchema";
+import { createOrganizationFormSchema } from "@/src/features/organizations/utils/organizationNameSchema";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const NewOrganizationForm = ({
   onSuccess,
 }: {
   onSuccess: (orgId: string) => void | Promise<void>;
 }) => {
+  const { translateText } = useI18n();
+  const organizationFormSchema = createOrganizationFormSchema(translateText);
   const { update: updateSession } = useSession();
 
   const form = useForm({
@@ -71,7 +74,7 @@ export const NewOrganizationForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Organization name</FormLabel>
+              <FormLabel>{translateText("Organization name")}</FormLabel>
               <FormControl>
                 <Input
                   placeholder="my-org"
@@ -84,7 +87,7 @@ export const NewOrganizationForm = ({
           )}
         />
         <Button type="submit" loading={createOrgMutation.isPending}>
-          Create
+          {translateText("Create")}
         </Button>
       </form>
     </Form>

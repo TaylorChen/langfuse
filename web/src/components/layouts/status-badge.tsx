@@ -1,4 +1,5 @@
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { type ReactNode } from "react";
 
 const statusCategories = {
@@ -28,6 +29,7 @@ export const StatusBadge = ({
   showText?: boolean;
   children?: ReactNode;
 }) => {
+  const { translateText } = useI18n();
   let badgeColor = "bg-muted-gray text-primary";
   let dotColor = "bg-muted-foreground";
   let dotPingColor = "bg-muted-foreground";
@@ -85,7 +87,9 @@ export const StatusBadge = ({
           ></span>
         </span>
       )}
-      {showText && type && <span>{type[0].toUpperCase() + type.slice(1)}</span>}
+      {showText && type && (
+        <span>{translateText(type[0].toUpperCase() + type.slice(1))}</span>
+      )}
       {children}
     </div>
   );

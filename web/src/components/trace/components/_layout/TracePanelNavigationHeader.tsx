@@ -29,6 +29,7 @@ import { TracePanelNavigationButton } from "./TracePanelNavigationButton";
 import { toast } from "sonner";
 import { TRACE_DOWNLOAD_OMIT_LARGE_FIELDS_THRESHOLD } from "@/src/features/traces/shared/traceDownloadConfig";
 import { useWatchedPromiseCallback } from "@/src/hooks/useWatchedPromiseCallback";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface TracePanelNavigationHeaderProps {
   isPanelCollapsed: boolean;
@@ -73,6 +74,7 @@ function TracePanelNavigationHeaderExpanded({
   const { isGraphViewAvailable } = useTraceGraphData();
   const { isBetaEnabled } = useV4Beta();
   const [viewMode, setViewMode] = useQueryParam("view", StringParam);
+  const { t } = useI18n();
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -117,21 +119,22 @@ function TracePanelNavigationHeaderExpanded({
         await downloadServerTraceAsJson({
           traceId: trace.id,
           projectId: trace.projectId,
+          fallbackErrorMessage: t("traceLog.downloadFailed"),
         });
 
         if (observations.length >= TRACE_DOWNLOAD_OMIT_LARGE_FIELDS_THRESHOLD) {
           toast.warning(
-            `Trace download excludes IO, metadata, toolDefinitions, and toolCalls for traces with ${TRACE_DOWNLOAD_OMIT_LARGE_FIELDS_THRESHOLD}+ observations.`,
+            t("traceLog.downloadLargeWarning", {
+              count: TRACE_DOWNLOAD_OMIT_LARGE_FIELDS_THRESHOLD,
+            }),
           );
         }
       } catch (error) {
         toast.error(
-          error instanceof Error
-            ? error.message
-            : "Failed to download trace JSON",
+          error instanceof Error ? error.message : t("traceLog.downloadFailed"),
         );
       }
-    }, [isBetaEnabled, observations, trace]);
+    }, [isBetaEnabled, observations, trace, t]);
 
   const isTimelineView = viewMode === "timeline";
 
@@ -150,7 +153,7 @@ function TracePanelNavigationHeaderExpanded({
         <div className="relative flex-1">
           <CommandInput
             showBorder={false}
-            placeholder="Search"
+            placeholder={t("traceLog.search")}
             className="h-7 min-w-20 border-0 pr-0 focus:ring-0"
             value={searchInputValue}
             onValueChange={setSearchInputValue}
@@ -163,7 +166,11 @@ function TracePanelNavigationHeaderExpanded({
             onClick={handleToggleTreeNodes}
             variant="ghost"
             size="icon"
-            title={isEverythingCollapsed ? "Expand all" : "Collapse all"}
+            title={
+              isEverythingCollapsed
+                ? t("traceLog.expandAll")
+                : t("traceLog.collapseAll")
+            }
             className="h-7 w-7"
           >
             {isEverythingCollapsed ? (
@@ -182,7 +189,7 @@ function TracePanelNavigationHeaderExpanded({
             size="icon"
             onClick={handleDownload}
             disabled={isDownloading}
-            title="Download trace as JSON"
+            title={t("traceLog.downloadTraceAsJson")}
             className="h-7 w-7"
           >
             {isDownloading ? (
@@ -202,7 +209,7 @@ function TracePanelNavigationHeaderExpanded({
               isTimelineView && "bg-primary text-primary-foreground",
             )}
           >
-            <span className="text-xs">Timeline</span>
+            <span className="text-xs">{t("traceLog.timeline")}</span>
           </Button>
         </div>
       </div>

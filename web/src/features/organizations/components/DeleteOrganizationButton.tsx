@@ -26,8 +26,10 @@ import { useQueryOrganization } from "@/src/features/organizations/hooks";
 import { useHasOrganizationAccess } from "@/src/features/rbac/utils/checkOrganizationAccess";
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast"; // Import success toast function
 import { env } from "@/src/env.mjs";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function DeleteOrganizationButton() {
+  const { translateText } = useI18n();
   const capture = usePostHogClientCapture();
 
   const organization = useQueryOrganization();
@@ -36,7 +38,9 @@ export function DeleteOrganizationButton() {
 
   const formSchema = z.object({
     name: z.string().includes(confirmMessage, {
-      message: `Please confirm with "${confirmMessage}"`,
+      message: translateText('Please confirm with "{confirmMessage}"', {
+        confirmMessage,
+      }),
     }),
   });
 
@@ -63,8 +67,10 @@ export function DeleteOrganizationButton() {
       });
       capture("organization_settings:delete_organization");
       showSuccessToast({
-        title: "Organization Deleted",
-        description: "The organization has been successfully deleted.",
+        title: translateText("Organization Deleted"),
+        description: translateText(
+          "The organization has been successfully deleted.",
+        ),
       });
       await new Promise((resolve) => setTimeout(resolve, 5000)); // Delay for 5 seconds
       window.location.href = env.NEXT_PUBLIC_BASE_PATH ?? "/"; // Browser reload to refresh jwt
@@ -77,18 +83,23 @@ export function DeleteOrganizationButton() {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="destructive-secondary" disabled={!hasAccess}>
-          Delete Organization
+          {translateText("Delete Organization")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
-            Delete Organization
+            {translateText("Delete Organization")}
           </DialogTitle>
           <DialogDescription>
             {hasProjects
-              ? "You can only delete an organization if it has no projects associated with it. Please delete or transfer all projects first. Deleting projects may take a few minutes."
-              : `To confirm, type "${confirmMessage}" in the input box `}
+              ? translateText(
+                  "You can only delete an organization if it has no projects associated with it. Please delete or transfer all projects first. Deleting projects may take a few minutes.",
+                )
+              : translateText(
+                  'To confirm, type "{confirmMessage}" in the input box',
+                  { confirmMessage },
+                )}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -117,7 +128,7 @@ export function DeleteOrganizationButton() {
                 disabled={hasProjects}
                 className="w-full"
               >
-                Delete Organization
+                {translateText("Delete Organization")}
               </Button>
             </DialogFooter>
           </form>

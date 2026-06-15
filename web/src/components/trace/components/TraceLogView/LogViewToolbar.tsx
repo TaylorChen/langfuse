@@ -31,6 +31,7 @@ import {
 } from "@/src/components/ui/hover-card";
 import { cn } from "@/src/utils/tailwind";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface LogViewToolbarProps {
   /** Current search query */
@@ -92,6 +93,7 @@ export const LogViewToolbar = memo(function LogViewToolbar({
   onToggleMilliseconds,
 }: LogViewToolbarProps) {
   const [isCopied, setIsCopied] = useState(false);
+  const { t } = useI18n();
 
   const handleCopyClick = () => {
     if (isCopyOrDownloadLoading) return;
@@ -108,7 +110,7 @@ export const LogViewToolbar = memo(function LogViewToolbar({
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
             <span className="cursor-help rounded bg-yellow-100 px-1.5 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300">
-              Large Trace
+              {t("traceLog.largeTrace")}
             </span>
           </HoverCardTrigger>
           <HoverCardContent
@@ -116,15 +118,18 @@ export const LogViewToolbar = memo(function LogViewToolbar({
             className="w-72 text-sm"
             sideOffset={8}
           >
-            <p className="font-medium">Optimized for performance</p>
+            <p className="font-medium">
+              {t("traceLog.optimizedForPerformance")}
+            </p>
             <p className="text-muted-foreground mt-1.5">
-              This trace has {observationCount?.toLocaleString() ?? "many"}{" "}
-              observations. To keep things smooth:
+              {t("traceLog.largeTraceDescription", {
+                count: observationCount?.toLocaleString() ?? t("traceLog.many"),
+              })}
             </p>
             <ul className="text-muted-foreground mt-1.5 list-inside list-disc space-y-0.5">
-              <li>Content loads as you scroll</li>
-              <li>JSON view is disabled</li>
-              <li>Download/copy includes I/O for cached observations only</li>
+              <li>{t("traceLog.contentLoadsAsYouScroll")}</li>
+              <li>{t("traceLog.jsonViewDisabled")}</li>
+              <li>{t("traceLog.downloadCopyCacheOnly")}</li>
             </ul>
           </HoverCardContent>
         </HoverCard>
@@ -137,7 +142,7 @@ export const LogViewToolbar = memo(function LogViewToolbar({
         <Command className="flex-1 rounded-none border-0 bg-transparent">
           <CommandInput
             showBorder={false}
-            placeholder="Search observations..."
+            placeholder={t("traceLog.searchObservations")}
             className="h-7 border-0 focus:ring-0"
             value={searchQuery}
             onValueChange={onSearchChange}
@@ -165,8 +170,8 @@ export const LogViewToolbar = memo(function LogViewToolbar({
                   indentDisabled
                     ? undefined
                     : indentEnabled
-                      ? "Hide indentation"
-                      : "Show indentation"
+                      ? t("traceLog.hideIndentation")
+                      : t("traceLog.showIndentation")
                 }
               >
                 <IndentIncrease className="h-3.5 w-3.5" />
@@ -174,9 +179,11 @@ export const LogViewToolbar = memo(function LogViewToolbar({
             </HoverCardTrigger>
             {indentDisabled && (
               <HoverCardContent className="w-56 text-sm" sideOffset={8}>
-                <p className="font-medium">Indentation unavailable</p>
+                <p className="font-medium">
+                  {t("traceLog.indentationUnavailable")}
+                </p>
                 <p className="text-muted-foreground mt-1">
-                  Disabled for deeply nested trees to maintain readability.
+                  {t("traceLog.indentationUnavailableDescription")}
                 </p>
               </HoverCardContent>
             )}
@@ -193,7 +200,11 @@ export const LogViewToolbar = memo(function LogViewToolbar({
               showMilliseconds && "bg-primary text-primary-foreground",
             )}
             onClick={onToggleMilliseconds}
-            title={showMilliseconds ? "Hide milliseconds" : "Show milliseconds"}
+            title={
+              showMilliseconds
+                ? t("traceLog.hideMilliseconds")
+                : t("traceLog.showMilliseconds")
+            }
           >
             <Timer className="h-3.5 w-3.5" />
           </Button>
@@ -224,10 +235,10 @@ export const LogViewToolbar = memo(function LogViewToolbar({
             </TooltipTrigger>
             <TooltipContent>
               {isVirtualized
-                ? "Disabled for large traces"
+                ? t("traceLog.disabledForLargeTraces")
                 : allRowsExpanded
-                  ? "Collapse all"
-                  : "Expand all"}
+                  ? t("traceLog.collapseAll")
+                  : t("traceLog.expandAll")}
             </TooltipContent>
           </Tooltip>
         )}
@@ -258,27 +269,28 @@ export const LogViewToolbar = memo(function LogViewToolbar({
                 </TooltipTrigger>
                 <TooltipContent>
                   {isCopyOrDownloadLoading
-                    ? "Loading data..."
+                    ? t("traceLog.loadingData")
                     : isCopyOrDownloadCacheOnly
-                      ? "Copy as JSON (cache only)"
-                      : "Copy as JSON"}
+                      ? t("traceLog.copyAsJsonCacheOnly")
+                      : t("traceLog.copyAsJson")}
                 </TooltipContent>
               </Tooltip>
             </HoverCardTrigger>
             {isCopyOrDownloadCacheOnly && !isCopyOrDownloadLoading && (
               <HoverCardContent className="w-64 text-sm" sideOffset={8}>
-                <p className="font-medium">Cache-only mode</p>
+                <p className="font-medium">{t("traceLog.cacheOnlyMode")}</p>
                 <p className="text-muted-foreground mt-1">
-                  For large traces, only expanded observations include full I/O
-                  data.
+                  {t("traceLog.cacheOnlyDescription")}
                 </p>
                 {loadedObservationCount !== undefined &&
                   observationCount !== undefined && (
                     <p className="text-muted-foreground mt-1.5">
                       <span className="font-medium">
-                        {loadedObservationCount} of {observationCount}
-                      </span>{" "}
-                      observations loaded
+                        {t("traceLog.observationsLoaded", {
+                          loaded: loadedObservationCount,
+                          total: observationCount,
+                        })}
+                      </span>
                     </p>
                   )}
               </HoverCardContent>
@@ -310,27 +322,28 @@ export const LogViewToolbar = memo(function LogViewToolbar({
                 </TooltipTrigger>
                 <TooltipContent>
                   {isCopyOrDownloadLoading
-                    ? "Loading data..."
+                    ? t("traceLog.loadingData")
                     : isCopyOrDownloadCacheOnly
-                      ? "Download as JSON (cache only)"
-                      : "Download as JSON"}
+                      ? t("traceLog.downloadAsJsonCacheOnly")
+                      : t("traceLog.downloadAsJson")}
                 </TooltipContent>
               </Tooltip>
             </HoverCardTrigger>
             {isCopyOrDownloadCacheOnly && !isCopyOrDownloadLoading && (
               <HoverCardContent className="w-64 text-sm" sideOffset={8}>
-                <p className="font-medium">Cache-only mode</p>
+                <p className="font-medium">{t("traceLog.cacheOnlyMode")}</p>
                 <p className="text-muted-foreground mt-1">
-                  For large traces, only expanded observations include full I/O
-                  data.
+                  {t("traceLog.cacheOnlyDescription")}
                 </p>
                 {loadedObservationCount !== undefined &&
                   observationCount !== undefined && (
                     <p className="text-muted-foreground mt-1.5">
                       <span className="font-medium">
-                        {loadedObservationCount} of {observationCount}
-                      </span>{" "}
-                      observations loaded
+                        {t("traceLog.observationsLoaded", {
+                          loaded: loadedObservationCount,
+                          total: observationCount,
+                        })}
+                      </span>
                     </p>
                   )}
               </HoverCardContent>

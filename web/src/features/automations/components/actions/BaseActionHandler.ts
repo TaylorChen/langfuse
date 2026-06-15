@@ -19,7 +19,13 @@ export interface BaseActionHandler<
   ): TFormData;
 
   // Validate the form data for this action type
-  validateFormData(formData: TFormData): {
+  validateFormData(
+    formData: TFormData,
+    translateText?: (
+      text: string,
+      values?: Record<string, string | number | undefined>,
+    ) => string,
+  ): {
     isValid: boolean;
     errors?: string[];
   };

@@ -27,6 +27,7 @@ import { DeleteDashboardButton } from "@/src/components/deleteButton";
 import { EditDashboardDialog } from "@/src/features/dashboard/components/EditDashboardDialog";
 import { User as UserIcon } from "lucide-react";
 import { useRouter } from "next/router";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type DashboardTableRow = {
   id: string;
@@ -44,6 +45,7 @@ function CloneDashboardButton({
   dashboardId: string;
   projectId: string;
 }) {
+  const { translateText } = useI18n();
   const utils = api.useUtils();
   const hasAccess = useHasProjectAccess({ projectId, scope: "dashboards:CUD" });
   const capture = usePostHogClientCapture();
@@ -53,12 +55,14 @@ function CloneDashboardButton({
       utils.dashboard.invalidate();
       capture("dashboard:clone_dashboard");
       showSuccessToast({
-        title: "Dashboard cloned",
-        description: "The dashboard has been cloned successfully",
+        title: translateText("Dashboard cloned"),
+        description: translateText(
+          "The dashboard has been cloned successfully",
+        ),
       });
     },
     onError: (e) => {
-      showErrorToast("Failed to clone dashboard", e.message);
+      showErrorToast(translateText("Failed to clone dashboard"), e.message);
     },
   });
 
@@ -82,7 +86,7 @@ function CloneDashboardButton({
       onClick={handleCloneDashboard}
     >
       <Copy className="mr-2 h-4 w-4" />
-      Clone
+      {translateText("Clone")}
     </Button>
   );
 }
@@ -98,6 +102,7 @@ function EditDashboardButton({
   dashboardName: string;
   dashboardDescription: string;
 }) {
+  const { translateText } = useI18n();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const hasAccess = useHasProjectAccess({ projectId, scope: "dashboards:CUD" });
 
@@ -110,7 +115,7 @@ function EditDashboardButton({
         onClick={() => setIsDialogOpen(true)}
       >
         <Edit className="mr-2 h-4 w-4" />
-        Edit
+        {translateText("Edit")}
       </Button>
 
       <EditDashboardDialog
@@ -126,6 +131,7 @@ function EditDashboardButton({
 }
 
 export function DashboardTable() {
+  const { translateText } = useI18n();
   const projectId = useProjectIdFromURL() as string;
   const { setDetailPageList } = useDetailPageLists();
   const router = useRouter();
@@ -169,7 +175,7 @@ export function DashboardTable() {
   const columnHelper = createColumnHelper<DashboardTableRow>();
   const dashboardColumns = [
     columnHelper.accessor("name", {
-      header: "Name",
+      header: translateText("Name"),
       id: "name",
       enableSorting: true,
       size: 200,
@@ -184,7 +190,7 @@ export function DashboardTable() {
       },
     }),
     columnHelper.accessor("description", {
-      header: "Description",
+      header: translateText("Description"),
       id: "description",
       size: 300,
       cell: (row) => {
@@ -193,7 +199,7 @@ export function DashboardTable() {
     }),
     columnHelper.display({
       id: "ownerTag",
-      header: "Owner",
+      header: translateText("Owner"),
       size: 80,
       cell: (row) => {
         return row.row.original.owner === "LANGFUSE" ? (
@@ -205,13 +211,13 @@ export function DashboardTable() {
           </span>
         ) : (
           <span className="flex gap-1 px-2 py-0.5 text-xs">
-            <UserIcon className="h-3 w-3" /> Project
+            <UserIcon className="h-3 w-3" /> {translateText("Project")}
           </span>
         );
       },
     }),
     columnHelper.accessor("createdAt", {
-      header: "Created At",
+      header: translateText("Created At"),
       id: "createdAt",
       enableSorting: true,
       size: 150,
@@ -221,7 +227,7 @@ export function DashboardTable() {
       },
     }),
     columnHelper.accessor("updatedAt", {
-      header: "Updated At",
+      header: translateText("Updated At"),
       id: "updatedAt",
       enableSorting: true,
       size: 150,
@@ -232,7 +238,7 @@ export function DashboardTable() {
     }),
     columnHelper.display({
       id: "actions",
-      header: "Actions",
+      header: translateText("Actions"),
       size: 70,
       cell: (row) => {
         const id = row.row.original.id;

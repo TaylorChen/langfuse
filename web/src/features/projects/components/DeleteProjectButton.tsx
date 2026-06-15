@@ -25,9 +25,11 @@ import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePos
 import { useQueryProject } from "@/src/features/projects/hooks";
 import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
 import { env } from "@/src/env.mjs";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function DeleteProjectButton() {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
 
   //code for dynamic confirmation message
   const { project, organization } = useQueryProject();
@@ -37,7 +39,9 @@ export function DeleteProjectButton() {
 
   const formSchema = z.object({
     name: z.string().includes(confirmMessage, {
-      message: `Please confirm with "${confirmMessage}"`,
+      message: translateText('Please confirm with "{confirmMessage}"', {
+        confirmMessage,
+      }),
     }),
   });
 
@@ -75,16 +79,19 @@ export function DeleteProjectButton() {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="destructive-secondary" disabled={!hasAccess}>
-          Delete Project
+          {translateText("Delete Project")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
-            Delete Project
+            {translateText("Delete Project")}
           </DialogTitle>
           <DialogDescription className=" ">
-            {`To confirm, type "${confirmMessage}" in the input box `}
+            {translateText(
+              'To confirm, type "{confirmMessage}" in the input box',
+              { confirmMessage },
+            )}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -110,7 +117,7 @@ export function DeleteProjectButton() {
                 loading={deleteProject.isPending}
                 className="w-full"
               >
-                Delete project
+                {translateText("Delete project")}
               </Button>
             </DialogFooter>
           </form>

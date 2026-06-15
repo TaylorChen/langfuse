@@ -12,6 +12,8 @@ import Link from "next/link";
 import { type ReactNode } from "react";
 import { cn } from "@/src/utils/tailwind";
 import { type RouteGroup } from "@/src/components/layouts/routes";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
+import { type TranslationKey } from "@/src/features/i18n/messages";
 
 export type NavMainItem = {
   title: string;
@@ -27,6 +29,12 @@ export type NavMainItem = {
     isActive?: boolean;
     newTab?: boolean;
   }[];
+};
+
+const routeGroupKeys: Record<string, TranslationKey> = {
+  Observability: "navigation.group.observability",
+  "Prompt Management": "navigation.group.promptManagement",
+  Evaluation: "navigation.group.evaluation",
 };
 
 function NavItemContent({ item }: { item: NavMainItem }) {
@@ -59,6 +67,8 @@ export function NavMain({
     ungrouped: NavMainItem[];
   };
 }) {
+  const { t } = useI18n();
+
   return (
     <>
       <SidebarGroup>
@@ -88,7 +98,9 @@ export function NavMain({
       {items.grouped &&
         Object.entries(items.grouped).map(([group, items]) => (
           <SidebarGroup key={group}>
-            <SidebarGroupLabel>{group}</SidebarGroupLabel>
+            <SidebarGroupLabel>
+              {routeGroupKeys[group] ? t(routeGroupKeys[group]) : group}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => (

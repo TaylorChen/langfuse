@@ -26,6 +26,7 @@ import {
   HoverCardTrigger,
 } from "@/src/components/ui/hover-card";
 import { HoverCardPortal } from "@radix-ui/react-hover-card";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type BaseDateRangeDropdownProps<T> = {
   selectedOption: T;
@@ -40,15 +41,17 @@ const BaseDateRangeDropdown = <T extends string>({
   limitedOptions,
   onSelectionChange,
 }: BaseDateRangeDropdownProps<T>) => {
+  const { t, translateText } = useI18n();
+
   return (
     <Select value={selectedOption} onValueChange={onSelectionChange}>
       <SelectTrigger className="hover:bg-accent hover:text-accent-foreground w-fit font-medium focus:ring-0 focus:ring-offset-0">
-        <SelectValue placeholder="Select">
+        <SelectValue placeholder={t("datePicker.select")}>
           <div className="flex items-center gap-2">
             <span className="bg-muted w-10 rounded px-1.5 py-0.5 text-center text-xs">
               {getAbbreviatedTimeRange(selectedOption)}
             </span>
-            <span>{getTimeRangeLabel(selectedOption)}</span>
+            <span>{translateText(getTimeRangeLabel(selectedOption))}</span>
           </div>
         </SelectValue>
       </SelectTrigger>
@@ -69,7 +72,7 @@ const BaseDateRangeDropdown = <T extends string>({
                 <span className="bg-muted w-10 rounded px-1.5 py-0.5 text-center text-xs">
                   {getAbbreviatedTimeRange(item)}
                 </span>
-                <span>{getTimeRangeLabel(item)}</span>
+                <span>{translateText(getTimeRangeLabel(item))}</span>
               </div>
             </SelectItem>
           );
@@ -82,7 +85,7 @@ const BaseDateRangeDropdown = <T extends string>({
               </HoverCardTrigger>
               <HoverCardPortal>
                 <HoverCardContent className="w-60 text-sm" side="right">
-                  This time range is not available in your current plan.
+                  {t("datePicker.rangeUnavailable")}
                 </HoverCardContent>
               </HoverCardPortal>
             </HoverCard>

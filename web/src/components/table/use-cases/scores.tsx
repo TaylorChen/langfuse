@@ -62,6 +62,7 @@ import { useTableViewManager } from "@/src/components/table/table-view-presets/h
 import TableIdOrName from "@/src/components/table/table-id";
 import { usePaginationState } from "@/src/hooks/usePaginationState";
 import { useV4Beta } from "@/src/features/events/hooks/useV4Beta";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export type ScoresTableRow = {
   id: string;
@@ -134,6 +135,7 @@ export default function ScoresTable({
     [hiddenColumns],
   );
   const { isBetaEnabled } = useV4Beta();
+  const { t, translateText } = useI18n();
   // In v4beta, scores must exclusively use events-backed endpoints (no traces-table route).
   const useEventsBackedScores = isBetaEnabled;
   const utils = api.useUtils();
@@ -203,9 +205,8 @@ export default function ScoresTable({
   const scoreDeleteMutation = api.scores.deleteMany.useMutation({
     onSuccess: () => {
       showSuccessToast({
-        title: "Scores deleted",
-        description:
-          "Selected scores will be deleted. Scores are removed asynchronously and may continue to be visible for up to 15 minutes.",
+        title: t("scores.deletedTitle"),
+        description: t("scores.deletedDescription"),
       });
     },
     onSettled: () => {
@@ -446,7 +447,7 @@ export default function ScoresTable({
       accessorKey: "id",
       id: "id",
       enableColumnFilter: false,
-      header: "Score ID",
+      header: translateText("Score ID"),
       size: 100,
       enableSorting: false,
       defaultHidden: true,
@@ -460,7 +461,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "traceName",
-      header: "Trace Name",
+      header: translateText("Trace Name"),
       id: "traceName",
       enableHiding: true,
       enableSorting: true,
@@ -485,7 +486,7 @@ export default function ScoresTable({
       accessorKey: "traceId",
       id: "traceId",
       enableColumnFilter: true,
-      header: "Trace",
+      header: translateText("Trace"),
       enableSorting: true,
       size: 100,
       cell: ({ row }) => {
@@ -503,7 +504,7 @@ export default function ScoresTable({
     {
       accessorKey: "executionTraceId",
       id: "executionTraceId",
-      header: "Execution Trace",
+      header: translateText("Execution Trace"),
       enableSorting: false,
       enableHiding: true,
       defaultHidden: true,
@@ -521,7 +522,7 @@ export default function ScoresTable({
     {
       accessorKey: "observationId",
       id: "observationId",
-      header: "Observation",
+      header: translateText("Observation"),
       enableSorting: true,
       size: 100,
       cell: ({ row }) => {
@@ -539,7 +540,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "sessionId",
-      header: "Session",
+      header: translateText("Session"),
       id: "sessionId",
       enableHiding: true,
       enableSorting: true,
@@ -556,7 +557,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "environment",
-      header: "Environment",
+      header: translateText("Environment"),
       id: "environment",
       size: 150,
       enableHiding: true,
@@ -575,10 +576,10 @@ export default function ScoresTable({
     },
     {
       accessorKey: "userId",
-      header: "User",
+      header: translateText("User"),
       id: "userId",
       headerTooltip: {
-        description: "The user ID associated with the trace.",
+        description: t("scores.userIdTooltip"),
         href: "https://langfuse.com/docs/observability/features/users",
       },
       enableHiding: true,
@@ -601,7 +602,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "timestamp",
-      header: "Timestamp",
+      header: translateText("Timestamp"),
       id: "timestamp",
       enableHiding: true,
       enableSorting: true,
@@ -613,7 +614,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "source",
-      header: "Source",
+      header: translateText("Source"),
       id: "source",
       enableHiding: true,
       enableSorting: true,
@@ -621,7 +622,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: translateText("Name"),
       id: "name",
       enableHiding: true,
       enableSorting: true,
@@ -629,7 +630,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "dataType",
-      header: "Data Type",
+      header: translateText("Data Type"),
       id: "dataType",
       enableHiding: true,
       enableSorting: true,
@@ -637,7 +638,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "value",
-      header: "Value",
+      header: translateText("Value"),
       id: "value",
       enableHiding: true,
       enableSorting: true,
@@ -645,7 +646,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "metadata",
-      header: "Metadata",
+      header: translateText("Metadata"),
       id: "metadata",
       size: 400,
       loadingCell: () => (
@@ -656,7 +657,7 @@ export default function ScoresTable({
         />
       ),
       headerTooltip: {
-        description: "Add metadata to scores to track additional information.",
+        description: t("scores.metadataTooltip"),
         // TODO: docs for metadata on scores
         href: "https://langfuse.com/docs/observability/features/metadata",
       },
@@ -674,7 +675,7 @@ export default function ScoresTable({
     },
     {
       accessorKey: "comment",
-      header: "Comment",
+      header: translateText("Comment"),
       id: "comment",
       enableHiding: true,
       size: 400,
@@ -695,7 +696,7 @@ export default function ScoresTable({
     {
       accessorKey: "author",
       id: "author",
-      header: "Author",
+      header: translateText("Author"),
       enableHiding: true,
       size: 150,
       cell: ({ row }) => {
@@ -707,7 +708,7 @@ export default function ScoresTable({
             <Avatar className="h-7 w-7">
               <AvatarImage
                 src={image ?? undefined}
-                alt={name ?? "User Avatar"}
+                alt={name ?? t("batchExports.userAvatar")}
               />
             </Avatar>
             <span>{name ?? userId}</span>
@@ -717,10 +718,10 @@ export default function ScoresTable({
     },
     {
       accessorKey: "jobConfigurationId",
-      header: "Eval Configuration ID",
+      header: translateText("Eval Configuration ID"),
       id: "jobConfigurationId",
       headerTooltip: {
-        description: "The Job Configuration ID associated with the trace.",
+        description: t("scores.jobConfigurationTooltip"),
         href: "https://langfuse.com/docs/evaluation/evaluation-methods/llm-as-a-judge",
       },
       enableHiding: true,
@@ -741,7 +742,7 @@ export default function ScoresTable({
     {
       accessorKey: "traceTags",
       id: "traceTags",
-      header: "Trace Tags",
+      header: translateText("Trace Tags"),
       size: 250,
       enableHiding: true,
       defaultHidden: true,
@@ -773,9 +774,8 @@ export default function ScoresTable({
           {
             id: "score-delete",
             type: BatchActionType.Delete,
-            label: "Delete Scores",
-            description:
-              "This action permanently deletes scores and cannot be undone. Score deletion happens asynchronously and may take up to 15 minutes.",
+            label: t("scores.deleteAction"),
+            description: t("scores.deleteActionDescription"),
             accessCheck: {
               scope: "traces:delete",
               entitlement: "trace-deletion",
@@ -981,14 +981,14 @@ export default function ScoresTable({
               columns={columns}
               noResultsMessage={
                 <div className="flex flex-col items-center">
-                  <span>No scores found.</span>
+                  <span>{translateText("No scores found.")}</span>
                   <a
                     href="https://langfuse.com/faq/all/what-are-scores"
                     className="text-primary pointer-events-auto italic underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    What are scores?
+                    {translateText("What are scores?")}
                   </a>
                 </div>
               }

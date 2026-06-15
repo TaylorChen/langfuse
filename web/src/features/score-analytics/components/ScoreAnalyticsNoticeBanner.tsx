@@ -2,9 +2,11 @@ import { Clock, Info } from "lucide-react";
 import { useScoreAnalytics } from "./ScoreAnalyticsProvider";
 import { useState, useEffect } from "react";
 import { SamplingDetailsHoverCard } from "./SamplingDetailsHoverCard";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function ScoreAnalyticsNoticeBanner() {
   const { isEstimating, estimate, isLoading, data } = useScoreAnalytics();
+  const { translateText } = useI18n();
   const [showLoadingBanner, setShowLoadingBanner] = useState(false);
 
   // Track when estimation starts and set delay for showing loading banner
@@ -44,17 +46,32 @@ export function ScoreAnalyticsNoticeBanner() {
           <div className="flex-1 space-y-1">
             <div className="text-sm font-medium">
               {showLargeDataset
-                ? "Processing large dataset..."
-                : "Loading analytics..."}
+                ? translateText("Processing large dataset...")
+                : translateText("Loading analytics...")}
             </div>
             {estimate && (
               <div className="text-muted-foreground text-sm">
                 {estimate.mode === "single"
-                  ? `Analyzing ~${estimate.score1Count.toLocaleString()} scores`
-                  : `Analyzing ~${estimate.score1Count.toLocaleString()} (Score 1) and ~${estimate.score2Count.toLocaleString()} (Score 2) scores`}
-                {estimate.willSample && " • Sampling will be applied"}
+                  ? translateText("Analyzing ~{count} scores", {
+                      count: estimate.score1Count.toLocaleString(),
+                    })
+                  : translateText(
+                      "Analyzing ~{score1Count} (Score 1) and ~{score2Count} (Score 2) scores",
+                      {
+                        score1Count: estimate.score1Count.toLocaleString(),
+                        score2Count: estimate.score2Count.toLocaleString(),
+                      },
+                    )}
+                {estimate.willSample &&
+                  ` • ${translateText("Sampling will be applied")}`}
                 {estimate.estimatedQueryTime && (
-                  <> • Est. time: {estimate.estimatedQueryTime}</>
+                  <>
+                    {" "}
+                    •{" "}
+                    {translateText("Est. time: {time}", {
+                      time: estimate.estimatedQueryTime,
+                    })}
+                  </>
                 )}
               </div>
             )}
@@ -72,7 +89,7 @@ export function ScoreAnalyticsNoticeBanner() {
           <Info className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2 text-sm font-medium">
-              Sampled Data
+              {translateText("Sampled Data")}
               <SamplingDetailsHoverCard
                 samplingMetadata={data.samplingMetadata}
                 mode={data.metadata.mode}
@@ -80,8 +97,28 @@ export function ScoreAnalyticsNoticeBanner() {
             </div>
             <div className="text-muted-foreground text-sm">
               {data.metadata.mode === "single"
-                ? `Results based on a ${(data.samplingMetadata.samplingRate * 100).toFixed(2)}% sample of ~${data.samplingMetadata.preflightEstimates?.score1Count.toLocaleString()} scores.`
-                : `Results based on a ${(data.samplingMetadata.samplingRate * 100).toFixed(2)}% sample of ~${data.samplingMetadata.preflightEstimates?.score1Count.toLocaleString()} Score 1 and ~${data.samplingMetadata.preflightEstimates?.score2Count.toLocaleString()} Score 2 data.`}
+                ? translateText(
+                    "Results based on a {rate}% sample of ~{count} scores.",
+                    {
+                      rate: (data.samplingMetadata.samplingRate * 100).toFixed(
+                        2,
+                      ),
+                      count:
+                        data.samplingMetadata.preflightEstimates?.score1Count.toLocaleString(),
+                    },
+                  )
+                : translateText(
+                    "Results based on a {rate}% sample of ~{score1Count} Score 1 and ~{score2Count} Score 2 data.",
+                    {
+                      rate: (data.samplingMetadata.samplingRate * 100).toFixed(
+                        2,
+                      ),
+                      score1Count:
+                        data.samplingMetadata.preflightEstimates?.score1Count.toLocaleString(),
+                      score2Count:
+                        data.samplingMetadata.preflightEstimates?.score2Count.toLocaleString(),
+                    },
+                  )}
             </div>
           </div>
         </div>

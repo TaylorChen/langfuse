@@ -11,6 +11,7 @@ import { useScoreAnalytics } from "../ScoreAnalyticsProvider";
 import { ScoreDistributionBooleanChart } from "../charts/ScoreDistributionBooleanChart";
 import { SamplingDetailsHoverCard } from "../SamplingDetailsHoverCard";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type DistributionTab = "score1" | "score2" | "all" | "matched";
 
@@ -32,6 +33,7 @@ type DistributionTab = "score1" | "score2" | "all" | "matched";
 export function DistributionBooleanCard() {
   const { data, isLoading, params, colorMappings, getColorForScore } =
     useScoreAnalytics();
+  const { translateText } = useI18n();
 
   const [activeTab, setActiveTab] = useState<DistributionTab>("all");
 
@@ -57,11 +59,18 @@ export function DistributionBooleanCard() {
           distribution1Data: distribution.score1,
           distribution2Data: undefined,
           categories: distribution.categories ?? [],
-          description: `${statistics.score1.total.toLocaleString()} observations${
-            statistics.score1.mode
-              ? ` | Most frequent: ${statistics.score1.mode.category} (${statistics.score1.mode.count.toLocaleString()})`
-              : ""
-          }`,
+          description: statistics.score1.mode
+            ? translateText(
+                "{count} observations | Most frequent: {category} ({modeCount})",
+                {
+                  count: statistics.score1.total.toLocaleString(),
+                  category: statistics.score1.mode.category,
+                  modeCount: statistics.score1.mode.count.toLocaleString(),
+                },
+              )
+            : translateText("{count} observations", {
+                count: statistics.score1.total.toLocaleString(),
+              }),
         };
       }
 
@@ -72,31 +81,52 @@ export function DistributionBooleanCard() {
             distribution1Data: distribution.score1Individual,
             distribution2Data: undefined,
             categories: distribution.categories ?? [],
-            description: `${score1.name} - ${statistics.score1.total.toLocaleString()} observations`,
+            description: translateText("{scoreName} - {count} observations", {
+              scoreName: score1.name,
+              count: statistics.score1.total.toLocaleString(),
+            }),
           };
         case "score2":
           return {
             distribution1Data: distribution.score2Individual,
             distribution2Data: undefined,
             categories: distribution.score2Categories ?? [],
-            description: `${score2?.name ?? "Score 2"} - ${statistics.score2?.total.toLocaleString()} observations`,
+            description: translateText("{scoreName} - {count} observations", {
+              scoreName: score2?.name ?? translateText("Score 2"),
+              count: statistics.score2?.total.toLocaleString(),
+            }),
           };
         case "all":
           return {
             distribution1Data: distribution.score1Individual,
             distribution2Data: distribution.score2Individual,
             categories: distribution.categories ?? [],
-            description: `${score1.name} (${statistics.score1.total.toLocaleString()}) vs ${score2?.name} (${statistics.score2?.total.toLocaleString()})`,
+            description: translateText(
+              "{score1Name} ({score1Count}) vs {score2Name} ({score2Count})",
+              {
+                score1Name: score1.name,
+                score1Count: statistics.score1.total.toLocaleString(),
+                score2Name: score2?.name,
+                score2Count: statistics.score2?.total.toLocaleString(),
+              },
+            ),
           };
         case "matched":
           return {
             distribution1Data: distribution.score1Matched,
             distribution2Data: distribution.score2Matched,
             categories: distribution.categories ?? [],
-            description: `${score1.name} vs ${score2?.name} - ${statistics.comparison?.matchedCount.toLocaleString()} matched`,
+            description: translateText(
+              "{score1Name} vs {score2Name} - {count} matched",
+              {
+                score1Name: score1.name,
+                score2Name: score2?.name,
+                count: statistics.comparison?.matchedCount.toLocaleString(),
+              },
+            ),
           };
       }
-    }, [data, activeTab, params]);
+    }, [data, activeTab, params, translateText]);
 
   // Build color mapping for boolean charts
   const chartColors = useMemo(() => {
@@ -124,8 +154,8 @@ export function DistributionBooleanCard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Distribution</CardTitle>
-          <CardDescription>Loading chart...</CardDescription>
+          <CardTitle>{translateText("Distribution")}</CardTitle>
+          <CardDescription>{translateText("Loading chart...")}</CardDescription>
         </CardHeader>
         <CardContent className="flex h-[340px] flex-col items-center justify-center pl-0">
           <Spinner size="xl" variant="muted" />
@@ -139,11 +169,13 @@ export function DistributionBooleanCard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Distribution</CardTitle>
-          <CardDescription>No data available</CardDescription>
+          <CardTitle>{translateText("Distribution")}</CardTitle>
+          <CardDescription>
+            {translateText("No data available")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="text-muted-foreground flex h-[340px] flex-col items-center justify-center pl-0 text-sm">
-          Select a score to view distribution
+          {translateText("Select a score to view distribution")}
         </CardContent>
       </Card>
     );
@@ -181,7 +213,7 @@ export function DistributionBooleanCard() {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <CardTitle className="flex items-center gap-2">
-                Distribution
+                {translateText("Distribution")}
                 {data.samplingMetadata.isSampled && (
                   <SamplingDetailsHoverCard
                     samplingMetadata={data.samplingMetadata}
@@ -213,10 +245,10 @@ export function DistributionBooleanCard() {
                   {truncateLabel(score2FullLabel)}
                 </TabsTrigger>
                 <TabsTrigger value="all" className="h-5 px-2 text-xs">
-                  all
+                  {translateText("all")}
                 </TabsTrigger>
                 <TabsTrigger value="matched" className="h-5 px-2 text-xs">
-                  matched
+                  {translateText("matched")}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -249,7 +281,9 @@ export function DistributionBooleanCard() {
           />
         ) : (
           <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-            No distribution data available for the selected time range
+            {translateText(
+              "No distribution data available for the selected time range",
+            )}
           </div>
         )}
       </CardContent>

@@ -61,22 +61,8 @@ export default function Traces() {
       headerProps={{
         title: "Tracing",
         help: {
-          description: (
-            <>
-              A trace represents a single function/api invocation. Traces
-              contain observations. See{" "}
-              <a
-                href="https://langfuse.com/docs/observability/data-model"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="decoration-primary/30 hover:decoration-primary underline"
-                onClick={(e) => e.stopPropagation()}
-              >
-                docs
-              </a>{" "}
-              to learn more.
-            </>
-          ),
+          description:
+            "A trace represents a single function/api invocation. Traces contain observations. See docs to learn more.",
           href: "https://langfuse.com/docs/observability/data-model",
         },
         tabsProps:

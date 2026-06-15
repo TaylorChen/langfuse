@@ -6,6 +6,7 @@ import {
   type CodeEvalValidationResult,
   validateCodeEvalSourceWithLanguage,
 } from "@/src/features/evals/utils/code-eval-template-validation";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type UseCodeEvalSourceValidationParams = {
   enabled: boolean;
@@ -27,14 +28,20 @@ function getLanguageLabel(sourceCodeLanguage: CodeEvalSourceCodeLanguage) {
 async function getCodeEvalValidationResult({
   sourceCode,
   sourceCodeLanguage,
+  translateText,
 }: {
   sourceCode: string;
   sourceCodeLanguage: CodeEvalSourceCodeLanguage;
+  translateText: (
+    text: string,
+    values?: Record<string, string | number | undefined>,
+  ) => string;
 }): Promise<CodeEvalValidationResult> {
   try {
     return await validateCodeEvalSourceWithLanguage({
       source: sourceCode,
       sourceCodeLanguage,
+      translateText,
     });
   } catch (error) {
     return {
@@ -48,7 +55,9 @@ async function getCodeEvalValidationResult({
           message:
             error instanceof Error
               ? error.message
-              : `Failed to validate ${getLanguageLabel(sourceCodeLanguage)} source.`,
+              : translateText("Failed to validate {languageLabel} source.", {
+                  languageLabel: getLanguageLabel(sourceCodeLanguage),
+                }),
         },
       ],
     };
@@ -60,6 +69,7 @@ export function useCodeEvalSourceValidation({
   sourceCode,
   sourceCodeLanguage,
 }: UseCodeEvalSourceValidationParams) {
+  const { translateText } = useI18n();
   const [validationResult, setValidationResult] =
     useState<CodeEvalValidationResult | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -79,13 +89,14 @@ export function useCodeEvalSourceValidation({
       const result = await getCodeEvalValidationResult({
         sourceCode: nextSourceCode,
         sourceCodeLanguage: nextSourceCodeLanguage,
+        translateText,
       });
       setValidationResult(result);
       setIsPending(false);
 
       return !result.hasErrors;
     },
-    [sourceCode, sourceCodeLanguage],
+    [sourceCode, sourceCodeLanguage, translateText],
   );
 
   useEffect(() => {
@@ -98,7 +109,11 @@ export function useCodeEvalSourceValidation({
     setIsPending(true);
 
     const timeout = setTimeout(() => {
-      getCodeEvalValidationResult({ sourceCode, sourceCodeLanguage })
+      getCodeEvalValidationResult({
+        sourceCode,
+        sourceCodeLanguage,
+        translateText,
+      })
         .then((result) => {
           if (!isActive) return;
           setValidationResult(result);
@@ -112,7 +127,7 @@ export function useCodeEvalSourceValidation({
       isActive = false;
       clearTimeout(timeout);
     };
-  }, [enabled, reset, sourceCode, sourceCodeLanguage]);
+  }, [enabled, reset, sourceCode, sourceCodeLanguage, translateText]);
 
   return {
     isValid: Boolean(validationResult) && !validationResult?.hasErrors,

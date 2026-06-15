@@ -5,6 +5,7 @@ import { SupportOrUpgradePage } from "@/src/ee/features/billing/components/Suppo
 import { useLangfuseCloudRegion } from "@/src/features/organizations/hooks";
 import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
 import useProjectIdFromURL from "@/src/hooks/useProjectIdFromURL";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /** MonitorScope is the RBAC scope a monitor page can require for entry. */
 type MonitorScope = "monitors:read" | "monitors:CUD";
@@ -17,12 +18,18 @@ export function MonitorPagePermissions({
   scope: MonitorScope;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
   const projectId = useProjectIdFromURL();
   const { isLangfuseCloud } = useLangfuseCloudRegion();
   const hasAccess = useHasProjectAccess({ projectId, scope });
 
   if (!isLangfuseCloud) {
-    return <ErrorPage title="Not found" message="This page does not exist." />;
+    return (
+      <ErrorPage
+        title={t("common.notFound")}
+        message={t("common.pageDoesNotExist")}
+      />
+    );
   }
 
   if (!hasAccess) {

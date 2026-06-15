@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
 import { useIsMobile } from "@/src/hooks/use-mobile";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * MultiWindowPlayground Component
@@ -156,6 +157,7 @@ function PlaygroundWindowContent({
   const playgroundContext = usePlaygroundContext();
   const { registerPageTarget, unregisterPageTarget } =
     useMessageSearchActions();
+  const { translateText } = useI18n();
   const windowContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleRemove = useCallback(() => {
@@ -203,11 +205,13 @@ function PlaygroundWindowContent({
                         className="h-7 gap-1.5 px-2.5 text-xs @xl:hidden"
                       >
                         <Plus size={14} />
-                        <span className="sr-only">New split window</span>
+                        <span className="sr-only">
+                          {translateText("New split window")}
+                        </span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="text-xs">
-                      New split window
+                      {translateText("New split window")}
                     </TooltipContent>
                   </Tooltip>
                   <Button
@@ -216,7 +220,7 @@ function PlaygroundWindowContent({
                     className="hidden h-7 gap-1.5 px-2.5 text-xs @xl:flex"
                   >
                     <Plus size={14} />
-                    <span>New split window</span>
+                    <span>{translateText("New split window")}</span>
                   </Button>
                 </>
               )}
@@ -229,11 +233,13 @@ function PlaygroundWindowContent({
                       className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
                     >
                       <X size={14} />
-                      <span className="sr-only">Remove window</span>
+                      <span className="sr-only">
+                        {translateText("Remove window")}
+                      </span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="text-xs">
-                    Remove window
+                    {translateText("Remove window")}
                   </TooltipContent>
                 </Tooltip>
               )}

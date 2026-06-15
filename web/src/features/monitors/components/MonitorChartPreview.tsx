@@ -19,8 +19,6 @@ import {
   windowToMs,
 } from "@langfuse/shared/monitors";
 
-import { renderChartSubtitle } from "../helpers/renderMonitorLabels";
-
 /** previewBucketCount is the number of complete window buckets the preview renders. */
 const previewBucketCount = 20;
 
@@ -35,6 +33,8 @@ export const MonitorChartPreview = ({
   thresholdOperator,
   alertThreshold,
   warningThreshold,
+  subtitle,
+  labels,
 }: {
   projectId: string;
   view: MonitorView;
@@ -45,6 +45,12 @@ export const MonitorChartPreview = ({
   thresholdOperator: MonitorThresholdOperator;
   alertThreshold: number | null | undefined;
   warningThreshold: number | null | undefined;
+  subtitle: string;
+  labels: {
+    livePreview: string;
+    warning: string;
+    alert: string;
+  };
 }) => {
   /** fromTimestamp and toTimestamp span 20 complete window buckets ending at the last floored boundary. */
   const { fromTimestamp, toTimestamp } = useMemo(() => {
@@ -95,7 +101,7 @@ export const MonitorChartPreview = ({
         value: warningThreshold,
         operator: thresholdOperator,
         color: "yellow" as const,
-        label: "Warning",
+        label: labels.warning,
       });
     }
     if (alertThreshold != null && Number.isFinite(alertThreshold)) {
@@ -103,11 +109,11 @@ export const MonitorChartPreview = ({
         value: alertThreshold,
         operator: thresholdOperator,
         color: "red" as const,
-        label: "Alert",
+        label: labels.alert,
       });
     }
     return ordered;
-  }, [warningThreshold, alertThreshold, thresholdOperator]);
+  }, [warningThreshold, alertThreshold, thresholdOperator, labels]);
 
   // Why: without the measure's unit, cost charts render as raw numbers
   // instead of dollar amounts.
@@ -127,14 +133,10 @@ export const MonitorChartPreview = ({
       <CardContent className="flex h-full flex-col pt-4">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold tracking-tight">Live Preview</h3>
-            <p className="text-muted-foreground text-sm">
-              {renderChartSubtitle({
-                view,
-                metric: { measure, aggregation },
-                window,
-              })}
-            </p>
+            <h3 className="text-lg font-bold tracking-tight">
+              {labels.livePreview}
+            </h3>
+            <p className="text-muted-foreground text-sm">{subtitle}</p>
           </div>
         </div>
         <div className="relative min-h-0 flex-1">

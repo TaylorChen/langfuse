@@ -10,16 +10,28 @@ import {
 } from "@langfuse/shared";
 import { z } from "zod";
 
+type TranslateText = (
+  text: string,
+  values?: Record<string, string | number | undefined>,
+) => string;
+
+const defaultTranslateText: TranslateText = (text) => text;
+
 // Define the form schema for Slack actions
 // Exported to silence @typescript-eslint/no-unused-vars v8 warning
 // (used for type extraction via z.infer<typeof>, which is a legitimate pattern)
-export const SlackActionFormSchema = z.object({
-  slack: z.object({
-    channelId: z.string().min(1, "Channel is required"),
-    channelName: z.string().min(1, "Channel name is required"),
-    messageTemplate: z.string().optional(),
-  }),
-});
+export const createSlackActionFormSchema = (
+  translateText: TranslateText = defaultTranslateText,
+) =>
+  z.object({
+    slack: z.object({
+      channelId: z.string().min(1, translateText("Channel is required")),
+      channelName: z.string().min(1, translateText("Channel name is required")),
+      messageTemplate: z.string().optional(),
+    }),
+  });
+
+export const SlackActionFormSchema = createSlackActionFormSchema();
 
 type SlackActionFormData = z.infer<typeof SlackActionFormSchema>;
 
@@ -47,18 +59,24 @@ export class SlackActionHandler implements BaseActionHandler<SlackActionFormData
     };
   }
 
-  validateFormData(formData: SlackActionFormData): {
+  validateFormData(
+    formData: SlackActionFormData,
+    translateText: (
+      text: string,
+      values?: Record<string, string | number | undefined>,
+    ) => string = (text) => text,
+  ): {
     isValid: boolean;
     errors?: string[];
   } {
     const errors: string[] = [];
 
     if (!formData.slack?.channelId) {
-      errors.push("Slack channel is required");
+      errors.push(translateText("Slack channel is required"));
     }
 
     if (!formData.slack?.channelName) {
-      errors.push("Channel name is required");
+      errors.push(translateText("Channel name is required"));
     }
 
     return {

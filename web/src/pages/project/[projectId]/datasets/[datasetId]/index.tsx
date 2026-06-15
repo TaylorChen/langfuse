@@ -1,4 +1,5 @@
 import { type GetServerSideProps } from "next";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // Keep the bare dataset URL as an alias only; tab content lives on explicit routes.
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -20,5 +21,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export default function RedirectPage() {
-  return <div>Redirecting...</div>;
+  const { translateText } = useI18n();
+
+  return <div>{translateText("Redirecting...")}</div>;
 }

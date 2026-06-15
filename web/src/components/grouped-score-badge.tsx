@@ -14,6 +14,7 @@ import { JSONView } from "@/src/components/ui/CodeJsonViewer";
 import Link from "next/link";
 import useProjectIdFromURL from "@/src/hooks/useProjectIdFromURL";
 import { type WithStringifiedMetadata } from "@/src/utils/clientSideDomainTypes";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const partitionScores = <
   T extends WithStringifiedMetadata<ScoreDomain> | LastUserScore,
@@ -60,6 +61,7 @@ const ScoreGroupBadge = <
   badgeClassName?: string;
 }) => {
   const projectId = useProjectIdFromURL();
+  const { translateText } = useI18n();
 
   return (
     <Badge
@@ -98,7 +100,7 @@ const ScoreGroupBadge = <
                         target="_blank"
                       >
                         <ExternalLinkIcon className="h-3 w-3" />
-                        View execution trace
+                        {translateText("View execution trace")}
                       </Link>
                     )}
                 </HoverCardContent>

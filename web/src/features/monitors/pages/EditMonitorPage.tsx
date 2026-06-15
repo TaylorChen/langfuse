@@ -6,6 +6,7 @@ import Page from "@/src/components/layouts/page";
 import { MonitorForm } from "@/src/features/monitors/components/MonitorForm";
 import { MonitorPagePermissions } from "@/src/features/monitors/components/MonitorPagePermissions";
 import { api } from "@/src/utils/api";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /** EditMonitorPage gates the edit-monitor route and defers all data fetching to EditMonitorPageContent so blocked users never trigger the monitor query. */
 export default function EditMonitorPage() {
@@ -18,6 +19,7 @@ export default function EditMonitorPage() {
 
 /** EditMonitorPageContent renders the edit form for a single monitor; runs only when the route gate has admitted the user. */
 function EditMonitorPageContent() {
+  const { t } = useI18n();
   const router = useRouter();
   const projectId = router.query.projectId as string;
   const monitorId = router.query.monitorId as string;
@@ -36,8 +38,8 @@ function EditMonitorPageContent() {
   if (error?.data?.code === "NOT_FOUND") {
     return (
       <ErrorPage
-        title="Monitor not found"
-        message="This monitor doesn't exist or has been deleted."
+        title={t("monitors.notFound")}
+        message={t("monitors.notFoundDescription")}
       />
     );
   }
@@ -46,9 +48,11 @@ function EditMonitorPageContent() {
     <Page
       withPadding
       headerProps={{
-        title: liveName ? `Edit Monitor - ${liveName}` : "Edit Monitor",
+        title: liveName
+          ? t("monitors.editMonitorWithName", { name: liveName })
+          : t("monitors.editMonitor"),
         breadcrumb: [
-          { name: "Monitors", href: `/project/${projectId}/monitors` },
+          { name: t("monitors.title"), href: `/project/${projectId}/monitors` },
         ],
       }}
     >

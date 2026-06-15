@@ -4,11 +4,14 @@
  */
 
 import { Spinner } from "@/src/components/layouts/spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type LoadingLayoutProps = {
   message?: string;
 };
 
-export function LoadingLayout({ message = "Loading" }: LoadingLayoutProps) {
-  return <Spinner message={message} />;
+export function LoadingLayout({ message = "Loading..." }: LoadingLayoutProps) {
+  const { translateText } = useI18n();
+
+  return <Spinner message={translateText(message)} />;
 }

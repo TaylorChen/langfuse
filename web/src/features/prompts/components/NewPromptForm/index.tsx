@@ -34,7 +34,7 @@ import {
 import { PromptChatMessages } from "./PromptChatMessages";
 import { ReviewPromptDialog } from "./ReviewPromptDialog";
 import {
-  NewPromptFormSchema,
+  createNewPromptFormSchema,
   type NewPromptFormSchemaType,
   PromptVariantSchema,
   type PromptVariant,
@@ -50,6 +50,7 @@ import usePlaygroundCache from "@/src/features/playground/page/hooks/usePlaygrou
 import { useQueryParam } from "use-query-params";
 import { usePromptNameValidation } from "@/src/features/prompts/hooks/usePromptNameValidation";
 import { useFormPersistence } from "@/src/hooks/useFormPersistence";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type NewPromptFormProps = {
   initialPrompt?: Prompt | null;
@@ -59,6 +60,7 @@ type NewPromptFormProps = {
 export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
   const { onFormSuccess, initialPrompt } = props;
   const projectId = useProjectIdFromURL();
+  const { t, translateText } = useI18n();
   const [shouldLoadPlaygroundCache] = useQueryParam("loadPlaygroundCache");
   const [folderPath] = useQueryParam("folder");
   const [formError, setFormError] = useState<string | null>(null);
@@ -95,7 +97,7 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
   };
 
   const form = useForm({
-    resolver: zodResolver(NewPromptFormSchema),
+    resolver: zodResolver(createNewPromptFormSchema(translateText)),
     mode: "onTouched",
     defaultValues,
   });
@@ -240,21 +242,23 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
               return (
                 <div>
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>{t("prompts.nameLabel")}</FormLabel>
                     <FormDescription>
-                      Use slashes &apos;/&apos; in prompt names to organize them
-                      into{" "}
+                      {t("prompts.nameDescriptionPrefix")}{" "}
                       <a
                         target="_blank"
                         rel="noopener noreferrer"
                         href="https://langfuse.com/docs/prompt-management/get-started#prompt-folders-for-organization"
                       >
-                        <i>folders</i>
+                        <i>{t("prompts.folders")}</i>
                       </a>
                       .
                     </FormDescription>
                     <FormControl>
-                      <Input placeholder="Name your prompt" {...field} />
+                      <Input
+                        placeholder={t("prompts.namePlaceholder")}
+                        {...field}
+                      />
                     </FormControl>
                     {/* Custom form message to include a link to the already existing prompt */}
                     {form.getFieldState("name").error ? (
@@ -267,7 +271,7 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
                             href={`/project/${projectId}/prompts/${currentName.trim()}`}
                             className="flex flex-row items-center"
                           >
-                            Create a new version for it here.
+                            {t("prompts.createNewVersionForIt")}
                             <SquareArrowOutUpRight className="ml-1 h-3 w-3" />
                           </Link>
                         ) : null}
@@ -283,14 +287,13 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
         {/* Prompt content field - text vs. chat */}
         <>
           <FormItem>
-            <FormLabel>Prompt</FormLabel>
+            <FormLabel>{t("prompts.promptLabel")}</FormLabel>
             <FormDescription>
-              Define your prompt template. You can use{" "}
-              <code className="text-xs">{"{{variable}}"}</code> to insert
-              variables into your prompt.
-              <b className="font-semibold"> Note:</b> Variables must be
-              alphabetical characters or underscores. You can also link other
-              text prompts using the plus button.
+              {t("prompts.promptDescriptionPrefix")}{" "}
+              <code className="text-xs">{"{{variable}}"}</code>{" "}
+              {` ${t("prompts.promptDescriptionMiddle")} `}
+              <b className="font-semibold"> {t("prompts.note")}</b>{" "}
+              {t("prompts.promptDescriptionSuffix")}
             </FormDescription>
             <Tabs
               value={form.watch("type")}
@@ -326,7 +329,7 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
                 <p
                   className={`text-muted-foreground mb-1 text-right text-xs ${initialPrompt ? "-mt-2" : "mt-1"}`}
                 >
-                  Draft restored.{" "}
+                  {t("prompts.draftRestored")}{" "}
                   <button
                     type="button"
                     className="hover:text-foreground underline"
@@ -340,7 +343,7 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
                       );
                     }}
                   >
-                    Discard
+                    {t("prompts.discard")}
                   </button>
                 </p>
               )}
@@ -390,11 +393,9 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
           name="config"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Config</FormLabel>
+              <FormLabel>{t("prompts.configLabel")}</FormLabel>
               <FormDescription>
-                Arbitrary JSON configuration that is available on the prompt.
-                Use this to track LLM parameters, function definitions, or any
-                other metadata.
+                {t("prompts.configDescription")}
               </FormDescription>
               <CodeMirrorEditor
                 value={field.value}
@@ -422,7 +423,7 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>Set the &quot;production&quot; label</FormLabel>
+                  <FormLabel>{t("prompts.setProductionLabel")}</FormLabel>
                 </div>
               </div>
             </FormItem>
@@ -434,14 +435,13 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
           name="commitMessage"
           render={({ field }) => (
             <FormItem className="relative">
-              <FormLabel>Commit message</FormLabel>
+              <FormLabel>{t("prompts.commitMessage")}</FormLabel>
               <FormDescription>
-                Provide information about the changes made in this version.
-                Helps maintain a clear history of prompt iterations.
+                {t("prompts.commitMessageDescription")}
               </FormDescription>
               <FormControl>
                 <Textarea
-                  placeholder="Add commit message..."
+                  placeholder={t("prompts.commitMessagePlaceholder")}
                   {...field}
                   className="rounded-md border text-sm focus:ring-0 focus:outline-hidden focus-visible:ring-0 focus-visible:ring-offset-0 active:ring-0"
                 />
@@ -464,7 +464,7 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
                 variant="secondary"
                 className="w-full"
               >
-                Review changes
+                {t("prompts.reviewChanges")}
               </Button>
             </ReviewPromptDialog>
 
@@ -474,7 +474,7 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
               className="w-full"
               disabled={!form.formState.isValid}
             >
-              Save new prompt version
+              {t("prompts.saveNewPromptVersion")}
             </Button>
           </div>
         ) : (
@@ -486,13 +486,14 @@ export const NewPromptForm: React.FC<NewPromptFormProps> = (props) => {
               !initialPrompt && form.formState.errors.name?.message,
             )} // Disable button if prompt name already exists. Check is dynamic and not part of zod schema
           >
-            Create prompt
+            {t("prompts.createPrompt")}
           </Button>
         )}
       </form>
       {formError && (
         <p className="text-red text-center">
-          <span className="font-bold">Error:</span> {formError}
+          <span className="font-bold">{translateText("Error:")}</span>{" "}
+          {formError}
         </p>
       )}
     </Form>

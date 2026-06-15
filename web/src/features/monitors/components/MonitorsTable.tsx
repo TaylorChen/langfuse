@@ -29,6 +29,7 @@ import { usePaginationState } from "@/src/hooks/usePaginationState";
 import useProjectIdFromURL from "@/src/hooks/useProjectIdFromURL";
 import { api, type RouterInputs, type RouterOutputs } from "@/src/utils/api";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { type FilterState } from "@langfuse/shared";
 import {
   type ListMonitorFilter,
@@ -55,6 +56,7 @@ type MonitorsOrderBy = RouterInputs["monitors"]["all"]["orderBy"];
 
 /** MonitorsTable renders the project's monitors as a sortable, filterable, paginated table with row navigation to the edit page. */
 export function MonitorsTable() {
+  const { t } = useI18n();
   const router = useRouter();
   const projectId = useProjectIdFromURL() ?? "";
   const { setDetailPageList } = useDetailPageLists();
@@ -73,15 +75,16 @@ export function MonitorsTable() {
       await utils.monitors.invalidate();
       showSuccessToast({
         title:
-          variables.status === "PAUSED" ? "Monitor paused" : "Monitor resumed",
+          variables.status === "PAUSED"
+            ? t("monitors.paused")
+            : t("monitors.resumed"),
         description:
           variables.status === "PAUSED"
-            ? "Evaluations are halted until you resume."
-            : "Evaluations have resumed.",
+            ? t("monitors.pausedDescription")
+            : t("monitors.resumedDescription"),
       });
     },
-    onError: (e) =>
-      showErrorToast("Failed to update monitor status", e.message),
+    onError: (e) => showErrorToast(t("monitors.updateStatusFailed"), e.message),
   });
 
   /** paginationState is the bound page index + size, defaulting to 50 per page and synced to the `pageIndex`/`pageSize` URL params. */
@@ -172,7 +175,7 @@ export function MonitorsTable() {
   const columns: LangfuseColumnDef<MonitorRow>[] = [
     {
       accessorKey: "severity",
-      header: "Severity",
+      header: t("monitors.severity"),
       id: "severity",
       enableSorting: true,
       enableResizing: false,
@@ -186,7 +189,7 @@ export function MonitorsTable() {
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: t("common.name"),
       id: "name",
       enableSorting: true,
       enableResizing: false,
@@ -206,7 +209,7 @@ export function MonitorsTable() {
       ? [
           {
             accessorKey: "tags",
-            header: "Tags",
+            header: t("monitors.tags"),
             id: "tags",
             enableSorting: false,
             enableResizing: false,
@@ -233,7 +236,7 @@ export function MonitorsTable() {
       : []),
     {
       accessorKey: "actions",
-      header: "Actions",
+      header: t("common.actions"),
       id: "actions",
       enableSorting: false,
       enableResizing: false,
@@ -247,6 +250,16 @@ export function MonitorsTable() {
           hasCUDAccess={hasCUDAccess}
           collapsed={!isWiderThanPhone}
           isStatusPending={statusMutation.isPending}
+          labels={{
+            edit: t("common.edit"),
+            editMonitor: t("monitors.editMonitor"),
+            pause: t("monitors.pause"),
+            pauseMonitor: t("monitors.pauseMonitor"),
+            resume: t("monitors.resume"),
+            resumeMonitor: t("monitors.resumeMonitor"),
+            delete: t("common.delete"),
+            monitorActions: t("monitors.monitorActions"),
+          }}
           onToggleStatus={() =>
             statusMutation.mutate(buildStatusToggleUpdate(row.original))
           }
@@ -304,6 +317,7 @@ function MonitorRowActions({
   hasCUDAccess,
   collapsed,
   isStatusPending,
+  labels,
   onToggleStatus,
 }: {
   monitor: MonitorRow;
@@ -311,6 +325,16 @@ function MonitorRowActions({
   hasCUDAccess: boolean;
   collapsed: boolean;
   isStatusPending: boolean;
+  labels: {
+    edit: string;
+    editMonitor: string;
+    pause: string;
+    pauseMonitor: string;
+    resume: string;
+    resumeMonitor: string;
+    delete: string;
+    monitorActions: string;
+  };
   /** onToggleStatus flips the monitor between ACTIVE and PAUSED. */
   onToggleStatus: () => void;
 }) {
@@ -322,8 +346,8 @@ function MonitorRowActions({
       variant="ghost"
       size={collapsed ? "default" : "icon"}
       disabled={!hasCUDAccess}
-      aria-label="Edit monitor"
-      title="Edit"
+      aria-label={labels.editMonitor}
+      title={labels.edit}
       className={cn(!collapsed && rowActionIconColors)}
     >
       <Link
@@ -331,7 +355,7 @@ function MonitorRowActions({
         onClick={(e) => e.stopPropagation()}
       >
         <SquarePen className="h-4 w-4" aria-hidden="true" />
-        {collapsed ? <span className="ml-2">Edit</span> : null}
+        {collapsed ? <span className="ml-2">{labels.edit}</span> : null}
       </Link>
     </Button>
   );
@@ -341,8 +365,8 @@ function MonitorRowActions({
       variant="ghost"
       size={collapsed ? "default" : "icon"}
       disabled={!hasCUDAccess || isStatusPending}
-      aria-label={isPaused ? "Resume monitor" : "Pause monitor"}
-      title={isPaused ? "Resume" : "Pause"}
+      aria-label={isPaused ? labels.resumeMonitor : labels.pauseMonitor}
+      title={isPaused ? labels.resume : labels.pause}
       className={cn(!collapsed && rowActionIconColors)}
       onClick={(e) => {
         e.stopPropagation();
@@ -355,7 +379,7 @@ function MonitorRowActions({
         <PauseCircle className="h-4.5 w-4.5" aria-hidden="true" />
       )}
       {collapsed ? (
-        <span className="ml-2">{isPaused ? "Resume" : "Pause"}</span>
+        <span className="ml-2">{isPaused ? labels.resume : labels.pause}</span>
       ) : null}
     </Button>
   );
@@ -367,7 +391,7 @@ function MonitorRowActions({
       isTableAction
       icon={!collapsed}
       variant="ghost"
-      title="Delete"
+      title={labels.delete}
       className={cn(!collapsed && rowActionIconColors)}
     />
   );
@@ -377,7 +401,11 @@ function MonitorRowActions({
       <div onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="xs" variant="ghost" aria-label="Monitor actions">
+            <Button
+              size="xs"
+              variant="ghost"
+              aria-label={labels.monitorActions}
+            >
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

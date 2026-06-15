@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Search, X, MoreHorizontal } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface MultiSelectComboboxProps<T> {
   selectedItems: T[];
@@ -42,6 +43,7 @@ export function MultiSelectCombobox<T>({
   showSelectedItemsInInput = true,
   dropdownClassName,
 }: MultiSelectComboboxProps<T>) {
+  const { translateText } = useI18n();
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [previousResults, setPreviousResults] = useState<T[]>([]);
@@ -130,6 +132,8 @@ export function MultiSelectCombobox<T>({
     );
   };
 
+  const translatedPlaceholder = translateText(placeholder);
+
   return (
     <div className="space-y-2">
       {/* Custom Input with Embedded Pills */}
@@ -155,9 +159,9 @@ export function MultiSelectCombobox<T>({
               placeholder={
                 showSelectedItemsInInput
                   ? selectedItems.length === 0
-                    ? placeholder
+                    ? translatedPlaceholder
                     : ""
-                  : placeholder
+                  : translatedPlaceholder
               }
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -215,7 +219,9 @@ export function MultiSelectCombobox<T>({
                   <MoreHorizontal className="h-4 w-4" />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs italic">
-                      More results available, refine your search
+                      {translateText(
+                        "More results available, refine your search",
+                      )}
                     </p>
                   </div>
                 </div>

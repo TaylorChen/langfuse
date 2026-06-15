@@ -13,6 +13,7 @@ import { LayoutDashboard } from "lucide-react";
 import Page from "@/src/components/layouts/page";
 import { useV4Beta } from "@/src/features/events/hooks/useV4Beta";
 import { ObservationsEventsTable } from "@/src/features/events/components";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const tabs = ["Traces", "Sessions", "Scores"] as const;
 
@@ -21,6 +22,7 @@ export default function UserPage() {
   const userId = router.query.userId as string;
   const projectId = router.query.projectId as string;
   const { isBetaEnabled } = useV4Beta();
+  const { t, translateText } = useI18n();
 
   const userV3 = api.users.byId.useQuery(
     {
@@ -72,7 +74,12 @@ export default function UserPage() {
     <Page
       headerProps={{
         title: userId,
-        breadcrumb: [{ name: "Users", href: `/project/${projectId}/users` }],
+        breadcrumb: [
+          {
+            name: translateText("Users"),
+            href: `/project/${projectId}/users`,
+          },
+        ],
         itemType: "USER",
         actionButtonsRight: (
           <>
@@ -81,7 +88,7 @@ export default function UserPage() {
               variant="secondary"
               icon={<LayoutDashboard className="h-4 w-4" />}
             >
-              Dashboard
+              {t("users.dashboard")}
             </ActionButton>
             <DetailPageNav
               currentId={encodeURIComponent(userId)}
@@ -98,27 +105,35 @@ export default function UserPage() {
         {user.data && (
           <div className="flex flex-wrap gap-2 px-4 py-4">
             <Badge variant="outline">
-              Observations:{" "}
-              {compactNumberFormatter(user.data.totalObservations)}
+              {t("users.observations", {
+                count: compactNumberFormatter(user.data.totalObservations),
+              })}
             </Badge>
             <Badge variant="outline">
-              Traces: {compactNumberFormatter(user.data.totalTraces)}
+              {t("users.traces", {
+                count: compactNumberFormatter(user.data.totalTraces),
+              })}
             </Badge>
             <Badge variant="outline">
-              Total Tokens: {compactNumberFormatter(user.data.totalTokens)}
+              {t("users.totalTokens", {
+                count: compactNumberFormatter(user.data.totalTokens),
+              })}
             </Badge>
             <Badge variant="outline">
               <span className="flex items-center gap-1">
-                Total Cost: {usdFormatter(user.data.sumCalculatedTotalCost)}
+                {t("users.totalCost", {
+                  cost: usdFormatter(user.data.sumCalculatedTotalCost),
+                })}
               </span>
             </Badge>
             <Badge variant="outline">
-              Active:{" "}
-              {user.data.firstTrace
-                ? `${user.data.firstTrace.toLocaleString()} - ${user.data.lastTrace?.toLocaleString()}`
-                : isBetaEnabled
-                  ? "No activity yet"
-                  : "No traces yet"}
+              {t("users.active", {
+                range: user.data.firstTrace
+                  ? `${user.data.firstTrace.toLocaleString()} - ${user.data.lastTrace?.toLocaleString()}`
+                  : isBetaEnabled
+                    ? t("users.noActivityYet")
+                    : t("users.noTracesYet"),
+              })}
             </Badge>
           </div>
         )}
@@ -128,7 +143,7 @@ export default function UserPage() {
         <div>
           <div className="sm:hidden">
             <label htmlFor="tabs" className="sr-only">
-              Select a tab
+              {t("users.selectTab")}
             </label>
             <select
               id="tabs"
@@ -138,13 +153,15 @@ export default function UserPage() {
               onChange={(e) => handleTabChange(e.currentTarget.value)}
             >
               {tabs.map((tab) => (
-                <option key={tab}>{tab}</option>
+                <option key={tab} value={tab}>
+                  {translateText(tab)}
+                </option>
               ))}
             </select>
           </div>
           <div className="hidden sm:block">
             <div className="border-border border-b">
-              <nav className="-mb-px flex" aria-label="Tabs">
+              <nav className="-mb-px flex" aria-label={t("users.selectTab")}>
                 {tabs.map((tab) => (
                   <button
                     key={tab}
@@ -157,7 +174,7 @@ export default function UserPage() {
                     aria-current={tab === currentTab ? "page" : undefined}
                     onClick={() => handleTabChange(tab)}
                   >
-                    {tab}
+                    {translateText(tab)}
                   </button>
                 ))}
               </nav>

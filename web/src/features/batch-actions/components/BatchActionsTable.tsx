@@ -13,6 +13,19 @@ import {
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
 import { LocalIsoDate } from "@/src/components/LocalIsoDate";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
+
+const formatBatchActionType = (
+  actionType: string,
+  translateText: (text: string) => string,
+) => {
+  const formattedType = actionType
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return translateText(formattedType);
+};
 
 type BatchActionRow = {
   id: string;
@@ -32,6 +45,7 @@ type BatchActionRow = {
 };
 
 export function BatchActionsTable(props: { projectId: string }) {
+  const { t, translateText } = useI18n();
   const [paginationState, setPaginationState] = useQueryParams({
     pageIndex: withDefault(NumberParam, 0),
     pageSize: withDefault(NumberParam, 10),
@@ -47,43 +61,45 @@ export function BatchActionsTable(props: { projectId: string }) {
     {
       accessorKey: "actionType",
       id: "actionType",
-      header: "Action Type",
+      header: t("batchActions.actionType"),
       size: 200,
       cell: ({ row }) => {
         const actionType = row.getValue("actionType") as string;
-        const formattedType = actionType
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-        return <span>{formattedType}</span>;
+        return <span>{formatBatchActionType(actionType, translateText)}</span>;
       },
     },
     {
       accessorKey: "tableName",
       id: "tableName",
-      header: "Table",
+      header: t("batchActions.table"),
       size: 120,
       cell: ({ row }) => {
         const tableName = row.getValue("tableName") as string;
-        return <span className="capitalize">{tableName}</span>;
+        return <span>{translateText(tableName)}</span>;
       },
     },
     {
       accessorKey: "status",
       id: "status",
-      header: "Status",
+      header: translateText("Status"),
       size: 110,
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
         return (
-          <StatusBadge type={status.toLowerCase()} className="capitalize" />
+          <StatusBadge
+            type={status.toLowerCase()}
+            className="capitalize"
+            showText={false}
+          >
+            <span>{translateText(status)}</span>
+          </StatusBadge>
         );
       },
     },
     {
       accessorKey: "progress",
       id: "progress",
-      header: "Progress",
+      header: t("batchActions.progress"),
       size: 150,
       cell: ({ row }) => {
         const totalCount = row.original.totalCount;
@@ -100,7 +116,7 @@ export function BatchActionsTable(props: { projectId: string }) {
             </div>
             {failedCount > 0 && (
               <div className="text-destructive text-xs">
-                {failedCount} failed
+                {t("batchActions.failedCount", { count: failedCount })}
               </div>
             )}
           </div>
@@ -110,7 +126,7 @@ export function BatchActionsTable(props: { projectId: string }) {
     {
       accessorKey: "createdAt",
       id: "createdAt",
-      header: "Created",
+      header: translateText("Created"),
       size: 150,
       cell: ({ row }) => {
         const createdAt = row.getValue("createdAt") as Date;
@@ -120,7 +136,7 @@ export function BatchActionsTable(props: { projectId: string }) {
     {
       accessorKey: "finishedAt",
       id: "finishedAt",
-      header: "Finished",
+      header: t("batchActions.finished"),
       size: 150,
       cell: ({ row }) => {
         const finishedAt = row.getValue("finishedAt") as Date | null;
@@ -134,7 +150,7 @@ export function BatchActionsTable(props: { projectId: string }) {
     {
       accessorKey: "user",
       id: "user",
-      header: "Created By",
+      header: translateText("Created By"),
       size: 150,
       cell: ({ row }) => {
         const user = row.getValue("user") as {
@@ -146,10 +162,10 @@ export function BatchActionsTable(props: { projectId: string }) {
             <Avatar className="h-7 w-7">
               <AvatarImage
                 src={user?.image ?? undefined}
-                alt={user?.name ?? "User Avatar"}
+                alt={user?.name ?? t("batchActions.userAvatar")}
               />
             </Avatar>
-            <span>{user?.name ?? "Unknown"}</span>
+            <span>{user?.name ?? t("batchActions.unknownUser")}</span>
           </div>
         );
       },
@@ -157,7 +173,7 @@ export function BatchActionsTable(props: { projectId: string }) {
     {
       accessorKey: "log",
       id: "log",
-      header: "Log",
+      header: t("batchActions.log"),
       size: 300,
       cell: ({ row }) => {
         const log = row.getValue("log") as string | null;

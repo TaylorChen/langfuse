@@ -7,6 +7,7 @@ import { type RouterInput } from "@/src/utils/types";
 import { useEffect, useState } from "react";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import { trpcErrorToast } from "@/src/utils/trpcErrorToast";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function StarToggle({
   value,
@@ -21,6 +22,8 @@ export function StarToggle({
   size?: "icon" | "icon-xs";
   isLoading: boolean;
 }) {
+  const { translateText } = useI18n();
+
   return (
     <Button
       variant="ghost"
@@ -31,7 +34,7 @@ export function StarToggle({
       }}
       disabled={disabled}
       loading={isLoading}
-      aria-label="bookmark"
+      aria-label={translateText(value ? "Remove bookmark" : "Bookmark")}
     >
       <StarIcon
         className="h-4 w-4"

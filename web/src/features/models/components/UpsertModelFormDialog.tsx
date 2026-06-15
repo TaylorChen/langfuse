@@ -32,8 +32,8 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import {
+  createFormUpsertModelSchema,
   type FormUpsertModel,
-  FormUpsertModelSchema,
   type GetModelResult,
 } from "@/src/features/models/validation";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
@@ -43,6 +43,7 @@ import { useRouter } from "next/router";
 
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
 import { PricingSection } from "./pricing-tiers/PricingSection";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type UpsertModelDialogProps =
   | {
@@ -72,6 +73,7 @@ export const UpsertModelFormDialog = (({
   const [formError, setFormError] = useState<string | null>(null);
   const utils = api.useUtils();
   const [open, setOpen] = useState(false);
+  const { t, translateText } = useI18n();
 
   // Initialize form default values
   const defaultValues: FormUpsertModel = useMemo(() => {
@@ -119,7 +121,7 @@ export const UpsertModelFormDialog = (({
   }, [props]);
 
   const form = useForm({
-    resolver: zodResolver(FormUpsertModelSchema),
+    resolver: zodResolver(createFormUpsertModelSchema(translateText)),
     defaultValues,
   });
 
@@ -204,14 +206,23 @@ export const UpsertModelFormDialog = (({
       form.reset();
       setOpen(false);
       showSuccessToast({
-        title: `Model ${props.action === "edit" ? "updated" : "created"}`,
-        description: `The model '${upsertedModel.modelName}' has been successfully ${props.action === "edit" ? "updated" : "created"}. New generations will use these model prices.`,
+        title: t(
+          props.action === "edit"
+            ? "models.modelUpdated"
+            : "models.modelCreated",
+        ),
+        description: t(
+          props.action === "edit"
+            ? "models.modelUpdatedDescription"
+            : "models.modelCreatedDescription",
+          { modelName: upsertedModel.modelName },
+        ),
       });
       router.push(
         `/project/${props.projectId}/settings/models/${upsertedModel.id}`,
       );
     },
-    onError: (error) => setFormError(error.message),
+    onError: (error) => setFormError(translateText(error.message)),
   });
 
   const onSubmit = async (values: FormUpsertModel) => {
@@ -243,7 +254,7 @@ export const UpsertModelFormDialog = (({
             : undefined,
       })
       .catch((error) => {
-        setFormError(error.message);
+        setFormError(translateText(error.message));
       });
   };
 
@@ -252,7 +263,7 @@ export const UpsertModelFormDialog = (({
     if (!defaultTier) return;
 
     append({
-      name: `Custom Tier ${fields.length}`,
+      name: t("models.customTier", { count: fields.length }),
       isDefault: false,
       priority: fields.length,
       conditions: [
@@ -284,8 +295,8 @@ export const UpsertModelFormDialog = (({
         className={props.className}
         title={
           props.action === "create"
-            ? "Create model definition"
-            : "Edit model definition"
+            ? t("models.createModelDefinition")
+            : t("models.editModelDefinition")
         }
       >
         {children}
@@ -294,17 +305,17 @@ export const UpsertModelFormDialog = (({
         <DialogHeader>
           <DialogTitle>
             {props.action === "create"
-              ? "Create Model"
+              ? t("models.createModel")
               : props.action === "clone"
-                ? "Clone Model"
-                : "Edit Model"}
+                ? t("models.cloneModel")
+                : t("models.editModel")}
           </DialogTitle>
           {props.action === "edit" && (
             <DialogDescription>{props.modelData.modelName}</DialogDescription>
           )}
           {props.action === "create" && (
             <DialogDescription>
-              Create a new model configuration to track generation costs.
+              {t("models.createModelDescription")}
             </DialogDescription>
           )}
         </DialogHeader>
@@ -320,11 +331,9 @@ export const UpsertModelFormDialog = (({
                 disabled={props.action === "edit"}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Model Name</FormLabel>
+                    <FormLabel>{t("models.modelName")}</FormLabel>
                     <FormDescription>
-                      The name of the model. This will be used to reference the
-                      model in the API. You can track price changes of models by
-                      using the same name and match pattern.
+                      {t("models.modelNameFormDescription")}
                     </FormDescription>
                     <FormControl>
                       <Input {...field} />
@@ -338,12 +347,9 @@ export const UpsertModelFormDialog = (({
                 name="matchPattern"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Match pattern</FormLabel>
+                    <FormLabel>{t("models.matchPattern")}</FormLabel>
                     <FormDescription>
-                      Regular expression (Postgres syntax) to match ingested
-                      generations (model attribute) to this model definition.
-                      For an exact, case-insensitive match to a model name, use
-                      the expression: (?i)^(modelname)$
+                      {t("models.matchPatternFormDescription")}
                     </FormDescription>
                     <FormControl>
                       <Input {...field} />
@@ -366,7 +372,7 @@ export const UpsertModelFormDialog = (({
                 name="tokenizerId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tokenizer</FormLabel>
+                    <FormLabel>{t("models.tokenizer")}</FormLabel>
                     <Select
                       onValueChange={(tokenizerId) => {
                         field.onChange(tokenizerId);
@@ -378,7 +384,9 @@ export const UpsertModelFormDialog = (({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a unit" />
+                          <SelectValue
+                            placeholder={t("models.selectTokenizer")}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -390,16 +398,13 @@ export const UpsertModelFormDialog = (({
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Optionally, Langfuse can tokenize the input and output of
-                      a generation if no unit counts are ingested. This is
-                      useful for e.g. streamed OpenAI completions. For details
-                      on the supported tokenizers, see the{" "}
+                      {t("models.tokenizerFormDescriptionPrefix")}{" "}
                       <Link
                         href="https://langfuse.com/docs/model-usage-and-cost"
                         className="underline"
                         target="_blank"
                       >
-                        docs
+                        {t("common.documentation")}
                       </Link>
                       .
                     </FormDescription>
@@ -413,23 +418,22 @@ export const UpsertModelFormDialog = (({
                   name="tokenizerConfig"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tokenizer Config</FormLabel>
+                      <FormLabel>{t("models.tokenizerConfig")}</FormLabel>
                       <CodeMirrorEditor
                         mode="json"
                         value={field.value ?? "{}"}
                         onChange={field.onChange}
                       />
                       <FormDescription>
-                        The config for the tokenizer. Required for openai. See
-                        the{" "}
+                        {t("models.tokenizerConfigFormDescriptionPrefix")}{" "}
                         <Link
                           href="https://langfuse.com/docs/model-usage-and-cost"
                           className="underline"
                           target="_blank"
                         >
-                          docs
+                          {t("common.documentation")}
                         </Link>{" "}
-                        for details.
+                        {t("models.tokenizerConfigFormDescriptionSuffix")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -444,17 +448,18 @@ export const UpsertModelFormDialog = (({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
 
               <Button type="submit" loading={upsertModelMutation.isPending}>
-                Submit
+                {t("scoreConfigs.submit")}
               </Button>
             </DialogFooter>
           </form>
           {formError ? (
             <p className="text-destructive my-2 text-center text-sm font-medium">
-              <span className="font-semibold">Error:</span> {formError}
+              <span className="font-semibold">{t("common.error")}:</span>{" "}
+              {formError}
             </p>
           ) : null}
         </Form>

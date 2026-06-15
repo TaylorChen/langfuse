@@ -28,15 +28,20 @@ import {
 import { isCloudPlan, planLabels } from "@langfuse/shared";
 import Link from "next/link";
 import { Badge } from "@/src/components/ui/badge";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
-const LoadingMenuItem = () => (
-  <DropdownMenuItem>
-    <span className="mr-1.5 inline-flex">
-      <Spinner size="sm" />
-    </span>
-    Loading...
-  </DropdownMenuItem>
-);
+const LoadingMenuItem = () => {
+  const { translateText } = useI18n();
+
+  return (
+    <DropdownMenuItem>
+      <span className="mr-1.5 inline-flex">
+        <Spinner size="sm" />
+      </span>
+      {translateText("Loading...")}
+    </DropdownMenuItem>
+  );
+};
 
 const BreadcrumbComponent = ({
   items,
@@ -47,6 +52,7 @@ const BreadcrumbComponent = ({
 }) => {
   const router = useRouter();
   const session = useSession();
+  const { translateText } = useI18n();
   const { organization, project } = useQueryProjectOrOrganization();
 
   const organizations = session.data?.user?.organizations;
@@ -111,7 +117,7 @@ const BreadcrumbComponent = ({
             <DropdownMenuContent align="start">
               <DropdownMenuItem className="font-semibold" asChild>
                 <Link href="/" className="cursor-pointer">
-                  Organizations
+                  {translateText("Organizations")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -184,7 +190,7 @@ const BreadcrumbComponent = ({
                           className="mr-1.5 h-4 w-4"
                           aria-hidden="true"
                         />
-                        New Organization
+                        {translateText("New Organization")}
                       </Link>
                     </Button>
                   </DropdownMenuItem>
@@ -209,7 +215,7 @@ const BreadcrumbComponent = ({
                     href={`/organization/${organization.id}`}
                     className="cursor-pointer"
                   >
-                    Projects
+                    {translateText("Projects")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -270,7 +276,7 @@ const BreadcrumbComponent = ({
                             className="mr-1.5 h-4 w-4"
                             aria-hidden="true"
                           />
-                          New Project
+                          {translateText("New Project")}
                         </Link>
                       </Button>
                     </DropdownMenuItem>

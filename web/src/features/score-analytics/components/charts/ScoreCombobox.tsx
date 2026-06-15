@@ -5,6 +5,7 @@ import {
 } from "@/src/components/ui/combobox";
 import { Button } from "@/src/components/ui/button";
 import { X } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface ScoreOption {
   value: string; // "name-dataType-source"
@@ -32,6 +33,8 @@ export function ScoreCombobox({
   disabled = false,
   className,
 }: ScoreComboboxProps) {
+  const { translateText } = useI18n();
+
   // 1. Filter options by dataType
   const filteredOptions = useMemo(() => {
     if (!filterByDataType) return options;
@@ -88,9 +91,9 @@ export function ScoreCombobox({
         value={value ?? ""}
         onValueChange={handleValueChange}
         options={groupedOptions}
-        placeholder={placeholder}
-        searchPlaceholder="Search scores..."
-        emptyText="No scores found."
+        placeholder={translateText(placeholder)}
+        searchPlaceholder={translateText("Search scores...")}
+        emptyText={translateText("No scores found.")}
         disabled={disabled}
         className={className}
       />
@@ -100,7 +103,7 @@ export function ScoreCombobox({
           variant="ghost"
           size="icon"
           onClick={handleClear}
-          title="Clear selection"
+          title={translateText("Clear selection")}
           className="h-6 w-6 shrink-0"
         >
           <X className="h-3 w-3" />

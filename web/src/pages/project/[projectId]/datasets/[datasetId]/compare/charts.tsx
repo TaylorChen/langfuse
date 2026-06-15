@@ -41,12 +41,14 @@ import {
   getDatasetRunCompareTabs,
 } from "@/src/features/navigation/utils/dataset-run-compare-tabs";
 import { NoDataOrLoading } from "@/src/components/NoDataOrLoading";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function DatasetCompare() {
   const router = useRouter();
   const capture = usePostHogClientCapture();
   const projectId = router.query.projectId as string;
   const datasetId = router.query.datasetId as string;
+  const { t, translateText } = useI18n();
 
   const [isCreateExperimentDialogOpen, setIsCreateExperimentDialogOpen] =
     useState(false);
@@ -86,14 +88,16 @@ export default function DatasetCompare() {
   return (
     <Page
       headerProps={{
-        title: `Compare runs: ${dataset.data?.name ?? datasetId}`,
+        title: t("datasets.compareRunsTitle", {
+          name: dataset.data?.name ?? datasetId,
+        }),
         tabsProps: {
           tabs: getDatasetRunCompareTabs(projectId, datasetId),
           activeTab: DATASET_RUN_COMPARE_TABS.CHARTS,
         },
         breadcrumb: [
           {
-            name: "Datasets",
+            name: translateText("Datasets"),
             href: `/project/${projectId}/datasets`,
           },
           {
@@ -102,7 +106,7 @@ export default function DatasetCompare() {
           },
         ],
         help: {
-          description: "Compare your dataset runs side by side",
+          description: t("datasets.compareRunsDescription"),
         },
         actionButtonsRight: (
           <>
@@ -118,7 +122,9 @@ export default function DatasetCompare() {
                   onClick={() => capture("dataset_run:new_form_open")}
                 >
                   <FlaskConical className="h-4 w-4" />
-                  <span className="ml-2 hidden md:block">New experiment</span>
+                  <span className="ml-2 hidden md:block">
+                    {t("datasets.newExperiment")}
+                  </span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -136,9 +142,9 @@ export default function DatasetCompare() {
             </Dialog>
             <MultiSelectKeyValues
               key="select-runs"
-              title="Experiments"
+              title={t("datasets.experimentsSelectTitle")}
               showSelectedValueStrings={false}
-              placeholder="Select runs to compare"
+              placeholder={t("datasets.selectRunsToCompare")}
               className="w-fit"
               variant="outline"
               hideClearButton
@@ -258,8 +264,8 @@ export default function DatasetCompare() {
             ) : (
               <span className="text-muted-foreground -mt-2 text-sm">
                 {Boolean(chartDataMap?.size)
-                  ? "All charts hidden. Enable them in the Charts dropdown."
-                  : "Select more than one run to generate charts."}
+                  ? t("datasets.allChartsHidden")
+                  : t("datasets.selectMoreThanOneRun")}
               </span>
             )}
           </div>
@@ -275,14 +281,14 @@ export default function DatasetCompare() {
           <SidePanelContent className="overflow-y-auto p-1">
             <div className="w-full space-y-4">
               <div>
-                <SubHeaderLabel title="Description" />
+                <SubHeaderLabel title={translateText("Description")} />
                 <span className="text-muted-foreground text-sm">
-                  {dataset.data?.description ?? "No description"}
+                  {dataset.data?.description ?? t("datasets.noDescription")}
                 </span>
               </div>
               {dataset.data?.metadata && (
                 <div>
-                  <SubHeaderLabel title="Metadata" />
+                  <SubHeaderLabel title={translateText("Metadata")} />
                   <MarkdownJsonView content={dataset.data?.metadata} />
                 </div>
               )}

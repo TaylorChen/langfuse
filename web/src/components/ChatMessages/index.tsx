@@ -40,6 +40,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { isString } from "@/src/utils/types";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type ChatMessagesProps = MessagesContext;
 export const ChatMessages: React.FC<ChatMessagesProps> = (props) => {
@@ -123,6 +124,7 @@ const AddMessageButton: React.FC<AddMessageButtonProps> = ({
   messages,
   addMessage,
 }) => {
+  const { translateText } = useI18n();
   // Skip placeholder messages when determining last roles
   const lastMessageWithRole = messages
     .slice()
@@ -213,7 +215,7 @@ const AddMessageButton: React.FC<AddMessageButtonProps> = ({
           onClick={addRegularMessage}
         >
           <PlusCircleIcon size={14} className="mr-2" />
-          <p>Message</p>
+          <p>{translateText("Message")}</p>
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -229,27 +231,27 @@ const AddMessageButton: React.FC<AddMessageButtonProps> = ({
             <DropdownMenuItem
               onClick={() => addMessageWithRole(ChatMessageRole.User)}
             >
-              User Message
+              {translateText("User Message")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => addMessageWithRole(ChatMessageRole.Assistant)}
             >
-              Assistant Message
+              {translateText("Assistant Message")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => addMessageWithRole(ChatMessageRole.System)}
             >
-              System Message
+              {translateText("System Message")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => addMessageWithRole(ChatMessageRole.Developer)}
             >
-              Developer Message
+              {translateText("Developer Message")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => addMessageWithRole(ChatMessageRole.Tool)}
             >
-              Tool Message
+              {translateText("Tool Message")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -264,14 +266,14 @@ const AddMessageButton: React.FC<AddMessageButtonProps> = ({
               onClick={addPlaceholderMessage}
             >
               <PlusCircleIcon size={14} className="mr-2" />
-              <p>Placeholder</p>
+              <p>{translateText("Placeholder")}</p>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
             <p className="text-xs">
-              Adds a placeholder to inject message pairs, e.g. a message history
-              (with &quot;role&quot;, &quot;content&quot; pairs) when compiling
-              the message in the SDK.
+              {translateText(
+                'Adds a placeholder to inject message pairs, e.g. a message history (with "role", "content" pairs) when compiling the message in the SDK.',
+              )}
             </p>
           </TooltipContent>
         </Tooltip>

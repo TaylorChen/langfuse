@@ -5,6 +5,7 @@ import { InfoIcon } from "lucide-react";
 import { ActionButton } from "@/src/components/ActionButton";
 import { Alert, AlertTitle, AlertDescription } from "@/src/components/ui/alert";
 import { StatusBadge } from "@/src/components/layouts/status-badge";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface ValueProposition {
   title: string;
@@ -88,6 +89,8 @@ export function SplashScreen({
   children,
   videoPosition = "top",
 }: SplashScreenProps) {
+  const { t, translateText } = useI18n();
+
   const mediaBlock = (
     <>
       {videoSrc && <VideoPlayer videoSrc={videoSrc} />}
@@ -117,8 +120,8 @@ export function SplashScreen({
             {waitingFor}
           </StatusBadge>
         )}
-        <h2 className="mb-2 text-2xl font-bold">{title}</h2>
-        <p className="text-muted-foreground">{description}</p>
+        <h2 className="mb-2 text-2xl font-bold">{translateText(title)}</h2>
+        <p className="text-muted-foreground">{translateText(description)}</p>
       </div>
 
       <div className="mb-8 flex w-full flex-wrap justify-center gap-4">
@@ -129,7 +132,7 @@ export function SplashScreen({
               onClick={primaryAction.onClick}
               href={primaryAction.href}
             >
-              {primaryAction.label}
+              {translateText(primaryAction.label)}
             </ActionButton>
           ))}
         {secondaryAction &&
@@ -140,7 +143,7 @@ export function SplashScreen({
               onClick={secondaryAction.onClick}
               href={secondaryAction.href}
             >
-              {secondaryAction.label}
+              {translateText(secondaryAction.label)}
             </ActionButton>
           ))}
       </div>
@@ -148,7 +151,7 @@ export function SplashScreen({
       {gettingStarted && (
         <Alert className="w-full max-w-3xl">
           <InfoIcon className="mr-2 h-4 w-4" />
-          <AlertTitle>Getting Started</AlertTitle>
+          <AlertTitle>{t("onboarding.gettingStarted")}</AlertTitle>
           <AlertDescription>{gettingStarted}</AlertDescription>
         </Alert>
       )}
@@ -177,12 +180,14 @@ export function SplashScreen({
                 )}
               >
                 <div className="mb-2 flex items-center gap-3">
-                  <h3 className="text-xl font-semibold">{step.title}</h3>
+                  <h3 className="text-xl font-semibold">
+                    {translateText(step.title)}
+                  </h3>
                   {step.badge}
                 </div>
                 {step.description && (
                   <p className="text-muted-foreground text-sm leading-6">
-                    {step.description}
+                    {translateText(step.description)}
                   </p>
                 )}
                 {step.content && <div className="mt-3">{step.content}</div>}
@@ -199,8 +204,10 @@ export function SplashScreen({
           {valuePropositions.map((prop, index) => (
             <Alert key={index}>
               {prop.icon}
-              <AlertTitle>{prop.title}</AlertTitle>
-              <AlertDescription>{prop.description}</AlertDescription>
+              <AlertTitle>{translateText(prop.title)}</AlertTitle>
+              <AlertDescription>
+                {translateText(prop.description)}
+              </AlertDescription>
             </Alert>
           ))}
         </div>

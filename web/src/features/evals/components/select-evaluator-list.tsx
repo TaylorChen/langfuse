@@ -24,12 +24,14 @@ import {
 import { getDefaultCodeEvalSource } from "@/src/features/evals/utils/code-eval-template-starter-examples";
 import { useIsCodeEvalEnabled } from "@/src/features/evals/hooks/useIsCodeEvalEnabled";
 import { CODE_EVAL_ESCAPE_CONFIRM_MESSAGE } from "@/src/features/evals/utils/code-eval-template-utils";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type SelectEvaluatorListProps = {
   projectId: string;
 };
 
 export function SelectEvaluatorList({ projectId }: SelectEvaluatorListProps) {
+  const { translateText } = useI18n();
   const router = useRouter();
   const [isCreateTemplateOpen, setIsCreateTemplateOpen] = useState(false);
   const [customEvaluatorType, setCustomEvaluatorType] = useState<
@@ -78,7 +80,9 @@ export function SelectEvaluatorList({ projectId }: SelectEvaluatorListProps) {
     <>
       <div className="mb-4 flex max-h-full min-h-0 flex-col gap-5">
         <div className="shrink-0 space-y-2">
-          <h2 className="text-base font-semibold">Create from scratch</h2>
+          <h2 className="text-base font-semibold">
+            {translateText("Create from scratch")}
+          </h2>
           <div className="flex flex-wrap gap-3">
             {isCodeEvalEnabled ? (
               <Button
@@ -89,9 +93,11 @@ export function SelectEvaluatorList({ projectId }: SelectEvaluatorListProps) {
               >
                 <Code2 className="h-5 w-5 shrink-0" />
                 <span className="flex flex-col gap-1">
-                  <span className="font-medium">Code evaluator</span>
+                  <span className="font-medium">
+                    {translateText("Code evaluator")}
+                  </span>
                   <span className="text-muted-foreground text-sm font-normal">
-                    Use code to create Langfuse scores.
+                    {translateText("Use code to create Langfuse scores.")}
                   </span>
                 </span>
               </Button>
@@ -106,9 +112,13 @@ export function SelectEvaluatorList({ projectId }: SelectEvaluatorListProps) {
             >
               <Bot className="h-5 w-5 shrink-0" />
               <span className="flex flex-col gap-1">
-                <span className="font-medium">LLM as a judge evaluator</span>
+                <span className="font-medium">
+                  {translateText("LLM as a judge evaluator")}
+                </span>
                 <span className="text-muted-foreground text-sm font-normal">
-                  Use a prompt and model to score traces or observations.
+                  {translateText(
+                    "Use a prompt and model to score traces or observations.",
+                  )}
                 </span>
               </span>
             </Button>
@@ -116,18 +126,22 @@ export function SelectEvaluatorList({ projectId }: SelectEvaluatorListProps) {
         </div>
 
         <div className="flex max-h-full min-h-0 flex-col gap-2">
-          <h2 className="shrink-0 text-base font-semibold">Use existing</h2>
+          <h2 className="shrink-0 text-base font-semibold">
+            {translateText("Use existing")}
+          </h2>
           <Card className="grid max-h-full min-h-0 grid-rows-[minmax(0,1fr)_auto] overflow-y-auto p-3">
             <div className="flex min-h-0 flex-col overflow-hidden">
               {templates.isLoading ? (
                 <Skeleton className="h-full w-full" />
               ) : templates.isError ? (
                 <div className="text-destructive py-8 text-center">
-                  Error: {templates.error.message}
+                  {translateText("Error")}: {templates.error.message}
                 </div>
               ) : templates.data?.templates.length === 0 ? (
                 <div className="text-muted-foreground py-8 text-center">
-                  No evaluators found. Create a new evaluator to get started.
+                  {translateText(
+                    "No evaluators found. Create a new evaluator to get started.",
+                  )}
                 </div>
               ) : (
                 <div className="flex-1 overflow-hidden">
@@ -170,7 +184,7 @@ export function SelectEvaluatorList({ projectId }: SelectEvaluatorListProps) {
           }
         >
           <DialogHeader>
-            <DialogTitle>Create new evaluator</DialogTitle>
+            <DialogTitle>{translateText("Create new evaluator")}</DialogTitle>
           </DialogHeader>
           <EvalTemplateForm
             key={customEvaluatorType ?? "custom-evaluator"}
@@ -206,8 +220,8 @@ export function SelectEvaluatorList({ projectId }: SelectEvaluatorListProps) {
                 setSelectedTemplate(newTemplate);
               }
               showSuccessToast({
-                title: "Evaluator created successfully",
-                description: "You can now use this evaluator.",
+                title: translateText("Evaluator created successfully"),
+                description: translateText("You can now use this evaluator."),
               });
             }}
           />

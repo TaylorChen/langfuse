@@ -17,6 +17,7 @@ import { DataTable } from "@/src/components/table/data-table";
 import { DataTableToolbar } from "@/src/components/table/data-table-toolbar";
 import { type LangfuseColumnDef } from "@/src/components/table/types";
 import { usdFormatter } from "@/src/utils/numbers";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface SpendAlertsTableProps {
   orgId: string;
@@ -31,6 +32,7 @@ type AlertRow = {
 };
 
 export function SpendAlertsTable({ orgId }: SpendAlertsTableProps) {
+  const { translateText } = useI18n();
   const [editingAlert, setEditingAlert] = useState<string | null>(null);
   const [deletingAlert, setDeletingAlert] = useState<string | null>(null);
 
@@ -74,44 +76,46 @@ export function SpendAlertsTable({ orgId }: SpendAlertsTableProps) {
     {
       accessorKey: "title",
       id: "title",
-      header: "Title",
+      header: translateText("Title"),
       cell: ({ row }) => row.original.title,
       size: 160,
     },
     {
       accessorKey: "Limit",
       id: "limit",
-      header: "Limit (USD)",
+      header: translateText("Limit (USD)"),
       size: 140,
       cell: ({ row }) => usdFormatter(row.original.threshold, 2, 2),
     },
     {
       accessorKey: "status",
       id: "status",
-      header: "Status",
+      header: translateText("Status"),
       size: 110,
       cell: ({ row }) => (
         <Badge variant={row.original.triggeredAt ? "destructive" : "secondary"}>
-          {row.original.triggeredAt ? "Triggered" : "Active"}
+          {row.original.triggeredAt
+            ? translateText("Triggered")
+            : translateText("Active")}
         </Badge>
       ),
     },
     {
       accessorKey: "lastTriggered",
       id: "lastTriggered",
-      header: "Last Triggered",
+      header: translateText("Last Triggered"),
       size: 160,
       cell: ({ row }) =>
         row.original.triggeredAt
           ? formatDistanceToNow(new Date(row.original.triggeredAt), {
               addSuffix: true,
             })
-          : "Never",
+          : translateText("Never"),
     },
     {
       accessorKey: "actions",
       id: "actions",
-      header: "Actions",
+      header: translateText("Actions"),
       size: 120,
       cell: ({ row }) => (
         <DropdownMenu>
@@ -123,14 +127,14 @@ export function SpendAlertsTable({ orgId }: SpendAlertsTableProps) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setEditingAlert(row.original.id)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit
+              {translateText("Edit")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => setDeletingAlert(row.original.id)}
               className="text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+              {translateText("Delete")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

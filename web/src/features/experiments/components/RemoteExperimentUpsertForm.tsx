@@ -30,14 +30,20 @@ import { type Prisma } from "@langfuse/shared";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { getFormattedPayload } from "@/src/features/experiments/utils/format";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
-const RemoteExperimentSetupSchema = z.object({
-  url: z.url(),
-  defaultPayload: z.string(),
-  enabled: z.boolean(),
-});
+const createRemoteExperimentSetupSchema = (
+  translateText: (text: string) => string,
+) =>
+  z.object({
+    url: z.url(translateText("Invalid URL")),
+    defaultPayload: z.string(),
+    enabled: z.boolean(),
+  });
 
-type RemoteExperimentSetupForm = z.infer<typeof RemoteExperimentSetupSchema>;
+type RemoteExperimentSetupForm = z.infer<
+  ReturnType<typeof createRemoteExperimentSetupSchema>
+>;
 
 export const RemoteExperimentUpsertForm = ({
   projectId,
@@ -56,6 +62,7 @@ export const RemoteExperimentUpsertForm = ({
   setShowRemoteExperimentUpsertForm: (show: boolean) => void;
   onBack?: () => void;
 }) => {
+  const { translateText } = useI18n();
   const hasDatasetAccess = useHasProjectAccess({
     projectId,
     scope: "datasets:CUD",
@@ -68,7 +75,7 @@ export const RemoteExperimentUpsertForm = ({
   const utils = api.useUtils();
 
   const form = useForm<RemoteExperimentSetupForm>({
-    resolver: zodResolver(RemoteExperimentSetupSchema),
+    resolver: zodResolver(createRemoteExperimentSetupSchema(translateText)),
     defaultValues: {
       url: existingRemoteExperiment?.url || "",
       defaultPayload: getFormattedPayload(existingRemoteExperiment?.payload),
@@ -80,8 +87,8 @@ export const RemoteExperimentUpsertForm = ({
     api.datasets.upsertRemoteExperiment.useMutation({
       onSuccess: () => {
         showSuccessToast({
-          title: "Setup successfully",
-          description: "Your changes have been saved.",
+          title: translateText("Setup successfully"),
+          description: translateText("Your changes have been saved."),
         });
         setShowRemoteExperimentUpsertForm(false);
         utils.datasets.getRemoteExperiment.invalidate({
@@ -91,8 +98,8 @@ export const RemoteExperimentUpsertForm = ({
       },
       onError: (error) => {
         showErrorToast(
-          error.message || "Failed to setup",
-          "Please check your URL and config and try again.",
+          error.message || translateText("Failed to setup"),
+          translateText("Please check your URL and config and try again."),
         );
       },
     });
@@ -101,9 +108,10 @@ export const RemoteExperimentUpsertForm = ({
     api.datasets.deleteRemoteExperiment.useMutation({
       onSuccess: () => {
         showSuccessToast({
-          title: "Deleted successfully",
-          description:
+          title: translateText("Deleted successfully"),
+          description: translateText(
             "The remote dataset run trigger has been removed from this dataset.",
+          ),
         });
         setShowRemoteExperimentUpsertForm(false);
         utils.datasets.getRemoteExperiment.invalidate({
@@ -113,8 +121,9 @@ export const RemoteExperimentUpsertForm = ({
       },
       onError: (error) => {
         showErrorToast(
-          error.message || "Failed to delete remote dataset run trigger",
-          "Please try again.",
+          error.message ||
+            translateText("Failed to delete remote dataset run trigger"),
+          translateText("Please try again."),
         );
       },
     });
@@ -125,7 +134,7 @@ export const RemoteExperimentUpsertForm = ({
         JSON.parse(data.defaultPayload);
       } catch {
         form.setError("defaultPayload", {
-          message: "Invalid JSON format",
+          message: translateText("Invalid JSON format"),
         });
         return;
       }
@@ -143,7 +152,9 @@ export const RemoteExperimentUpsertForm = ({
   const handleDelete = () => {
     if (
       confirm(
-        "Are you sure you want to delete this remote dataset run trigger?",
+        translateText(
+          "Are you sure you want to delete this remote dataset run trigger?",
+        ),
       )
     ) {
       deleteRemoteExperimentMutation.mutate({
@@ -175,15 +186,17 @@ export const RemoteExperimentUpsertForm = ({
           }}
           className="inline-block self-start"
         >
-          ← Back
+          {translateText("← Back")}
         </Button>
         <DialogTitle>
           {existingRemoteExperiment
-            ? "Edit remote experiment trigger"
-            : "Set up remote experiment trigger in UI"}
+            ? translateText("Edit remote experiment trigger")
+            : translateText("Set up remote experiment trigger in UI")}
         </DialogTitle>
         <DialogDescription>
-          Enable your team to run custom experiments on dataset{" "}
+          {translateText(
+            "Enable your team to run custom experiments on dataset",
+          )}{" "}
           <strong>
             {dataset.isSuccess ? (
               <>&quot;{dataset.data?.name}&quot;</>
@@ -191,9 +204,10 @@ export const RemoteExperimentUpsertForm = ({
               <Spinner size="sm" display="inline" />
             )}
           </strong>
-          . Configure a webhook URL to trigger remote custom experiments from
-          UI. We will send dataset info (name, id) and config to your service,
-          which can run against the dataset and post results to Langfuse.
+          .{" "}
+          {translateText(
+            "Configure a webhook URL to trigger remote custom experiments from UI. We will send dataset info (name, id) and config to your service, which can run against the dataset and post results to Langfuse.",
+          )}
         </DialogDescription>
       </DialogHeader>
 
@@ -205,10 +219,11 @@ export const RemoteExperimentUpsertForm = ({
               name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL</FormLabel>
+                  <FormLabel>{translateText("URL")}</FormLabel>
                   <FormDescription>
-                    The URL that will be called when the remote experiment is
-                    triggered.
+                    {translateText(
+                      "The URL that will be called when the remote experiment is triggered.",
+                    )}
                   </FormDescription>
                   <FormControl>
                     <Input
@@ -226,11 +241,11 @@ export const RemoteExperimentUpsertForm = ({
               name="defaultPayload"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Default config</FormLabel>
+                  <FormLabel>{translateText("Default config")}</FormLabel>
                   <FormDescription>
-                    Set a default config that will be sent to the remote
-                    experiment run URL. This can be modified before starting a
-                    new run. View docs for more details.
+                    {translateText(
+                      "Set a default config that will be sent to the remote experiment run URL. This can be modified before starting a new run. View docs for more details.",
+                    )}
                   </FormDescription>
                   <CodeMirrorEditor
                     value={field.value}
@@ -251,11 +266,15 @@ export const RemoteExperimentUpsertForm = ({
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                   <div className="space-y-0.5">
-                    <FormLabel>Enabled</FormLabel>
+                    <FormLabel>{translateText("Enabled")}</FormLabel>
                     <FormDescription>
                       {field.value
-                        ? "Trigger is active. You can disable anytime to pause without losing your configuration."
-                        : "Trigger is paused. Enable to allow running remote experiments."}
+                        ? translateText(
+                            "Trigger is active. You can disable anytime to pause without losing your configuration.",
+                          )
+                        : translateText(
+                            "Trigger is paused. Enable to allow running remote experiments.",
+                          )}
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -283,7 +302,7 @@ export const RemoteExperimentUpsertForm = ({
                       <Spinner size="sm" />
                     </div>
                   )}
-                  Delete
+                  {translateText("Delete")}
                 </Button>
               )}
               <Button
@@ -296,7 +315,9 @@ export const RemoteExperimentUpsertForm = ({
                     <Spinner size="sm" />
                   </div>
                 ) : null}
-                {existingRemoteExperiment ? "Update" : "Set up"}
+                {existingRemoteExperiment
+                  ? translateText("Update")
+                  : translateText("Set up")}
               </Button>
             </div>
           </DialogFooter>

@@ -14,11 +14,13 @@ import { useEntitlementLimit } from "@/src/features/entitlements/hooks";
 import { SupportOrUpgradePage } from "@/src/ee/features/billing/components/SupportOrUpgradePage";
 import { EvaluatorsOnboarding } from "@/src/components/onboarding/EvaluatorsOnboarding";
 import { ManageDefaultEvalModel } from "@/src/features/evals/components/manage-default-eval-model";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function EvaluatorsPage() {
   const router = useRouter();
   const projectId = router.query.projectId as string;
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
 
   const evaluatorLimit = useEntitlementLimit(
     "model-based-evaluations-count-evaluators",
@@ -102,7 +104,7 @@ export default function EvaluatorsPage() {
                 limitValue={countsQuery.data?.configActiveCount ?? 0}
                 limit={evaluatorLimit}
               >
-                Set up evaluator
+                {translateText("Set up evaluator")}
               </ActionButton>
             </>
           ),

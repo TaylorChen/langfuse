@@ -30,6 +30,7 @@ import { useAuthGuard } from "./hooks/useAuthGuard";
 import { useProjectAccess } from "./hooks/useProjectAccess";
 import { useFilteredNavigation } from "./hooks/useFilteredNavigation";
 import { useLayoutMetadata } from "./hooks/useLayoutMetadata";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * Main layout component
@@ -40,6 +41,7 @@ import { useLayoutMetadata } from "./hooks/useLayoutMetadata";
  * - User permissions
  */
 export function AppLayout(props: PropsWithChildren) {
+  const { translateText } = useI18n();
   const router = useRouter();
   const session = useAuthSession();
   const { organization } = useQueryProjectOrOrganization();
@@ -92,10 +94,12 @@ export function AppLayout(props: PropsWithChildren) {
     // For non-publishable paths, show error page
     return (
       <ErrorPageWithSentry
-        title="Project Not Found"
-        message="The project you are trying to access does not exist or you do not have access to it."
+        title={translateText("Project Not Found")}
+        message={translateText(
+          "The project you are trying to access does not exist or you do not have access to it.",
+        )}
         additionalButton={{
-          label: "Go to Home",
+          label: translateText("Go to Home"),
           href: "/",
         }}
       />
@@ -124,7 +128,7 @@ export function AppLayout(props: PropsWithChildren) {
   // The authGuard hook ensures we don't reach here without a valid session
   if (!session.data) {
     // This should never happen due to guards above, but TypeScript needs this
-    return <LoadingLayout message="Loading" />;
+    return <LoadingLayout message="Loading..." />;
   }
 
   const handleSignOut = async () => {

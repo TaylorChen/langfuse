@@ -26,6 +26,7 @@ import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePos
 import { isReservedPromptLabel } from "@/src/features/prompts/utils";
 import { TruncatedLabels } from "@/src/components/TruncatedLabels";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function SetPromptVersionLabels({
   promptLabels,
@@ -48,6 +49,7 @@ export function SetPromptVersionLabels({
   const utils = api.useUtils();
   const capture = usePostHogClientCapture();
   const hasAccess = useHasProjectAccess({ projectId, scope: "prompts:CUD" });
+  const { t } = useI18n();
 
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [createdLabels, setCreatedLabels] = useState<string[]>([]);
@@ -183,7 +185,7 @@ export function SetPromptVersionLabels({
           />
           <Button
             variant="outline"
-            title="Add prompt label"
+            title={t("prompts.addPromptLabel")}
             className={cn(
               "bg-muted-gray text-primary h-6 w-6",
               showOnlyOnHover && "opacity-0 group-hover:opacity-100",
@@ -204,16 +206,18 @@ export function SetPromptVersionLabels({
           onClick={(event) => event.stopPropagation()}
           className="flex flex-col"
         >
-          <h2 className="text-md mb-3 font-semibold">Prompt labels</h2>
+          <h2 className="text-md mb-3 font-semibold">
+            {t("prompts.promptLabels")}
+          </h2>
           <h2 className="mb-3 text-xs">
-            Use labels to fetch prompts via SDKs. The{" "}
-            <strong>production</strong> labeled prompt will be served by
-            default.
+            {t("prompts.promptLabelsDescriptionPrefix")}{" "}
+            <strong>production</strong>{" "}
+            {t("prompts.promptLabelsDescriptionSuffix")}
           </h2>
           <InputCommand className="mx-0 my-3 px-0">
             <InputCommandList className="max-h-full overflow-hidden">
               <InputCommandSeparator />
-              <InputCommandGroup heading="Promote to production?">
+              <InputCommandGroup heading={t("prompts.promoteToProduction")}>
                 <LabelCommandItem
                   {...{
                     selectedLabels,
@@ -223,11 +227,11 @@ export function SetPromptVersionLabels({
                 />
               </InputCommandGroup>
               <InputCommandSeparator />
-              <InputCommandGroup heading="Custom labels">
+              <InputCommandGroup heading={t("prompts.customLabels")}>
                 {/* Search + create input */}
                 <div className="px-2 pt-1 pb-2">
                   <Input
-                    placeholder="Search or create label…"
+                    placeholder={t("prompts.searchOrCreateLabel")}
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     onKeyDown={(e) => {
@@ -255,8 +259,10 @@ export function SetPromptVersionLabels({
                       }
                     >
                       {filteredUnselectedCount > 0
-                        ? `Select all ${filteredUnselectedCount}`
-                        : "Select all"}
+                        ? t("prompts.selectAllCount", {
+                            count: filteredUnselectedCount,
+                          })
+                        : t("table.selectAll")}
                     </button>
                     <span className="text-muted-foreground text-xs">·</span>
                     <button
@@ -277,7 +283,7 @@ export function SetPromptVersionLabels({
                         )
                       }
                     >
-                      Clear
+                      {t("table.clear")}
                     </button>
                   </div>
                 )}
@@ -308,7 +314,7 @@ export function SetPromptVersionLabels({
                       onClick={handleCreateLabel}
                     >
                       <span className="truncate">
-                        Create a new label:{" "}
+                        {t("prompts.createNewLabel")}{" "}
                         <strong className="text-foreground">
                           {trimmedSearch}
                         </strong>
@@ -332,10 +338,10 @@ export function SetPromptVersionLabels({
             onClick={handleSubmitLabels}
           >
             {isPromotingToProduction
-              ? "Save and promote to production"
+              ? t("prompts.saveAndPromoteProduction")
               : isDemotingFromProduction
-                ? "Save and remove from production"
-                : "Save"}
+                ? t("prompts.saveRemoveProduction")
+                : t("common.save")}
           </Button>
         </div>
       </PopoverContent>

@@ -5,6 +5,7 @@ import { type QueryProgress } from "@/src/hooks/useSSEDashboardQuery";
 import { QueryProgressBar } from "@/src/features/widgets/chart-library/QueryProgressBar";
 import { Button } from "@/src/components/ui/button";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const DEFAULT_HINT_DELAY_MS = 2000;
 const PROGRESS_REVEAL_DELAY_MS = 1000;
@@ -38,6 +39,7 @@ export function ChartLoadingState({
   onRetry,
   retryLabel = "Retry",
 }: ChartLoadingStateProps) {
+  const { translateText } = useI18n();
   const [showHint, setShowHint] = useState(false);
   const [showProgressPhase, setShowProgressPhase] = useState(false);
   const shouldShowProgress = progress !== undefined;
@@ -94,7 +96,7 @@ export function ChartLoadingState({
       <div
         role="status"
         aria-live="polite"
-        aria-label={spinnerLabel}
+        aria-label={translateText(spinnerLabel)}
         className={cn(
           "text-muted-foreground flex h-full w-full items-center justify-center",
           className,
@@ -113,12 +115,13 @@ export function ChartLoadingState({
       : showSpinner
         ? "Loading widget"
         : "Query needs attention";
+  const translatedStatusTitle = translateText(statusTitle);
 
   return (
     <div
       role="status"
       aria-live="polite"
-      aria-label={spinnerLabel}
+      aria-label={translateText(spinnerLabel)}
       className={cn(
         "text-muted-foreground flex h-full min-h-0 w-full flex-col overflow-hidden",
         className,
@@ -146,7 +149,7 @@ export function ChartLoadingState({
                 isTight ? "text-xs" : "text-sm",
               )}
             >
-              {statusTitle}
+              {translatedStatusTitle}
             </p>
           ) : null}
           {shouldShowProgress ? (
@@ -185,7 +188,7 @@ export function ChartLoadingState({
               onClick={onRetry}
               className="w-fit self-center"
             >
-              {retryLabel}
+              {translateText(retryLabel)}
             </Button>
           ) : null}
         </div>

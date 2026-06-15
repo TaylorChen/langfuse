@@ -25,13 +25,7 @@ import {
 } from "@langfuse/shared";
 import { automationCreateHref } from "@/src/features/automations/components/automationForm";
 import { cn } from "@/src/utils/tailwind";
-
-/** actionLabel maps each automation action type to its display name. */
-const actionLabel: Record<ActionTypes, string> = {
-  WEBHOOK: "Webhook",
-  SLACK: "Slack",
-  GITHUB_DISPATCH: "GitHub Dispatch",
-};
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /** MonitorAutomationsPanel lets the user select which automations fire for a monitor via explicit trigger IDs. */
 export const MonitorAutomationsPanel = ({
@@ -45,6 +39,7 @@ export const MonitorAutomationsPanel = ({
   onTriggerIdsChange: (next: string[]) => void;
   hasAccess?: boolean;
 }) => {
+  const { t } = useI18n();
   const automations = api.automations.getAutomations.useQuery(
     {
       projectId,
@@ -94,13 +89,19 @@ export const MonitorAutomationsPanel = ({
           {showEmptyState ? (
             <>
               <p className="text-muted-foreground px-4 py-6 text-center text-base">
-                Set up Slack, Webhook, and Github Action Automations to Receive
-                Alerts
+                {t("monitors.automationEmptyState")}
               </p>
               <AddAutomationDropdown
                 projectId={projectId}
                 fullWidth
                 hasAccess={hasAccess}
+                labels={{
+                  automation: t("monitors.automation"),
+                  newAutomation: t("monitors.newAutomation"),
+                  webhook: t("monitors.webhook"),
+                  slack: t("monitors.slack"),
+                  githubDispatch: t("monitors.githubDispatch"),
+                }}
               />
             </>
           ) : (
@@ -143,6 +144,13 @@ export const MonitorAutomationsPanel = ({
                 projectId={projectId}
                 fullWidth
                 hasAccess={hasAccess}
+                labels={{
+                  automation: t("monitors.automation"),
+                  newAutomation: t("monitors.newAutomation"),
+                  webhook: t("monitors.webhook"),
+                  slack: t("monitors.slack"),
+                  githubDispatch: t("monitors.githubDispatch"),
+                }}
               />
             </>
           )}
@@ -190,10 +198,18 @@ const AddAutomationDropdown = ({
   projectId,
   fullWidth,
   hasAccess = true,
+  labels,
 }: {
   projectId: string;
   fullWidth?: boolean;
   hasAccess?: boolean;
+  labels: {
+    automation: string;
+    newAutomation: string;
+    webhook: string;
+    slack: string;
+    githubDispatch: string;
+  };
 }) => {
   const router = useRouter();
   return (
@@ -206,7 +222,7 @@ const AddAutomationDropdown = ({
           className={fullWidth ? "w-full" : undefined}
         >
           <Plus className="mr-2 h-4 w-4" />
-          Automation
+          {labels.automation}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
@@ -215,14 +231,18 @@ const AddAutomationDropdown = ({
             href={automationCreateHref(projectId, undefined, router.asPath)}
           >
             <Plus className="mr-2 h-3.5 w-3.5" />
-            New automation
+            {labels.newAutomation}
           </Link>
         </DropdownMenuItem>
         {ActionTypeSchema.options.map((t) => (
           <DropdownMenuItem key={t} asChild>
             <Link href={automationCreateHref(projectId, t, router.asPath)}>
               <ActionIcon type={t} className="mr-2 h-3.5 w-3.5" />
-              {actionLabel[t]}
+              {t === "WEBHOOK"
+                ? labels.webhook
+                : t === "SLACK"
+                  ? labels.slack
+                  : labels.githubDispatch}
             </Link>
           </DropdownMenuItem>
         ))}

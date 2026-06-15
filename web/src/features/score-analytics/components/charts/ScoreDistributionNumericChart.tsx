@@ -9,6 +9,7 @@ import {
 import { ScoreChartLegendContent } from "./ScoreChartLegendContent";
 import { compactNumberFormatter } from "@/src/utils/numbers";
 import { ScoreChartTooltip } from "../../lib/ScoreChartTooltip";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface NumericChartProps {
   distribution1: Array<{ binIndex: number; count: number }>;
@@ -33,6 +34,7 @@ export function ScoreDistributionNumericChart({
   score2Name,
   colors,
 }: NumericChartProps) {
+  const { translateText } = useI18n();
   const isComparisonMode = Boolean(distribution2 && score2Name);
 
   // Transform data for Recharts
@@ -44,7 +46,9 @@ export function ScoreDistributionNumericChart({
     return [...distribution1]
       .sort((a, b) => a.binIndex - b.binIndex)
       .map((item) => {
-        const label = binLabels[item.binIndex] ?? `Bin ${item.binIndex}`;
+        const label =
+          binLabels[item.binIndex] ??
+          translateText("Bin {index}", { index: item.binIndex });
 
         if (isComparisonMode && dist2Map) {
           // Two score mode: use simple keys to avoid CSS variable name issues
@@ -61,7 +65,13 @@ export function ScoreDistributionNumericChart({
           };
         }
       });
-  }, [distribution1, distribution2, binLabels, isComparisonMode]);
+  }, [
+    distribution1,
+    distribution2,
+    binLabels,
+    isComparisonMode,
+    translateText,
+  ]);
 
   // Configure chart config
   const config: ChartConfig = useMemo(() => {

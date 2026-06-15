@@ -41,7 +41,7 @@ export function useAuthGuard(
 
     // Loading state
     if (session.status === "loading") {
-      return { action: "loading", message: "Loading" };
+      return { action: "loading", message: "Loading..." };
     }
 
     const isUnauthPath = PATH_CONSTANTS.unauthenticated.some((p) =>
@@ -77,7 +77,7 @@ export function useAuthGuard(
       !isPublishable &&
       !isPublicPath
     ) {
-      return { action: "sign-out", message: "Redirecting" };
+      return { action: "sign-out", message: "Redirecting..." };
     }
 
     // Unauthenticated user trying to access protected route
@@ -101,7 +101,7 @@ export function useAuthGuard(
       return {
         action: "redirect",
         url: `/auth/sign-in${targetPathQuery}`,
-        message: "Redirecting",
+        message: "Redirecting...",
       };
     }
 
@@ -113,7 +113,7 @@ export function useAuthGuard(
       return {
         action: "redirect",
         url: routerRedirectUrl,
-        message: "Redirecting",
+        message: "Redirecting...",
       };
     }
 

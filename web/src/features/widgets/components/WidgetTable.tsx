@@ -28,6 +28,7 @@ import { getChartTypeDisplayName } from "@/src/features/widgets/chart-library/ut
 import { type DashboardWidgetChartType } from "@langfuse/shared/src/db";
 import { type metricAggregations } from "@langfuse/shared/query";
 import { type z } from "zod";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type WidgetTableRow = {
   id: string;
@@ -47,6 +48,7 @@ export function DeleteWidget({
   widgetId: string;
   owner: "PROJECT" | "LANGFUSE";
 }) {
+  const { t } = useI18n();
   const projectId = useProjectIdFromURL();
   const utils = api.useUtils();
   const [isOpen, setIsOpen] = useState(false);
@@ -62,12 +64,9 @@ export function DeleteWidget({
     },
     onError: (error) => {
       if (error.data?.code === "CONFLICT") {
-        showErrorToast(
-          "Widget in use",
-          "Widget is still in use. Please remove it from all dashboards before deleting it.",
-        );
+        showErrorToast(t("widget.inUseTitle"), t("widget.inUseDescription"));
       } else {
-        showErrorToast("Failed to delete widget", error.message);
+        showErrorToast(t("widget.deleteError"), error.message);
       }
     },
   });
@@ -80,11 +79,11 @@ export function DeleteWidget({
         </Button>
       </PopoverTrigger>
       <PopoverContent>
-        <h2 className="text-md mb-3 font-semibold">Please confirm</h2>
+        <h2 className="text-md mb-3 font-semibold">
+          {t("common.pleaseConfirm")}
+        </h2>
         <p className="mb-3 text-sm">
-          This action permanently deletes this widget. If the widget is
-          currently used in any dashboard, you will need to remove it from those
-          dashboards first.
+          {t("widget.deleteConfirmationDescription")}
         </p>
         <div className="flex justify-end space-x-4">
           <Button
@@ -104,7 +103,7 @@ export function DeleteWidget({
               setIsOpen(false);
             }}
           >
-            Delete Widget
+            {t("widget.deleteWidget")}
           </Button>
         </div>
       </PopoverContent>
@@ -113,6 +112,7 @@ export function DeleteWidget({
 }
 
 function ShareWidgetButton({ widgetId }: { widgetId: string }) {
+  const { t } = useI18n();
   const projectId = useProjectIdFromURL();
   const utils = api.useUtils();
   const [isDownloading, setIsDownloading] = useState(false);
@@ -152,8 +152,8 @@ function ShareWidgetButton({ widgetId }: { widgetId: string }) {
           });
         } catch (error) {
           showErrorToast(
-            "Failed to download widget",
-            error instanceof Error ? error.message : "Unknown error",
+            t("widget.downloadError"),
+            error instanceof Error ? error.message : t("common.unknown"),
           );
         } finally {
           setIsDownloading(false);
@@ -166,6 +166,7 @@ function ShareWidgetButton({ widgetId }: { widgetId: string }) {
 }
 
 export function DashboardWidgetTable() {
+  const { t, translateText } = useI18n();
   const projectId = useProjectIdFromURL();
   const { isBetaEnabled } = useV4Beta();
   const { setDetailPageList } = useDetailPageLists();
@@ -210,7 +211,7 @@ export function DashboardWidgetTable() {
   const columnHelper = createColumnHelper<WidgetTableRow>();
   const widgetColumns = [
     columnHelper.accessor("name", {
-      header: "Name",
+      header: t("common.name"),
       id: "name",
       enableSorting: true,
       size: 200,
@@ -225,7 +226,7 @@ export function DashboardWidgetTable() {
       },
     }),
     columnHelper.accessor("description", {
-      header: "Description",
+      header: t("common.description"),
       id: "description",
       size: 300,
       cell: (row) => {
@@ -233,24 +234,26 @@ export function DashboardWidgetTable() {
       },
     }),
     columnHelper.accessor("view", {
-      header: "View Type",
+      header: t("widget.viewType"),
       id: "view",
       enableSorting: true,
       size: 100,
       cell: (row) => {
-        return startCase(row.getValue().toLowerCase());
+        return translateText(startCase(row.getValue().toLowerCase()));
       },
     }),
     columnHelper.accessor("chartType", {
-      header: "Chart Type",
+      header: t("widget.chartType"),
       id: "chartType",
       enableSorting: true,
       size: 100,
       cell: (row) =>
-        getChartTypeDisplayName(row.getValue() as DashboardWidgetChartType),
+        translateText(
+          getChartTypeDisplayName(row.getValue() as DashboardWidgetChartType),
+        ),
     }),
     columnHelper.accessor("createdAt", {
-      header: "Created At",
+      header: t("common.created"),
       id: "createdAt",
       enableSorting: true,
       size: 150,
@@ -260,7 +263,7 @@ export function DashboardWidgetTable() {
       },
     }),
     columnHelper.accessor("updatedAt", {
-      header: "Updated At",
+      header: t("widget.updatedAt"),
       id: "updatedAt",
       enableSorting: true,
       size: 150,
@@ -271,7 +274,7 @@ export function DashboardWidgetTable() {
     }),
     columnHelper.display({
       id: "actions",
-      header: "Actions",
+      header: t("common.actions"),
       size: 70,
       cell: (row) => {
         const id = row.row.original.id;

@@ -12,6 +12,7 @@ import {
   useChart,
   getPayloadConfigFromPayload,
 } from "@/src/components/ui/chart";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface ScoreChartLegendContentProps extends Pick<
   DefaultLegendContentProps,
@@ -51,13 +52,17 @@ const LegendItem = ({
   onClick,
   noTruncate = false,
 }: LegendItemProps) => {
+  const { translateText } = useI18n();
+
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={!interactive}
       aria-pressed={visible}
-      aria-label={`${visible ? "Hide" : "Show"} ${label}`}
+      aria-label={translateText(visible ? "Hide {label}" : "Show {label}", {
+        label,
+      })}
       className={cn(
         "flex items-center gap-1.5 text-sm transition-opacity",
         interactive && "cursor-pointer hover:opacity-80",
@@ -118,6 +123,7 @@ export const ScoreChartLegendContent = React.forwardRef<
     ref,
   ) => {
     const { config } = useChart();
+    const { translateText } = useI18n();
     const containerRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const [showPopover, setShowPopover] = useState(false);
@@ -443,9 +449,15 @@ export const ScoreChartLegendContent = React.forwardRef<
                   variant="ghost"
                   size="sm"
                   className="text-muted-foreground hover:bg-accent h-6 shrink-0 gap-1 px-2 text-xs"
-                  aria-label={`Show all ${payload.length} categories`}
+                  aria-label={translateText("Show all {count} categories", {
+                    count: payload.length,
+                  })}
                 >
-                  <span>Show all {payload.length}</span>
+                  <span>
+                    {translateText("Show all {count}", {
+                      count: payload.length,
+                    })}
+                  </span>
                   {hiddenCount > 0 && (
                     <span className="font-medium">(+{hiddenCount})</span>
                   )}
@@ -459,9 +471,13 @@ export const ScoreChartLegendContent = React.forwardRef<
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium">All Categories</p>
+                    <p className="text-sm font-medium">
+                      {translateText("All Categories")}
+                    </p>
                     <span className="text-muted-foreground text-xs">
-                      {payload.length} total
+                      {translateText("{count} total", {
+                        count: payload.length,
+                      })}
                     </span>
                   </div>
                   <div className="space-y-3">

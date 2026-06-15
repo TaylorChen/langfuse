@@ -1,6 +1,7 @@
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
 import { api } from "@/src/utils/api";
 import { copyTextToClipboard } from "@/src/utils/clipboard";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type UseViewMutationsProps = {
   handleSetViewId: (viewId: string | null) => void;
@@ -10,6 +11,7 @@ export const useViewMutations = ({
   handleSetViewId,
 }: UseViewMutationsProps) => {
   const utils = api.useUtils();
+  const { translateText } = useI18n();
 
   const createMutation = api.TableViewPresets.create.useMutation({
     onSuccess: (data) => {
@@ -25,8 +27,11 @@ export const useViewMutations = ({
       });
       utils.TableViewPresets.getByTableName.invalidate();
       showSuccessToast({
-        title: "View updated",
-        description: `${data.view.name} has been updated to reflect your current table state`,
+        title: translateText("View updated"),
+        description: translateText(
+          "{viewName} has been updated to reflect your current table state",
+          { viewName: data.view.name },
+        ),
       });
     },
   });
@@ -49,8 +54,10 @@ export const useViewMutations = ({
       onSuccess: (data) => {
         copyTextToClipboard(data);
         showSuccessToast({
-          title: "Permalink copied to clipboard",
-          description: "You can now share the permalink with others",
+          title: translateText("Permalink copied to clipboard"),
+          description: translateText(
+            "You can now share the permalink with others",
+          ),
         });
       },
     });

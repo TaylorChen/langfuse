@@ -6,20 +6,22 @@ import { SurveyName } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function useSurveyForm() {
   const { data: session } = useSession();
+  const { translateText } = useI18n();
   const createSurveyMutation = api.surveys.create.useMutation({
     onSuccess: () => {
       showSuccessToast({
-        title: "Survey submitted",
-        description: "Thank you for your feedback!",
+        title: translateText("Survey submitted"),
+        description: translateText("Thank you for your feedback!"),
       });
     },
     onError: (error) => {
       showErrorToast(
-        "Failed to submit survey",
-        error.message || "Please try again later.",
+        translateText("Failed to submit survey"),
+        error.message || translateText("Please try again later."),
       );
     },
   });

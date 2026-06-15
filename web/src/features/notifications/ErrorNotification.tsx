@@ -1,4 +1,5 @@
 import { Button } from "@/src/components/ui/button";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import { useSupportDrawer } from "@/src/features/support-chat/SupportDrawerProvider";
 import { AlertTriangle, X } from "lucide-react";
@@ -20,9 +21,12 @@ export const ErrorNotification: React.FC<ErrorNotificationProps> = ({
   toast,
   path,
 }) => {
+  const { translateText } = useI18n();
   const { setOpen } = useSupportDrawer();
   const capture = usePostHogClientCapture();
   const isError = type === "ERROR";
+  const translatedError = translateText(error);
+  const translatedDescription = translateText(description);
   const textColor = isError
     ? "text-destructive-foreground"
     : "text-dark-yellow";
@@ -42,19 +46,19 @@ export const ErrorNotification: React.FC<ErrorNotificationProps> = ({
         <div className="flex items-center gap-2">
           <AlertTriangle size={20} className={textColor} />
           <div className={`m-0 text-sm leading-tight font-medium ${textColor}`}>
-            {error}
+            {translatedError}
           </div>
         </div>
-        {description && (
+        {translatedDescription && (
           <div
             className={`text-sm leading-tight whitespace-pre-line ${textColor}`}
           >
-            {description}
+            {translatedDescription}
           </div>
         )}
         {path && (
           <div className={`text-sm leading-tight ${textColor}`}>
-            Path: {path}
+            {translateText("Path:")} {path}
           </div>
         )}
 
@@ -70,7 +74,7 @@ export const ErrorNotification: React.FC<ErrorNotificationProps> = ({
               setOpen(true);
             }}
           >
-            Report issue to Langfuse team
+            {translateText("Report issue to Langfuse team")}
           </Button>
         )}
       </div>
@@ -91,7 +95,7 @@ export const ErrorNotification: React.FC<ErrorNotificationProps> = ({
           e.stopPropagation();
           e.preventDefault();
         }}
-        aria-label="Close"
+        aria-label={translateText("Close")}
       >
         <X size={14} />
       </button>

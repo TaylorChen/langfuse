@@ -16,6 +16,7 @@ import type { MetricOption } from "../types/charts";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { buildWidgetConfigFromId } from "@/src/features/experiments/utils/charts";
 import { NoDataOrLoading } from "@/src/components/NoDataOrLoading";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type ExperimentChartSlotProps = {
   chartIndex: number;
@@ -47,6 +48,7 @@ export function ExperimentChartSlot({
   toTimestamp,
   isExternalLoading = false,
 }: ExperimentChartSlotProps) {
+  const { translateText } = useI18n();
   const { selectedMetricOption, widgetConfig } = useMemo(
     () => ({
       selectedMetricOption: availableMetricOptions.find(
@@ -145,12 +147,14 @@ export function ExperimentChartSlot({
     }
     // Extract label from ID for stale selections
     if (selectedMetricId.startsWith("base:")) {
-      return selectedMetricId === "base:cost" ? "Cost ($)" : "Latency (ms)";
+      return selectedMetricId === "base:cost"
+        ? translateText("Cost ($)")
+        : translateText("Latency (ms)");
     }
     // Score IDs like "obs-score-numeric:helpfulness" -> "helpfulness"
     const scoreName = selectedMetricId.split(":").pop();
     return scoreName ?? selectedMetricId;
-  }, [selectedMetricOption, selectedMetricId]);
+  }, [selectedMetricOption, selectedMetricId, translateText]);
 
   // Check if metric is available for current experiments
   const isMetricAvailable = Boolean(selectedMetricOption);
@@ -175,7 +179,7 @@ export function ExperimentChartSlot({
       <div className="flex items-center">
         <Select value={selectedMetricId} onValueChange={onMetricChange}>
           <SelectTrigger className="h-7 w-44 text-xs">
-            <SelectValue placeholder="Select metric...">
+            <SelectValue placeholder={translateText("Select metric...")}>
               {selectedLabel}
             </SelectValue>
           </SelectTrigger>
@@ -220,7 +224,7 @@ export function ExperimentChartSlot({
         ) : (
           <div className="flex h-full items-center justify-center rounded-lg border-2 border-dashed">
             <span className="text-muted-foreground text-sm">
-              Select a metric
+              {translateText("Select a metric")}
             </span>
           </div>
         )}

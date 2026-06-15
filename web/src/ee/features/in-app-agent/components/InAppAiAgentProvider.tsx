@@ -27,6 +27,7 @@ import {
   type InAppAgentRuntimeState,
 } from "@/src/ee/features/in-app-agent/schema";
 import { useHasEntitlement } from "@/src/features/entitlements/hooks";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { api } from "@/src/utils/api";
 import { createInAppAgentScreenContext } from "@/src/ee/features/in-app-agent/context";
@@ -169,6 +170,7 @@ function InAppAiAgentProviderInner({
   open,
   setOpen,
 }: InAppAiAgentProviderInnerProps) {
+  const { translateText } = useI18n();
   const utils = api.useUtils();
   const [selectedConversationId, setSelectedConversationId] = useSessionStorage<
     string | null
@@ -236,13 +238,17 @@ function InAppAiAgentProviderInner({
 
     fetchNextConversationsPage().catch((error) => {
       const errorMessage = getAgentErrorMessage(error);
-      showErrorToast("Failed to load conversations", errorMessage);
+      showErrorToast(
+        translateText("Failed to load conversations"),
+        errorMessage,
+      );
       console.error("Failed to load in-app agent conversations", error);
     });
   }, [
     fetchNextConversationsPage,
     hasMoreConversations,
     isLoadingMoreConversations,
+    translateText,
   ]);
 
   useEffect(() => {
@@ -251,12 +257,12 @@ function InAppAiAgentProviderInner({
     }
 
     const errorMessage = getAgentErrorMessage(conversationListQuery.error);
-    showErrorToast("Failed to load conversations", errorMessage);
+    showErrorToast(translateText("Failed to load conversations"), errorMessage);
     console.error("Failed to load in-app agent conversations", {
       error: conversationListQuery.error,
       projectId,
     });
-  }, [conversationListQuery.error, projectId]);
+  }, [conversationListQuery.error, projectId, translateText]);
 
   const isSelectedConversationHydrating =
     Boolean(selectedConversationId) &&
@@ -597,7 +603,7 @@ function InAppAiAgentProviderInner({
         });
       } catch (error) {
         const errorMessage = getAgentErrorMessage(error);
-        showErrorToast("Failed to save feedback", errorMessage);
+        showErrorToast(translateText("Failed to save feedback"), errorMessage);
         console.error("Failed to save in-app agent feedback", error);
         throw error;
       }
@@ -607,6 +613,7 @@ function InAppAiAgentProviderInner({
       projectId,
       selectedConversationId,
       setFeedbackByConversationId,
+      translateText,
     ],
   );
 

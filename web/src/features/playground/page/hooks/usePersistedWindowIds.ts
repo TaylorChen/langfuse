@@ -9,12 +9,14 @@ import {
   clearAllPlaygroundData,
 } from "../storage/windowStorage";
 import { toast } from "sonner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * Hook to persist window IDs across page refreshes.
  * Manages the list of active playground windows by orchestrating with storage utilities.
  */
 export function usePersistedWindowIds() {
+  const { translateText } = useI18n();
   const [windowIds, setWindowIds] = useState<string[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -44,14 +46,16 @@ export function usePersistedWindowIds() {
       }
       if (windowIds.length >= MULTI_WINDOW_CONFIG.MAX_WINDOWS) {
         toast.error(
-          `Maximum window limit of ${MULTI_WINDOW_CONFIG.MAX_WINDOWS} reached`,
+          translateText("Maximum window limit of {count} reached", {
+            count: String(MULTI_WINDOW_CONFIG.MAX_WINDOWS),
+          }),
         );
         return null;
       }
       setWindowIds((prev) => [...prev, windowId]);
       return windowId;
     },
-    [windowIds],
+    [translateText, windowIds],
   );
 
   /**
@@ -63,7 +67,9 @@ export function usePersistedWindowIds() {
     (sourceWindowId?: string) => {
       if (windowIds.length >= MULTI_WINDOW_CONFIG.MAX_WINDOWS) {
         toast.error(
-          `Maximum window limit of ${MULTI_WINDOW_CONFIG.MAX_WINDOWS} reached`,
+          translateText("Maximum window limit of {count} reached", {
+            count: String(MULTI_WINDOW_CONFIG.MAX_WINDOWS),
+          }),
         );
         return null;
       }
@@ -78,7 +84,7 @@ export function usePersistedWindowIds() {
       setWindowIds((prev) => [...prev, newWindowId]);
       return newWindowId;
     },
-    [windowIds],
+    [translateText, windowIds],
   );
 
   /**
@@ -88,14 +94,14 @@ export function usePersistedWindowIds() {
   const removeWindowId = useCallback(
     (windowId: string) => {
       if (windowIds.length <= 1) {
-        toast.error("Cannot remove the last remaining window");
+        toast.error(translateText("Cannot remove the last remaining window"));
         return;
       }
 
       removeWindowState(windowId);
       setWindowIds((prev) => prev.filter((id) => id !== windowId));
     },
-    [windowIds.length],
+    [translateText, windowIds.length],
   );
 
   /**

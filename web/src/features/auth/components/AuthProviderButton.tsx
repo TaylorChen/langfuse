@@ -1,4 +1,5 @@
 import { Button } from "@/src/components/ui/button";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { cn } from "@/src/utils/tailwind";
 import React from "react";
 
@@ -17,6 +18,8 @@ export function AuthProviderButton({
   loading = false,
   showLastUsedBadge = false,
 }: AuthProviderButtonProps) {
+  const { translateText } = useI18n();
+
   return (
     <div>
       <Button
@@ -34,7 +37,7 @@ export function AuthProviderButton({
           showLastUsedBadge ? "visible" : "invisible",
         )}
       >
-        Last used
+        {translateText("Last used")}
       </div>
     </div>
   );

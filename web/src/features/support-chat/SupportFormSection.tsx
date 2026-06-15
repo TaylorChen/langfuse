@@ -12,10 +12,11 @@ import {
   INTEGRATION_TYPES,
   TopicGroups,
   type MessageType,
-  SupportFormSchema,
+  createSupportFormSchema,
   isSeverityAllowedForPlan,
   highestSupportPlan,
 } from "./formConstants";
+import type { SupportFormSchema } from "./formConstants";
 
 import { api } from "@/src/utils/api";
 
@@ -51,6 +52,7 @@ import { Paperclip, Trash2 } from "lucide-react";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { PYLON_MAX_FILE_SIZE_BYTES } from "./pylon/pylonConstants";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /** Make RHF generics match the resolver (Zod defaults => input can be undefined) */
 type SupportFormInput = z.input<typeof SupportFormSchema>;
@@ -74,7 +76,13 @@ const FILE_UPLOAD_CONSTRAINTS = {
  * Validates files against upload constraints
  * @returns {isValid: boolean, error?: string}
  */
-function validateFiles(files: File[] | undefined): {
+function validateFiles(
+  files: File[] | undefined,
+  translateText: (
+    text: string,
+    values?: Record<string, string | number | undefined>,
+  ) => string,
+): {
   isValid: boolean;
   error?: string;
 } {
@@ -89,7 +97,9 @@ function validateFiles(files: File[] | undefined): {
   if (files.length > maxFiles) {
     return {
       isValid: false,
-      error: `Please upload at most ${maxFiles} files.`,
+      error: translateText("Please upload at most {maxFiles} files.", {
+        maxFiles,
+      }),
     };
   }
 
@@ -99,7 +109,10 @@ function validateFiles(files: File[] | undefined): {
     const maxMB = (maxFileSizeBytes / (1024 * 1024)).toFixed(0);
     return {
       isValid: false,
-      error: `File "${oversizedFile.name}" is too large. Maximum file size is ${maxMB}MB per file.`,
+      error: translateText(
+        'File "{fileName}" is too large. Maximum file size is {maxMB}MB per file.',
+        { fileName: oversizedFile.name, maxMB },
+      ),
     };
   }
 
@@ -110,7 +123,10 @@ function validateFiles(files: File[] | undefined): {
     const maxMB = (maxCombinedBytes / (1024 * 1024)).toFixed(0);
     return {
       isValid: false,
-      error: `Total attachment size (${totalMB}MB) exceeds the limit of ${maxMB}MB.`,
+      error: translateText(
+        "Total attachment size ({totalMB}MB) exceeds the limit of {maxMB}MB.",
+        { totalMB, maxMB },
+      ),
     };
   }
 
@@ -120,7 +136,13 @@ function validateFiles(files: File[] | undefined): {
 /**
  * Converts technical file error messages to user-friendly ones
  */
-function formatFileError(error: Error): string {
+function formatFileError(
+  error: Error,
+  translateText: (
+    text: string,
+    values?: Record<string, string | number | undefined>,
+  ) => string,
+): string {
   const msg = error.message.toLowerCase();
   const { maxFiles, maxFileSizeBytes, maxCombinedBytes } =
     FILE_UPLOAD_CONSTRAINTS;
@@ -134,7 +156,10 @@ function formatFileError(error: Error): string {
     msg.includes("10mb") ||
     msg.includes("too large")
   ) {
-    return `File is too large. Maximum file size is ${maxMB}MB per file.`;
+    return translateText(
+      "File is too large. Maximum file size is {maxMB}MB per file.",
+      { maxMB },
+    );
   }
 
   // File count errors
@@ -143,20 +168,29 @@ function formatFileError(error: Error): string {
     msg.includes("maxfiles") ||
     msg.includes("5 files")
   ) {
-    return `Too many files. Maximum ${maxFiles} files allowed.`;
+    return translateText("Too many files. Maximum {maxFiles} files allowed.", {
+      maxFiles,
+    });
   }
 
   // Combined size errors
   if (msg.includes("total") && (msg.includes("50mb") || msg.includes("size"))) {
-    return `Total attachment size exceeds limit. Maximum combined size is ${maxCombinedMB}MB.`;
+    return translateText(
+      "Total attachment size exceeds limit. Maximum combined size is {maxCombinedMB}MB.",
+      { maxCombinedMB },
+    );
   }
 
   // File type errors
   if (msg.includes("file type") || msg.includes("accept")) {
-    return "File type not supported. Please select a different file.";
+    return translateText(
+      "File type not supported. Please select a different file.",
+    );
   }
 
-  return error.message || "File upload failed. Please try again.";
+  return (
+    error.message || translateText("File upload failed. Please try again.")
+  );
 }
 
 export function SupportFormSection({
@@ -166,6 +200,7 @@ export function SupportFormSection({
   onCancel: () => void;
   onSuccess: () => void;
 }) {
+  const { translateText } = useI18n();
   const { organization, project } = useQueryProjectOrOrganization();
   const session = useSession();
 
@@ -195,8 +230,13 @@ export function SupportFormSection({
   // Local submit guard to avoid flicker across multiple mutations
   const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
 
+  const localizedSupportFormSchema = useMemo(
+    () => createSupportFormSchema(translateText),
+    [translateText],
+  );
+
   const form = useForm<SupportFormInput>({
-    resolver: zodResolver(SupportFormSchema),
+    resolver: zodResolver(localizedSupportFormSchema),
     defaultValues: {
       messageType: "Question" as MessageType,
       severity: SEVERITY_3,
@@ -220,8 +260,8 @@ export function SupportFormSection({
         // attachments) intact so the user can retry instead of wiping it.
         if (data.pylonIssueFailed) {
           showErrorToast(
-            "Support request was not sent",
-            "Please contact support@langfuse.com",
+            translateText("Support request was not sent"),
+            translateText("Please contact support@langfuse.com"),
           );
           return;
         }
@@ -263,7 +303,7 @@ export function SupportFormSection({
       const body = await res.json().catch(() => ({}));
       throw new Error(
         (body as { error?: string }).error ??
-          "Failed to upload attachments to Pylon.",
+          translateText("Failed to upload attachments to Pylon."),
       );
     }
 
@@ -272,7 +312,7 @@ export function SupportFormSection({
   }
 
   const onSubmit = async (values: SupportFormInput) => {
-    const parsed: SupportFormValues = SupportFormSchema.parse(values);
+    const parsed: SupportFormValues = localizedSupportFormSchema.parse(values);
     const msgLen = (parsed.message ?? "").trim().length;
 
     if (msgLen < 50 && !warnedShortOnce) {
@@ -284,7 +324,7 @@ export function SupportFormSection({
       setIsSubmittingLocal(true);
 
       // Validate files using centralized validation function
-      const validation = validateFiles(files);
+      const validation = validateFiles(files, translateText);
       if (!validation.isValid) {
         throw new Error(validation.error);
       }
@@ -326,7 +366,8 @@ export function SupportFormSection({
       setIsSubmittingLocal(false);
       form.setError("message", {
         type: "manual",
-        message: err?.message ?? "Failed to submit support request.",
+        message:
+          err?.message ?? translateText("Failed to submit support request."),
       });
     }
   };
@@ -341,11 +382,12 @@ export function SupportFormSection({
   return (
     <div className="mt-1 flex flex-col gap-3">
       <div className="flex items-center gap-2 text-base font-semibold">
-        E-Mail a Support Engineer
+        {translateText("E-Mail a Support Engineer")}
       </div>
       <p className="text-muted-foreground text-sm">
-        Details speed things up. The clearer your request, the quicker you get
-        the answer you need.
+        {translateText(
+          "Details speed things up. The clearer your request, the quicker you get the answer you need.",
+        )}
       </p>
 
       <Form {...form}>
@@ -359,7 +401,7 @@ export function SupportFormSection({
             name="messageType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Message Type</FormLabel>
+                <FormLabel>{translateText("Message Type")}</FormLabel>
                 <FormControl>
                   <RadioGroup
                     className="grid grid-cols-3 gap-2"
@@ -376,13 +418,13 @@ export function SupportFormSection({
                         size="default"
                         onClick={() => field.onChange(v)}
                       >
-                        <span className="truncate">{v}</span>
+                        <span className="truncate">{translateText(v)}</span>
                       </Button>
                     ))}
                   </RadioGroup>
                 </FormControl>
                 <FormDescription className="sr-only">
-                  Choose the type of your message.
+                  {translateText("Choose the type of your message.")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -396,11 +438,13 @@ export function SupportFormSection({
             name="severity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Priority</FormLabel>
+                <FormLabel>{translateText("Priority")}</FormLabel>
                 <FormControl>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a priority" />
+                      <SelectValue
+                        placeholder={translateText("Select a priority")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {SEVERITIES.map((s) => (
@@ -409,7 +453,7 @@ export function SupportFormSection({
                           value={s}
                           disabled={!isSeverityAllowedForPlan(s, effectivePlan)}
                         >
-                          {s}
+                          {translateText(s)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -421,8 +465,12 @@ export function SupportFormSection({
                 {!isSev1Allowed && (
                   <FormDescription>
                     {isSev2Allowed
-                      ? "Severity 1 is available on the Team and Enterprise plans."
-                      : "Severity 1 (Team and Enterprise) and Severity 2 (Pro and above) are not available on your current plan."}
+                      ? translateText(
+                          "Severity 1 is available on the Team and Enterprise plans.",
+                        )
+                      : translateText(
+                          "Severity 1 (Team and Enterprise) and Severity 2 (Pro and above) are not available on your current plan.",
+                        )}
                   </FormDescription>
                 )}
                 <FormMessage />
@@ -436,33 +484,35 @@ export function SupportFormSection({
             name="topic"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Topic</FormLabel>
+                <FormLabel>{translateText("Topic")}</FormLabel>
                 <FormControl>
                   <Select
                     value={(field.value as string | undefined) ?? undefined}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a topic" />
+                      <SelectValue
+                        placeholder={translateText("Select a topic")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <div className="p-2">
                         <div className="text-muted-foreground mb-2 text-xs font-medium">
-                          Product Features
+                          {translateText("Product Features")}
                         </div>
                         {TopicGroups["Product Features"].map((t) => (
                           <SelectItem key={t} value={t}>
-                            {t}
+                            {translateText(t)}
                           </SelectItem>
                         ))}
                       </div>
                       <div className="border-t p-2">
                         <div className="text-muted-foreground mb-2 text-xs font-medium">
-                          Operations
+                          {translateText("Operations")}
                         </div>
                         {TopicGroups.Operations.map((t) => (
                           <SelectItem key={t} value={t}>
-                            {t}
+                            {translateText(t)}
                           </SelectItem>
                         ))}
                       </div>
@@ -481,16 +531,20 @@ export function SupportFormSection({
               name="integrationType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Integration Type (optional)</FormLabel>
+                  <FormLabel>
+                    {translateText("Integration Type (optional)")}
+                  </FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select integration type" />
+                        <SelectValue
+                          placeholder={translateText("Select integration type")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {INTEGRATION_TYPES.map((it) => (
                           <SelectItem key={it} value={it}>
-                            {it}
+                            {translateText(it)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -508,10 +562,11 @@ export function SupportFormSection({
             name="message"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Message</FormLabel>
+                <FormLabel>{translateText("Message")}</FormLabel>
                 <div className="text-muted-foreground text-xs">
-                  We will email you at your account address. Replies may take up
-                  to one business day.
+                  {translateText(
+                    "We will email you at your account address. Replies may take up to one business day.",
+                  )}
                 </div>
                 <FormControl>
                   <div className="relative w-full">
@@ -520,8 +575,12 @@ export function SupportFormSection({
                       rows={8}
                       placeholder={
                         isProductFeatureTopic
-                          ? "Please explain as fully as possible what you're aiming to do, and what you'd like help with.\n\nIf your question involves a specific trace, prompt, score, etc. please include a link to it."
-                          : "Please explain as fully as possible what you're aiming to do, and what you'd like help with."
+                          ? translateText(
+                              "Please explain as fully as possible what you're aiming to do, and what you'd like help with.\n\nIf your question involves a specific trace, prompt, score, etc. please include a link to it.",
+                            )
+                          : translateText(
+                              "Please explain as fully as possible what you're aiming to do, and what you'd like help with.",
+                            )
                       }
                     />
                   </div>
@@ -533,9 +592,9 @@ export function SupportFormSection({
                     role="status"
                     aria-live="polite"
                   >
-                    The message seems short — adding a bit more context can help
-                    us get you a quicker, smarter answer. You can submit again
-                    as is, or add more details.
+                    {translateText(
+                      "The message seems short — adding a bit more context can help us get you a quicker, smarter answer. You can submit again as is, or add more details.",
+                    )}
                   </p>
                 )}
 
@@ -554,8 +613,12 @@ export function SupportFormSection({
                     })
                   }
                   onError={(error) => {
-                    const userMessage = formatFileError(error);
-                    showErrorToast("File Upload Error", userMessage, "WARNING");
+                    const userMessage = formatFileError(error, translateText);
+                    showErrorToast(
+                      translateText("File Upload Error"),
+                      userMessage,
+                      "WARNING",
+                    );
                   }}
                   src={files}
                 >
@@ -565,8 +628,11 @@ export function SupportFormSection({
                       <Paperclip className="h-4 w-4" />
                       <span className="truncate">
                         {hasFiles
-                          ? `${files!.length} file${files!.length > 1 ? "s" : ""} • ${totalMB} MB`
-                          : "Attach files"}
+                          ? translateText("{count} file(s) • {totalMB} MB", {
+                              count: files!.length,
+                              totalMB,
+                            })
+                          : translateText("Attach files")}
                       </span>
                     </div>
                   </DropzoneEmptyState>
@@ -574,7 +640,9 @@ export function SupportFormSection({
                   <DropzoneContent>
                     <div className="flex w-full cursor-pointer items-center justify-start gap-2 p-2 text-xs">
                       <Paperclip className="h-4 w-4" />
-                      <span className="truncate">Attach files</span>
+                      <span className="truncate">
+                        {translateText("Attach files")}
+                      </span>
                     </div>
                   </DropzoneContent>
                 </Dropzone>
@@ -582,7 +650,7 @@ export function SupportFormSection({
                 {files && files.length > 0 && (
                   <div className="p-0 text-left text-sm font-medium">
                     <div className="text-muted-foreground mb-2 text-xs font-medium">
-                      Attached files
+                      {translateText("Attached files")}
                     </div>
                     {files?.map((file) => (
                       <div
@@ -598,7 +666,9 @@ export function SupportFormSection({
                           }
                           className="p-0"
                         >
-                          <span className="sr-only">Remove file</span>
+                          <span className="sr-only">
+                            {translateText("Remove file")}
+                          </span>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                         {file.name}
@@ -622,7 +692,7 @@ export function SupportFormSection({
               }}
               className="w-full"
             >
-              Cancel
+              {translateText("Cancel")}
             </Button>
 
             <Button
@@ -633,20 +703,21 @@ export function SupportFormSection({
               {isSubmittingLocal ? (
                 <span className="inline-flex items-center gap-2">
                   <Spinner size="sm" />
-                  Submitting…
+                  {translateText("Submitting…")}
                 </span>
               ) : messageIsShortAfterWarning ? (
-                "Submit Anyways"
+                translateText("Submit Anyways")
               ) : (
-                "Submit"
+                translateText("Submit")
               )}
             </Button>
           </div>
 
           {isSubmittingLocal && (
             <div className="text-muted-foreground text-xs">
-              This can take a few seconds — hang tight while we submit your
-              request.
+              {translateText(
+                "This can take a few seconds — hang tight while we submit your request.",
+              )}
             </div>
           )}
         </form>

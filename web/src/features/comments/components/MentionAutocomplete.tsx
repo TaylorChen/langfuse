@@ -8,6 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/src/components/ui/command";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface User {
   id: string;
@@ -32,6 +33,7 @@ export function MentionAutocomplete({
   onClose: _onClose,
   onSelectedIndexChange,
 }: MentionAutocompleteProps) {
+  const { translateText } = useI18n();
   const selectedItemRef = useRef<HTMLDivElement>(null);
 
   // Scroll selected item into view
@@ -51,12 +53,12 @@ export function MentionAutocomplete({
     <div
       className="absolute right-0 bottom-full left-0 z-50 mb-1"
       role="region"
-      aria-label="User mention suggestions"
+      aria-label={translateText("User mention suggestions")}
     >
       <Command
         className="max-h-60 rounded-md border shadow-md"
         value={selectedUserId}
-        aria-label="Mention user autocomplete"
+        aria-label={translateText("Mention user autocomplete")}
       >
         <CommandList
           role="listbox"
@@ -69,11 +71,15 @@ export function MentionAutocomplete({
               aria-live="polite"
             >
               <Spinner size="sm" />
-              <span className="sr-only">Loading users...</span>
+              <span className="sr-only">
+                {translateText("Loading users...")}
+              </span>
             </div>
           )}
           {!isLoading && users.length === 0 && (
-            <CommandEmpty role="status">No users found</CommandEmpty>
+            <CommandEmpty role="status">
+              {translateText("No users found")}
+            </CommandEmpty>
           )}
           {!isLoading && users.length > 0 && (
             <>
@@ -99,7 +105,7 @@ export function MentionAutocomplete({
                       </Avatar>
                       <div className="text-foreground flex-1 overflow-hidden">
                         <div className="truncate font-medium">
-                          {user.name || "Unknown"}
+                          {user.name || translateText("Unknown")}
                         </div>
                         {user.email && (
                           <div className="text-muted-foreground truncate text-xs">
@@ -117,7 +123,10 @@ export function MentionAutocomplete({
                   role="status"
                   aria-live="polite"
                 >
-                  and {remainingCount} more...
+                  {translateText("and {count} more...").replace(
+                    "{count}",
+                    String(remainingCount),
+                  )}
                 </div>
               )}
             </>

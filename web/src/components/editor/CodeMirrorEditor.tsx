@@ -30,6 +30,7 @@ import {
 } from "@langfuse/shared";
 import { lightTheme } from "@/src/components/editor/light-theme";
 import { darkTheme } from "@/src/components/editor/dark-theme";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // Custom language mode for prompts that highlights mustache variables and prompt dependency tags
 const promptLanguage = StreamLanguage.define({
@@ -63,7 +64,12 @@ const promptLanguage = StreamLanguage.define({
   },
 });
 
-export const getPromptVariableDiagnostics = (content: string): Diagnostic[] => {
+type TranslateText = (text: string) => string;
+
+export const getPromptVariableDiagnostics = (
+  content: string,
+  translateText: TranslateText = (text) => text,
+): Diagnostic[] => {
   const diagnostics: Diagnostic[] = [];
 
   // Check for multiline variables
@@ -72,7 +78,7 @@ export const getPromptVariableDiagnostics = (content: string): Diagnostic[] => {
       from: match.index,
       to: match.index + match[0].length,
       severity: "error",
-      message: "Variables cannot span multiple lines",
+      message: translateText("Variables cannot span multiple lines"),
     });
   }
 
@@ -82,7 +88,7 @@ export const getPromptVariableDiagnostics = (content: string): Diagnostic[] => {
       from: match.index,
       to: match.index + 2,
       severity: "error",
-      message: "Unclosed variable brackets",
+      message: translateText("Unclosed variable brackets"),
     });
   }
 
@@ -94,15 +100,16 @@ export const getPromptVariableDiagnostics = (content: string): Diagnostic[] => {
         from: match.index,
         to: match.index + match[0].length,
         severity: "error",
-        message: "Empty variable is not allowed",
+        message: translateText("Empty variable is not allowed"),
       });
     } else if (!isValidVariableName(variable)) {
       diagnostics.push({
         from: match.index,
         to: match.index + match[0].length,
         severity: "error",
-        message:
+        message: translateText(
           "Variable must start with a letter and can only contain letters and underscores",
+        ),
       });
     }
   }
@@ -118,7 +125,7 @@ export const getPromptVariableDiagnostics = (content: string): Diagnostic[] => {
           from: match.index,
           to: match.index + match[0].length,
           severity: "warning",
-          message: "Malformed prompt dependency tag",
+          message: translateText("Malformed prompt dependency tag"),
         });
       }
     } catch {
@@ -126,7 +133,7 @@ export const getPromptVariableDiagnostics = (content: string): Diagnostic[] => {
         from: match.index,
         to: match.index + match[0].length,
         severity: "warning",
-        message: "Invalid prompt dependency tag format",
+        message: translateText("Invalid prompt dependency tag format"),
       });
     }
   }
@@ -135,9 +142,10 @@ export const getPromptVariableDiagnostics = (content: string): Diagnostic[] => {
 };
 
 // Linter for prompt variables
-const promptLinter = linter((view) =>
-  getPromptVariableDiagnostics(view.state.doc.toString()),
-);
+const createPromptLinter = (translateText: TranslateText) =>
+  linter((view) =>
+    getPromptVariableDiagnostics(view.state.doc.toString(), translateText),
+  );
 
 // Create a language support instance that combines the language and its configuration
 const promptSupport = new LanguageSupport(promptLanguage);
@@ -402,6 +410,7 @@ export function CodeMirrorEditor({
   enableSearchKeymap?: boolean;
   onEditorMount?: () => void;
 }) {
+  const { translateText } = useI18n();
   const { resolvedTheme } = useTheme();
   const codeMirrorTheme = resolvedTheme === "dark" ? darkTheme : lightTheme;
   // used to disable linter when field is empty
@@ -504,7 +513,9 @@ export function CodeMirrorEditor({
         ...(mode === "json" && linterEnabled
           ? [linter(jsonParseLinter())]
           : []),
-        ...(mode === "prompt" ? [promptSupport, promptLinter] : []),
+        ...(mode === "prompt"
+          ? [promptSupport, createPromptLinter(translateText)]
+          : []),
         ...(lineWrapping ? [EditorView.lineWrapping] : []),
       ]}
       defaultValue={value}

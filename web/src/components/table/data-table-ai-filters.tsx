@@ -13,6 +13,7 @@ import useProjectIdFromURL from "@/src/hooks/useProjectIdFromURL";
 import { AIFeaturesDisabledNotice } from "@/src/features/organizations/components/AIFeaturesDisabledNotice";
 import { api } from "@/src/utils/api";
 import { type FilterState } from "@langfuse/shared";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface DataTableAIFiltersProps {
   onFiltersGenerated: (filters: FilterState) => void;
@@ -25,6 +26,7 @@ export function DataTableAIFilters({
   const [aiError, setAiError] = useState<string | null>(null);
   const projectId = useProjectIdFromURL();
   const { organization } = useQueryProject();
+  const { translateText } = useI18n();
 
   const createFilterMutation =
     api.naturalLanguageFilters.createCompletion.useMutation();
@@ -40,7 +42,7 @@ export function DataTableAIFilters({
 
         if (result && Array.isArray(result.filters)) {
           if (result.filters.length === 0) {
-            setAiError("Failed to generate filters, try again");
+            setAiError(translateText("Failed to generate filters, try again"));
             return;
           }
 
@@ -49,12 +51,14 @@ export function DataTableAIFilters({
           setAiPrompt("");
         } else {
           console.error(result);
-          setAiError("Invalid response format from API");
+          setAiError(translateText("Invalid response format from API"));
         }
       } catch (error) {
         console.error("Error calling tRPC API:", error);
         setAiError(
-          error instanceof Error ? error.message : "Failed to generate filters",
+          error instanceof Error
+            ? error.message
+            : translateText("Failed to generate filters"),
         );
       }
     }
@@ -64,8 +68,9 @@ export function DataTableAIFilters({
   if (!organization?.aiFeaturesEnabled) {
     return (
       <AIFeaturesDisabledNotice organizationId={organization?.id}>
-        AI-powered filters use natural language to generate deterministic
-        filters.
+        {translateText(
+          "AI-powered filters use natural language to generate deterministic filters.",
+        )}
       </AIFeaturesDisabledNotice>
     );
   }
@@ -74,7 +79,9 @@ export function DataTableAIFilters({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Filter with AI</span>
+        <span className="text-sm font-medium">
+          {translateText("Filter with AI")}
+        </span>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -82,8 +89,9 @@ export function DataTableAIFilters({
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-xs">
-                We convert natural language into deterministic filters which you
-                can adjust afterwards
+                {translateText(
+                  "We convert natural language into deterministic filters which you can adjust afterwards",
+                )}
               </p>
             </TooltipContent>
           </Tooltip>
@@ -96,7 +104,7 @@ export function DataTableAIFilters({
           setAiPrompt(e.target.value);
           if (aiError) setAiError(null);
         }}
-        placeholder="Describe the filters you want to apply..."
+        placeholder={translateText("Describe the filters you want to apply...")}
         className="min-h-[80px] resize-none"
         disabled={createFilterMutation.isPending}
         onKeyDown={(e) => {
@@ -118,7 +126,9 @@ export function DataTableAIFilters({
         disabled={createFilterMutation.isPending || !aiPrompt.trim()}
         className="w-fit"
       >
-        {createFilterMutation.isPending ? "Loading..." : "Generate"}
+        {createFilterMutation.isPending
+          ? translateText("Loading...")
+          : translateText("Generate")}
       </Button>
       {aiError && (
         <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">

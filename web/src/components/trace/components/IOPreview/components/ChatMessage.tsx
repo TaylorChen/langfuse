@@ -22,6 +22,7 @@ import {
   hasRedactedThinkingContent,
 } from "./chat-message-utils";
 import { ThinkingBlock, RedactedThinkingBlock } from "./ThinkingBlock";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // View mode for pretty/json toggle
 export type ViewMode = "pretty" | "json";
@@ -52,8 +53,13 @@ export function ChatMessage({
   isOutputMessage,
 }: ChatMessageProps) {
   const [showTableView, setShowTableView] = useState(false);
+  const { t, translateText } = useI18n();
 
   const title = getMessageTitle(message);
+  const displayTitle = title ? translateText(title) : undefined;
+  const fallbackTitle = isOutputMessage
+    ? translateText("Output")
+    : translateText("Input");
   const toolCalls = parseToolCallsFromMessage(message);
   const hasContent = hasRenderableContent(message);
 
@@ -64,7 +70,9 @@ export function ChatMessage({
       size="icon-xs"
       onClick={() => setShowTableView((v) => !v)}
       title={
-        showTableView ? "Show formatted view" : "Show passthrough JSON data"
+        showTableView
+          ? t("ioPreview.showFormattedView")
+          : t("ioPreview.showPassthroughJson")
       }
       className="hover:bg-border -mr-2"
     >
@@ -82,15 +90,15 @@ export function ChatMessage({
       <div className={cn("hover:bg-muted transition-colors")}>
         <div style={{ display: shouldRenderMarkdown ? "block" : "none" }}>
           <MarkdownJsonView
-            title="Placeholder"
-            content={message.name || "Unnamed placeholder"}
+            title={t("ioPreview.placeholder")}
+            content={message.name || t("ioPreview.unnamedPlaceholder")}
             customCodeHeaderClassName={cn("bg-primary-foreground")}
           />
         </div>
         <div style={{ display: shouldRenderMarkdown ? "none" : "block" }}>
           <PrettyJsonView
-            title="Placeholder"
-            json={message.name || "Unnamed placeholder"}
+            title={t("ioPreview.placeholder")}
+            json={message.name || t("ioPreview.unnamedPlaceholder")}
             currentView={currentView}
           />
         </div>
@@ -103,7 +111,7 @@ export function ChatMessage({
     return (
       <div className={cn("hover:bg-muted transition-colors")}>
         <PrettyJsonView
-          title={title || (isOutputMessage ? "Output" : "Input")}
+          title={displayTitle || fallbackTitle}
           json={message.json}
           currentView={currentView}
         />
@@ -116,7 +124,7 @@ export function ChatMessage({
     return (
       <div className={cn("hover:bg-muted transition-colors")}>
         <PrettyJsonView
-          title={title}
+          title={displayTitle}
           json={message.json}
           currentView="pretty"
           controlButtons={passthroughToggleButton}
@@ -135,7 +143,7 @@ export function ChatMessage({
     return (
       <div className={cn("hover:bg-muted transition-colors")}>
         <MarkdownJsonViewHeader
-          title={title}
+          title={displayTitle}
           handleOnValueChange={() => {}}
           handleOnCopy={() => {
             const rawText = JSON.stringify(message, null, 2);
@@ -180,7 +188,7 @@ export function ChatMessage({
         {/* Markdown view */}
         <div style={{ display: shouldRenderMarkdown ? "block" : "none" }}>
           <MarkdownJsonView
-            title={title}
+            title={displayTitle}
             content={message.content || ""}
             customCodeHeaderClassName={cn(
               message.role === "assistant" && "bg-secondary",
@@ -203,7 +211,7 @@ export function ChatMessage({
         {/* JSON view */}
         <div style={{ display: shouldRenderMarkdown ? "none" : "block" }}>
           <PrettyJsonView
-            title={title}
+            title={displayTitle}
             json={message.content}
             currentView={currentView}
             controlButtons={passthroughToggleButton}
@@ -227,7 +235,7 @@ export function ChatMessage({
     return (
       <div className={cn("hover:bg-muted transition-colors")}>
         <PrettyJsonView
-          title={title || (isOutputMessage ? "Output" : "Input")}
+          title={displayTitle || fallbackTitle}
           json={message}
           currentView={currentView}
         />

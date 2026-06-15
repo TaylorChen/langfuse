@@ -7,6 +7,7 @@ import {
 } from "@/src/components/ui/tooltip";
 import { cn } from "@/src/utils/tailwind";
 import { useState } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface HeatmapCellProps {
   cell?: HeatmapCell;
@@ -61,6 +62,7 @@ function CellWithData({
   showValues,
 }: CellWithDataProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const { translateText } = useI18n();
 
   // Determine if cell is empty (value = 0)
   const isEmpty = cell.value === 0;
@@ -93,6 +95,8 @@ function CellWithData({
       : cellColor, // Border matches fill for filled cells
     color: textColor === "white" ? "white" : "black",
   };
+  const ariaLabel =
+    cell.displayValue || translateText("Value: {value}", { value: cell.value });
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -115,7 +119,7 @@ function CellWithData({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={() => onClick?.(cell)}
-      aria-label={cell.displayValue || `Value: ${cell.value}`}
+      aria-label={ariaLabel}
     >
       {showValues && (
         <span className="text-[10px] sm:text-xs">{cell.displayValue}</span>
@@ -127,7 +131,7 @@ function CellWithData({
       style={sharedStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      aria-label={cell.displayValue || `Value: ${cell.value}`}
+      aria-label={ariaLabel}
     >
       {showValues && (
         <span className="text-[10px] sm:text-xs">{cell.displayValue}</span>

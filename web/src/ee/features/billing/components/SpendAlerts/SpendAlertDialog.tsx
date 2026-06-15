@@ -22,20 +22,28 @@ import { api } from "@/src/utils/api";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import { toast } from "sonner";
 import { Info } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
-const spendAlertSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Title is required")
-    .max(100, "Title must be less than 100 characters"),
-  limit: z.coerce
-    .number()
-    .positive("Limit must be positive")
-    .max(1000000, "Limit must be less than $1,000,000"),
-});
+type TranslateText = (
+  text: string,
+  values?: Record<string, string | number | undefined>,
+) => string;
 
-type SpendAlertFormInput = z.input<typeof spendAlertSchema>;
-type SpendAlertFormOutput = z.output<typeof spendAlertSchema>;
+const createSpendAlertSchema = (translateText: TranslateText) =>
+  z.object({
+    title: z
+      .string()
+      .min(1, translateText("Title is required"))
+      .max(100, translateText("Title must be less than 100 characters")),
+    limit: z.coerce
+      .number()
+      .positive(translateText("Limit must be positive"))
+      .max(1000000, translateText("Limit must be less than $1,000,000")),
+  });
+
+type SpendAlertSchema = ReturnType<typeof createSpendAlertSchema>;
+type SpendAlertFormInput = z.input<SpendAlertSchema>;
+type SpendAlertFormOutput = z.output<SpendAlertSchema>;
 
 interface SpendAlertDialogProps {
   orgId: string;
@@ -56,11 +64,12 @@ export function SpendAlertDialog({
   onOpenChange,
   onSuccess,
 }: SpendAlertDialogProps) {
+  const { translateText } = useI18n();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const capture = usePostHogClientCapture();
 
   const form = useForm<SpendAlertFormInput, undefined, SpendAlertFormOutput>({
-    resolver: zodResolver(spendAlertSchema),
+    resolver: zodResolver(createSpendAlertSchema(translateText)),
     defaultValues: {
       title: alert?.title ?? "",
       limit: alert ? parseFloat(alert.threshold.toString()) : undefined,
@@ -86,7 +95,7 @@ export function SpendAlertDialog({
           alertId: alert.id,
           limit: data.limit,
         });
-        toast.success("Spend alert updated successfully");
+        toast.success(translateText("Spend alert updated successfully"));
       } else {
         // Create new alert
         await createMutation.mutateAsync({
@@ -98,13 +107,15 @@ export function SpendAlertDialog({
           orgId,
           limit: data.limit,
         });
-        toast.success("Spend alert created successfully");
+        toast.success(translateText("Spend alert created successfully"));
       }
       onSuccess();
     } catch (error) {
       console.error("Failed to save spend alert:", error);
       toast.error(
-        `Failed to ${alert ? "update" : "create"} spend alert. Please try again.`,
+        alert
+          ? translateText("Failed to update spend alert. Please try again.")
+          : translateText("Failed to create spend alert. Please try again."),
       );
     } finally {
       setIsSubmitting(false);
@@ -115,10 +126,14 @@ export function SpendAlertDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-4 sm:max-w-[425px]">
         <DialogTitle>
-          {alert ? "Edit Spend Alert" : "Create Spend Alert"}
+          {alert
+            ? translateText("Edit Spend Alert")
+            : translateText("Create Spend Alert")}
         </DialogTitle>
         <DialogDescription className="text-muted-foreground pt-1 pb-2 text-sm">
-          Get notified when your organization&apos;s spending exceeds a limit.
+          {translateText(
+            "Get notified when your organization's spending exceeds a limit.",
+          )}
         </DialogDescription>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -127,9 +142,12 @@ export function SpendAlertDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Alert Title</FormLabel>
+                  <FormLabel>{translateText("Alert Title")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Production Alert" {...field} />
+                    <Input
+                      placeholder={translateText("e.g., Production Alert")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -140,7 +158,7 @@ export function SpendAlertDialog({
               name="limit"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Limit (USD)</FormLabel>
+                  <FormLabel>{translateText("Limit (USD)")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -167,16 +185,29 @@ export function SpendAlertDialog({
             <div className="text-muted-foreground text-xs">
               <div className="flex flex-row items-center">
                 <Info className="mr-2 h-3 w-3" />
-                <span className="font-medium">How it works</span>
+                <span className="font-medium">
+                  {translateText("How it works")}
+                </span>
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  The limit is evaluated against your upcoming invoice total,
-                  including base fee, running usage fees, discounts, and taxes.
+                  {translateText(
+                    "The limit is evaluated against your upcoming invoice total, including base fee, running usage fees, discounts, and taxes.",
+                  )}
                 </li>
-                <li>Alerts trigger once per billing cycle.</li>
-                <li>You will receive an email when the alert is triggered.</li>
-                <li>Alerts are evaluated with a 90 minute delay.</li>
+                <li>
+                  {translateText("Alerts trigger once per billing cycle.")}
+                </li>
+                <li>
+                  {translateText(
+                    "You will receive an email when the alert is triggered.",
+                  )}
+                </li>
+                <li>
+                  {translateText(
+                    "Alerts are evaluated with a 90 minute delay.",
+                  )}
+                </li>
               </ul>
             </div>
             <div className="flex flex-row items-center justify-end gap-2">
@@ -186,16 +217,16 @@ export function SpendAlertDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
               >
-                Cancel
+                {translateText("Cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting
                   ? alert
-                    ? "Updating..."
-                    : "Creating..."
+                    ? translateText("Updating...")
+                    : translateText("Creating...")
                   : alert
-                    ? "Update Alert"
-                    : "Create Alert"}
+                    ? translateText("Update Alert")
+                    : translateText("Create Alert")}
               </Button>
             </div>
           </form>

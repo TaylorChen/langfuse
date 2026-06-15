@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface UsePromptNameValidationProps {
   currentName: string | undefined;
@@ -12,6 +13,9 @@ export const usePromptNameValidation = ({
   allPrompts,
   form,
 }: UsePromptNameValidationProps) => {
+  const { translateText } = useI18n();
+  const promptNameExistsMessage = translateText("Prompt name already exists.");
+
   useEffect(() => {
     if (!currentName || !allPrompts) return;
 
@@ -20,12 +24,12 @@ export const usePromptNameValidation = ({
       .includes(currentName);
 
     if (!isNewPrompt) {
-      form.setError("name", { message: "Prompt name already exists." });
+      form.setError("name", { message: promptNameExistsMessage });
     } else {
       const currentError = form.getFieldState("name").error;
-      if (currentError?.message === "Prompt name already exists.") {
+      if (currentError?.message === promptNameExistsMessage) {
         form.clearErrors("name");
       }
     }
-  }, [currentName, allPrompts, form]);
+  }, [currentName, allPrompts, form, promptNameExistsMessage]);
 };

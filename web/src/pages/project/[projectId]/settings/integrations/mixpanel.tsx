@@ -28,7 +28,7 @@ import {
 } from "@/src/components/ui/tooltip";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import {
-  mixpanelIntegrationFormSchema,
+  createMixpanelIntegrationFormSchema,
   MIXPANEL_REGIONS,
   type MixpanelRegion,
 } from "@/src/features/mixpanel-integration/types";
@@ -51,10 +51,12 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { type z } from "zod";
 import { Info, ExternalLink } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function MixpanelIntegrationSettings() {
   const router = useRouter();
   const projectId = router.query.projectId as string;
+  const { t, translateText } = useI18n();
 
   const hasAccess = useHasProjectAccess({
     projectId,
@@ -77,40 +79,44 @@ export default function MixpanelIntegrationSettings() {
   return (
     <ContainerPage
       headerProps={{
-        title: "Mixpanel Integration",
+        title: t("analyticsIntegrations.mixpanelTitle"),
         breadcrumb: [
-          { name: "Settings", href: `/project/${projectId}/settings` },
+          {
+            name: translateText("Settings"),
+            href: `/project/${projectId}/settings`,
+          },
         ],
-        actionButtonsLeft: <>{status && <StatusBadge type={status} />}</>,
+        actionButtonsLeft: (
+          <>
+            {status && (
+              <StatusBadge type={status} showText={false}>
+                <span>{translateText(status)}</span>
+              </StatusBadge>
+            )}
+          </>
+        ),
         actionButtonsRight: (
           <Button asChild variant="secondary">
             <Link href="https://langfuse.com/integrations/analytics/mixpanel">
-              Integration Docs ↗
+              {t("integrations.docs")}
             </Link>
           </Button>
         ),
       }}
     >
       <p className="text-primary mb-4 text-sm">
-        Integrate with{" "}
+        {t("analyticsIntegrations.mixpanelIntroPrefix")}{" "}
         <Link href="https://mixpanel.com" className="underline">
           Mixpanel
         </Link>{" "}
-        to sync your Langfuse traces, generations, and scores for advanced
-        product analytics. Upon activation, all historical data from your
-        project will be synced. After the initial sync, new data is
-        automatically synced every hour to keep your Mixpanel dashboards up to
-        date.
+        {t("analyticsIntegrations.mixpanelIntroSuffix")}
       </p>
       {!hasAccess && (
-        <p className="text-sm">
-          Your current role does not grant you access to these settings, please
-          reach out to your project admin or owner.
-        </p>
+        <p className="text-sm">{t("analyticsIntegrations.noAccess")}</p>
       )}
       {hasAccess && (
         <>
-          <Header title="Configuration" />
+          <Header title={translateText("Configuration")} />
           <Card className="p-3">
             <MixpanelLogo className="text-foreground mb-4 w-20" />
             <MixpanelIntegrationSettingsForm
@@ -123,12 +129,12 @@ export default function MixpanelIntegrationSettings() {
       )}
       {state.data?.enabled && (
         <>
-          <Header title="Status" className="mt-8" />
+          <Header title={translateText("Status")} className="mt-8" />
           <p className="text-primary text-sm">
-            Data synced until:{" "}
+            {t("analyticsIntegrations.dataSyncedUntil")}{" "}
             {state.data?.lastSyncAt
               ? new Date(state.data.lastSyncAt).toLocaleString()
-              : "Never (pending)"}
+              : t("analyticsIntegrations.neverPending")}
           </p>
         </>
       )}
@@ -146,9 +152,11 @@ const MixpanelIntegrationSettingsForm = ({
   isLoading: boolean;
 }) => {
   const capture = usePostHogClientCapture();
+  const { t, translateText } = useI18n();
   const { isBetaEnabled } = useV4Beta();
   const { isLangfuseCloud } = useLangfuseCloudRegion();
   const { project } = useQueryProject();
+  const formSchema = createMixpanelIntegrationFormSchema(translateText);
 
   // Post-cutoff Cloud projects may only use OBSERVATIONS_V2 (EVENTS). The
   // Export Source field is hidden in that case; the form value is pinned to
@@ -159,7 +167,7 @@ const MixpanelIntegrationSettingsForm = ({
   const showExportSourceField = isBetaEnabled && !isPostCutoffCloud;
 
   const mixpanelForm = useForm({
-    resolver: zodResolver(mixpanelIntegrationFormSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       mixpanelRegion:
         (state?.mixpanelRegion as MixpanelRegion) ??
@@ -205,9 +213,7 @@ const MixpanelIntegrationSettingsForm = ({
     },
   });
 
-  async function onSubmit(
-    values: z.infer<typeof mixpanelIntegrationFormSchema>,
-  ) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     capture("integrations:mixpanel_form_submitted");
     mut.mutate({
       projectId,
@@ -226,11 +232,13 @@ const MixpanelIntegrationSettingsForm = ({
           name="mixpanelRegion"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mixpanel Region</FormLabel>
+              <FormLabel>{t("analyticsIntegrations.mixpanelRegion")}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a region" />
+                    <SelectValue
+                      placeholder={t("analyticsIntegrations.selectRegion")}
+                    />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -242,7 +250,7 @@ const MixpanelIntegrationSettingsForm = ({
                 </SelectContent>
               </Select>
               <FormDescription>
-                Select the Mixpanel region where your project is hosted
+                {t("analyticsIntegrations.mixpanelRegionDescription")}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -253,13 +261,14 @@ const MixpanelIntegrationSettingsForm = ({
           name="mixpanelProjectToken"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mixpanel Project Token</FormLabel>
+              <FormLabel>
+                {t("analyticsIntegrations.mixpanelProjectToken")}
+              </FormLabel>
               <FormControl>
                 <PasswordInput {...field} />
               </FormControl>
               <FormDescription>
-                You can find your Project Token in your Mixpanel project
-                settings
+                {t("analyticsIntegrations.mixpanelProjectTokenDescription")}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -272,7 +281,7 @@ const MixpanelIntegrationSettingsForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-1.5 pt-2">
-                  Export Source
+                  {t("analyticsIntegrations.exportSource")}
                   <Tooltip>
                     <TooltipTrigger>
                       <Info className="text-muted-foreground h-3.5 w-3.5" />
@@ -283,9 +292,11 @@ const MixpanelIntegrationSettingsForm = ({
                     >
                       {EXPORT_SOURCE_OPTIONS.map((option) => (
                         <div key={option.value} className="space-y-0.5">
-                          <div className="font-medium">{option.label}</div>
+                          <div className="font-medium">
+                            {translateText(option.label)}
+                          </div>
                           <div className="text-muted-foreground text-xs">
-                            {option.description}
+                            {translateText(option.description)}
                           </div>
                         </div>
                       ))}
@@ -296,7 +307,7 @@ const MixpanelIntegrationSettingsForm = ({
                           rel="noopener noreferrer"
                           className="text-muted-foreground hover:text-primary inline-flex items-center gap-1 text-xs hover:underline"
                         >
-                          For further information see
+                          {t("analyticsIntegrations.exportSourceLearnMore")}
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
@@ -306,20 +317,23 @@ const MixpanelIntegrationSettingsForm = ({
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select data to export" />
+                      <SelectValue
+                        placeholder={t(
+                          "analyticsIntegrations.selectDataToExport",
+                        )}
+                      />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {EXPORT_SOURCE_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                        {translateText(option.label)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Choose which data sources to export to Mixpanel. Scores are
-                  always included.
+                  {t("analyticsIntegrations.mixpanelExportSourceDescription")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -331,7 +345,7 @@ const MixpanelIntegrationSettingsForm = ({
           name="enabled"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Enabled</FormLabel>
+              <FormLabel>{translateText("Enabled")}</FormLabel>
               <FormControl>
                 <Switch
                   id="mixpanel-integration-enabled"
@@ -353,22 +367,18 @@ const MixpanelIntegrationSettingsForm = ({
           onClick={mixpanelForm.handleSubmit(onSubmit)}
           disabled={isLoading}
         >
-          Save
+          {translateText("Save")}
         </Button>
         <Button
           variant="ghost"
           loading={mutDelete.isPending}
           disabled={isLoading || !!!state}
           onClick={() => {
-            if (
-              confirm(
-                "Are you sure you want to reset the Mixpanel integration for this project?",
-              )
-            )
+            if (confirm(t("analyticsIntegrations.resetMixpanelConfirm")))
               mutDelete.mutate({ projectId });
           }}
         >
-          Reset
+          {translateText("Reset")}
         </Button>
       </div>
     </Form>

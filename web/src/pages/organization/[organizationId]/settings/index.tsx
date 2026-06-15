@@ -20,6 +20,21 @@ import { useIsCloudBillingAvailable } from "@/src/ee/features/billing/utils/isCl
 import { env } from "@/src/env.mjs";
 import { OrgAuditLogsSettingsPage } from "@/src/ee/features/audit-log-viewer/OrgAuditLogsSettingsPage";
 import { useHasOrganizationAccess } from "@/src/features/rbac/utils/checkOrganizationAccess";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
+
+type TranslateText = (
+  text: string,
+  values?: Record<string, string | number | undefined>,
+) => string;
+
+const defaultTranslateText: TranslateText = (text, values) => {
+  if (!values) return text;
+  return Object.entries(values).reduce(
+    (result, [name, value]) =>
+      result.replaceAll(`{${name}}`, String(value ?? "")),
+    text,
+  );
+};
 
 type OrganizationSettingsPage = {
   title: string;
@@ -29,6 +44,7 @@ type OrganizationSettingsPage = {
 } & ({ content: React.ReactNode } | { href: string });
 
 export function useOrganizationSettingsPages(): OrganizationSettingsPage[] {
+  const { translateText } = useI18n();
   const { organization } = useQueryProjectOrOrganization();
   const showBillingSettings = useHasEntitlement("cloud-billing");
   const hasAdminApiEntitlement = useHasEntitlement("admin-api");
@@ -50,6 +66,7 @@ export function useOrganizationSettingsPages(): OrganizationSettingsPage[] {
     showOrgApiKeySettings,
     showAuditLogs,
     isLangfuseCloud,
+    translateText,
   });
 }
 
@@ -59,24 +76,26 @@ export const getOrganizationSettingsPages = ({
   showOrgApiKeySettings,
   showAuditLogs,
   isLangfuseCloud,
+  translateText = defaultTranslateText,
 }: {
   organization: { id: string; name: string; metadata: Record<string, unknown> };
   showBillingSettings: boolean;
   showOrgApiKeySettings: boolean;
   showAuditLogs: boolean;
   isLangfuseCloud: boolean;
+  translateText?: TranslateText;
 }): OrganizationSettingsPage[] => [
   {
-    title: "General",
+    title: translateText("General"),
     slug: "index",
     cmdKKeywords: ["name", "id", "delete"],
     content: (
       <div className="flex flex-col gap-6">
         <RenameOrganization />
         <div>
-          <Header title="Debug Information" />
+          <Header title={translateText("Debug Information")} />
           <JSONView
-            title="Metadata"
+            title={translateText("Metadata")}
             json={{
               name: organization.name,
               id: organization.id,
@@ -91,9 +110,10 @@ export const getOrganizationSettingsPages = ({
         <SettingsDangerZone
           items={[
             {
-              title: "Delete this organization",
-              description:
+              title: translateText("Delete this organization"),
+              description: translateText(
                 "Once you delete an organization, there is no going back. Please be certain.",
+              ),
               button: <DeleteOrganizationButton />,
             },
           ]}
@@ -102,7 +122,7 @@ export const getOrganizationSettingsPages = ({
     ),
   },
   {
-    title: "API Keys",
+    title: translateText("API Keys"),
     slug: "api-keys",
     content: (
       <div className="flex flex-col gap-6">
@@ -112,13 +132,13 @@ export const getOrganizationSettingsPages = ({
     show: showOrgApiKeySettings,
   },
   {
-    title: "Members",
+    title: translateText("Members"),
     slug: "members",
     cmdKKeywords: ["invite", "user", "rbac"],
     content: (
       <div className="flex flex-col gap-6">
         <div>
-          <Header title="Organization Members" />
+          <Header title={translateText("Organization Members")} />
           <MembersTable orgId={organization.id} />
         </div>
         <div>
@@ -128,21 +148,21 @@ export const getOrganizationSettingsPages = ({
     ),
   },
   {
-    title: "Audit Logs",
+    title: translateText("Audit Logs"),
     slug: "audit-logs",
     cmdKKeywords: ["audit", "logs", "history", "changes"],
     content: <OrgAuditLogsSettingsPage orgId={organization.id} />,
     show: showAuditLogs,
   },
   {
-    title: "Billing",
+    title: translateText("Billing"),
     slug: "billing",
     cmdKKeywords: ["payment", "subscription", "plan", "invoice"],
     content: <BillingSettings />,
     show: showBillingSettings,
   },
   {
-    title: "SSO",
+    title: translateText("SSO"),
     slug: "sso",
     cmdKKeywords: [
       "sso",
@@ -160,13 +180,14 @@ export const getOrganizationSettingsPages = ({
     show: isLangfuseCloud,
   },
   {
-    title: "Projects",
+    title: translateText("Projects"),
     slug: "projects",
     href: `/organization/${organization.id}`,
   },
 ];
 
 const OrgSettingsPage = () => {
+  const { translateText } = useI18n();
   const organization = useQueryOrganization();
   const router = useRouter();
   const { page } = router.query;
@@ -177,7 +198,7 @@ const OrgSettingsPage = () => {
   return (
     <ContainerPage
       headerProps={{
-        title: "Organization Settings",
+        title: translateText("Organization Settings"),
       }}
     >
       <PagedSettingsContainer

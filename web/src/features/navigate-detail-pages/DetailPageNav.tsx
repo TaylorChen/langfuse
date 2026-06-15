@@ -15,6 +15,7 @@ import { cn } from "@/src/utils/tailwind";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const SHORTCUT_PULSE_MS = 160;
 
@@ -28,6 +29,7 @@ export const DetailPageNav = (props: {
 }) => {
   const { currentId, path, listKey, onNavigate } = props;
   const { detailPagelists } = useDetailPageLists();
+  const { translateText } = useI18n();
   const entries = detailPagelists[listKey] ?? [];
   const [shortcutPulse, setShortcutPulse] = useState<ShortcutPulse>(null);
   const shortcutPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -137,7 +139,7 @@ export const DetailPageNav = (props: {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <span>Navigate up</span>
+            <span>{translateText("Navigate up")}</span>
             <InputCommandShortcut className="ml-2">K</InputCommandShortcut>
           </TooltipContent>
         </Tooltip>
@@ -165,7 +167,7 @@ export const DetailPageNav = (props: {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <span>Navigate down</span>
+            <span>{translateText("Navigate down")}</span>
             <InputCommandShortcut className="ml-2">J</InputCommandShortcut>
           </TooltipContent>
         </Tooltip>

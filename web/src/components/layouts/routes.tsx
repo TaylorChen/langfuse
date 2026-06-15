@@ -35,6 +35,7 @@ import { useCommandMenu } from "@/src/features/command-k-menu/CommandMenuProvide
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import { CloudStatusMenu } from "@/src/features/cloud-status-notification/components/CloudStatusMenu";
 import { type ProductModule } from "@/src/ee/features/ui-customization/productModuleSchema";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export enum RouteSection {
   Main = "main",
@@ -264,6 +265,7 @@ export const ROUTES: Route[] = [
 function CommandMenuTrigger() {
   const { setOpen } = useCommandMenu();
   const capture = usePostHogClientCapture();
+  const { t } = useI18n();
 
   return (
     <SidebarMenuButton
@@ -276,7 +278,7 @@ function CommandMenuTrigger() {
       className="whitespace-nowrap"
     >
       <Search className="h-4 w-4" />
-      Go to...
+      {t("navigation.goTo")}
       <KeyboardShortcut
         className="ml-auto"
         keys={[navigator.userAgent.includes("Mac") ? "⌘" : "Ctrl", "K"]}

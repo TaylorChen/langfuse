@@ -3,6 +3,7 @@ import { api } from "@/src/utils/api";
 import { JobConfigState, type AutomationDomain } from "@langfuse/shared";
 import { cn } from "@/src/utils/tailwind";
 import { StatusBadge } from "@/src/components/layouts/status-badge";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface AutomationSidebarProps {
   projectId: string;
@@ -15,6 +16,7 @@ export const AutomationSidebar: React.FC<AutomationSidebarProps> = ({
   selectedAutomation,
   onAutomationSelect,
 }) => {
+  const { translateText } = useI18n();
   const { data: automations, isLoading } =
     api.automations.getAutomations.useQuery({
       projectId,
@@ -31,7 +33,7 @@ export const AutomationSidebar: React.FC<AutomationSidebarProps> = ({
         )}
       >
         <div className="text-muted-foreground p-4 text-center text-sm">
-          Loading automations...
+          {translateText("Loading automations...")}
         </div>
       </div>
     );
@@ -46,8 +48,9 @@ export const AutomationSidebar: React.FC<AutomationSidebarProps> = ({
         )}
       >
         <div className="text-muted-foreground p-4 text-center text-sm">
-          No automations configured. Create your first automation to streamline
-          workflows.
+          {translateText(
+            "No automations configured. Create your first automation to streamline workflows.",
+          )}
         </div>
       </div>
     );

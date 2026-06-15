@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const ExperimentOverviewSectionHeading = ({
   children,
@@ -12,9 +13,15 @@ export const ExperimentOverviewField = ({
 }: {
   label: string;
   children: ReactNode;
-}) => (
-  <div>
-    <div className="text-muted-foreground text-xs">{label}</div>
-    {children}
-  </div>
-);
+}) => {
+  const { translateText } = useI18n();
+
+  return (
+    <div>
+      <div className="text-muted-foreground text-xs">
+        {translateText(label)}
+      </div>
+      {children}
+    </div>
+  );
+};

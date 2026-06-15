@@ -32,11 +32,12 @@ export function renderPromptPreviewFromObservation(params: {
   prompt: string | null | undefined;
   variableMapping: ObservationVariableMapping[];
   observation: ObservationPreview | EventPreview;
+  emptyPromptMessage: string;
 }): string {
-  const { prompt, variableMapping, observation } = params;
+  const { prompt, variableMapping, observation, emptyPromptMessage } = params;
 
   if (!prompt) {
-    return "Template has no prompt.";
+    return emptyPromptMessage;
   }
 
   const variableValues = new Map<string, string>();

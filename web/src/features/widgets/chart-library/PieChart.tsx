@@ -16,6 +16,7 @@ import {
   formatMetric,
   toFullMetricString,
 } from "@/src/features/widgets/chart-library/utils";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * PieChart component
@@ -37,6 +38,7 @@ export const PieChart: React.FC<ChartProps> = ({
   metricFormatter = (value, options) => formatMetric(value, options),
   subtleFill = false,
 }) => {
+  const { translateText } = useI18n();
   const formatValue = (value: number) =>
     toFullMetricString(metricFormatter(value, { style: "compact" }));
 
@@ -48,11 +50,11 @@ export const PieChart: React.FC<ChartProps> = ({
   // Transform data for PieChart
   const chartData = useMemo(() => {
     return data.map((item, index) => ({
-      name: item.dimension || "Unknown",
+      name: item.dimension || translateText("Unknown"),
       value: item.metric,
       fill: `hsl(var(--chart-${(index % 8) + 1}))`,
     }));
-  }, [data]);
+  }, [data, translateText]);
 
   const renderSector = (props: PieSectorShapeProps) => {
     const outerRadius =
@@ -122,7 +124,7 @@ export const PieChart: React.FC<ChartProps> = ({
                         y={(viewBox.cy || 0) + 24}
                         className="fill-muted-foreground"
                       >
-                        Total
+                        {translateText("Total")}
                       </tspan>
                     </text>
                   );

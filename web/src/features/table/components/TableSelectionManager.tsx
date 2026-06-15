@@ -11,6 +11,7 @@ import {
   type Row,
   type RowSelectionState,
 } from "@tanstack/react-table";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface TableSelectionManagerProps {
   projectId: string;
@@ -34,6 +35,8 @@ function SelectionHeaderCheckbox<TData>({
   setSelectAll: (value: boolean) => void;
   table: Table<TData>;
 }) {
+  const { translateText } = useI18n();
+
   const pageRows = table.getRowModel().rows;
   const pageRowIds = pageRows.map((row) => row.id);
   const rowSelection = useTableRowSelection(
@@ -81,7 +84,7 @@ function SelectionHeaderCheckbox<TData>({
             setSelectAll(false);
           }
         }}
-        aria-label="Select all"
+        aria-label={translateText("Select all")}
         className="opacity-60"
       />
     </div>
@@ -101,6 +104,8 @@ function SelectionRowCheckbox<TData>({
   selectionStore?: TableSelectionStoreLike;
   setSelectAll: (value: boolean) => void;
 }) {
+  const { translateText } = useI18n();
+
   const shiftKeyRef = useRef(false);
   const rowIsSelected = useTableRowIsSelected(
     selectionStore,
@@ -184,7 +189,7 @@ function SelectionRowCheckbox<TData>({
           row.toggleSelected(!!value);
           if (!value) setSelectAll(false);
         }}
-        aria-label="Select row"
+        aria-label={translateText("Select row")}
         className="opacity-60"
       />
     </div>

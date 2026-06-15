@@ -14,6 +14,7 @@ import { api } from "@/src/utils/api";
 import { useState } from "react";
 import { toast } from "sonner";
 import { nanoid } from "nanoid";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const StripeCancellationButton = ({
   orgId,
@@ -24,13 +25,16 @@ export const StripeCancellationButton = ({
   variant: "secondary" | "default";
   className?: string;
 }) => {
+  const { translateText } = useI18n();
   const { cancellation } = useBillingInformation();
   const [loading, setLoading] = useState(false);
   const [_opId, setOpId] = useState<string | null>(null);
 
   const cancelMutation = api.cloudBilling.cancelStripeSubscription.useMutation({
     onSuccess: () => {
-      toast.success("Subscription will be cancelled at period end");
+      toast.success(
+        translateText("Subscription will be cancelled at period end"),
+      );
       setLoading(false);
       setOpId(null);
       setTimeout(() => window.location.reload(), 500);
@@ -38,14 +42,14 @@ export const StripeCancellationButton = ({
     onError: () => {
       setLoading(false);
       setOpId(null);
-      toast.error("Failed to cancel subscription");
+      toast.error(translateText("Failed to cancel subscription"));
     },
   });
 
   const reactivateMutation =
     api.cloudBilling.reactivateStripeSubscription.useMutation({
       onSuccess: () => {
-        toast.success("Subscription reactivated");
+        toast.success(translateText("Subscription reactivated"));
         setLoading(false);
         setOpId(null);
         setTimeout(() => window.location.reload(), 500);
@@ -53,7 +57,7 @@ export const StripeCancellationButton = ({
       onError: () => {
         setLoading(false);
         setOpId(null);
-        toast.error("Failed to reactivate subscription");
+        toast.error(translateText("Failed to reactivate subscription"));
       },
     });
 
@@ -70,7 +74,7 @@ export const StripeCancellationButton = ({
       }
       await reactivateMutation.mutateAsync({ orgId, opId });
     } catch (_e) {
-      toast.error("Failed to reactivate subscription");
+      toast.error(translateText("Failed to reactivate subscription"));
     }
   };
 
@@ -85,7 +89,7 @@ export const StripeCancellationButton = ({
       }
       await cancelMutation.mutateAsync({ orgId, opId });
     } catch (_e) {
-      toast.error("Failed to cancel subscription");
+      toast.error(translateText("Failed to cancel subscription"));
     }
   };
 
@@ -97,35 +101,40 @@ export const StripeCancellationButton = ({
           <Button
             variant={variant}
             disabled={loading}
-            title="Reactivate Subscription"
+            title={translateText("Reactivate Subscription")}
             className={className}
           >
-            {loading ? "Working…" : "Reactivate Subscription"}
+            {loading
+              ? translateText("Working...")
+              : translateText("Reactivate Subscription")}
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-lg">
-              Confirm Reactivation: Keep Your Subscription
+              {translateText("Confirm Reactivation: Keep Your Subscription")}
             </DialogTitle>
           </DialogHeader>
           <DialogBody className="text-sm">
             <p>
-              Reactivating removes the scheduled cancellation. Your subscription
-              will continue beyond the current billing period and renew until
-              you cancel again.
+              {translateText(
+                "Reactivating removes the scheduled cancellation. Your subscription will continue beyond the current billing period and renew until you cancel again.",
+              )}
             </p>
             <p>
-              Your features and usage billing remain unchanged. By confirming,
-              you agree to future renewals and charges.
+              {translateText(
+                "Your features and usage billing remain unchanged. By confirming, you agree to future renewals and charges.",
+              )}
             </p>
           </DialogBody>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="secondary">Cancel</Button>
+              <Button variant="secondary">{translateText("Cancel")}</Button>
             </DialogClose>
             <Button variant="default" onClick={onReactivate} disabled={loading}>
-              {loading ? "Reactivating…" : "Confirm Reactivation"}
+              {loading
+                ? translateText("Reactivating...")
+                : translateText("Confirm Reactivation")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -140,33 +149,39 @@ export const StripeCancellationButton = ({
         <Button
           variant={variant}
           disabled={loading}
-          title="Cancel Subscription"
+          title={translateText("Cancel Subscription")}
         >
-          Cancel Subscription
+          {translateText("Cancel Subscription")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-lg">Confirm Cancellation</DialogTitle>
+          <DialogTitle className="text-lg">
+            {translateText("Confirm Cancellation")}
+          </DialogTitle>
         </DialogHeader>
         <DialogBody className="text-sm">
           <p>
-            Your subscription will not renew. You will retain access until the
-            end of the current billing period
+            {translateText(
+              "Your subscription will not renew. You will retain access until the end of the current billing period.",
+            )}
           </p>
           <p>
-            Usage during the remainder of the period is still billed under your
-            current plan. By confirming, you schedule the cancellation for
-            period end. You can reactivate before that date if you change your
-            mind.
+            {translateText(
+              "Usage during the remainder of the period is still billed under your current plan. By confirming, you schedule the cancellation for period end. You can reactivate before that date if you change your mind.",
+            )}
           </p>
         </DialogBody>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="secondary">Keep Subscription</Button>
+            <Button variant="secondary">
+              {translateText("Keep Subscription")}
+            </Button>
           </DialogClose>
           <Button variant="destructive" onClick={onCancel} disabled={loading}>
-            {loading ? "Cancelling…" : "Confirm Cancellation"}
+            {loading
+              ? translateText("Cancelling...")
+              : translateText("Confirm Cancellation")}
           </Button>
         </DialogFooter>
       </DialogContent>

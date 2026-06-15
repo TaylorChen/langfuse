@@ -11,7 +11,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/src/components/ui/form";
-import { projectNameSchema } from "@/src/features/auth/lib/projectNameSchema";
+import { createProjectNameSchema } from "@/src/features/auth/lib/projectNameSchema";
 import Header from "@/src/components/layouts/header";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import { useHasOrganizationAccess } from "@/src/features/rbac/utils/checkOrganizationAccess";
@@ -19,10 +19,13 @@ import { useQueryOrganization } from "@/src/features/organizations/hooks";
 import { Card } from "@/src/components/ui/card";
 import { LockIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function RenameOrganization() {
+  const { translateText } = useI18n();
   const { update: updateSession } = useSession();
   const capture = usePostHogClientCapture();
+  const projectNameSchema = createProjectNameSchema(translateText);
   const organization = useQueryOrganization();
   const hasAccess = useHasOrganizationAccess({
     organizationId: organization?.id,
@@ -63,19 +66,21 @@ export default function RenameOrganization() {
 
   return (
     <div>
-      <Header title="Organization Name" />
+      <Header title={translateText("Organization Name")} />
       <Card className="mb-4 p-3">
         {form.getValues().name !== "" ? (
           <p className="text-primary mb-4 text-sm">
-            Your Organization will be renamed from &quot;
-            {orgName}
-            &quot; to &quot;
-            <b>{form.watch().name}</b>&quot;.
+            {translateText(
+              'Your Organization will be renamed from "{oldName}" to "{newName}".',
+              { oldName: orgName, newName: form.watch().name },
+            )}
           </p>
         ) : (
           <p className="mb-4 text-sm">
-            Your Organization is currently named &quot;<b>{orgName}</b>
-            &quot;.
+            {translateText(
+              'Your Organization is currently named "{organizationName}".',
+              { organizationName: orgName },
+            )}
           </p>
         )}
         <Form {...form}>
@@ -98,7 +103,7 @@ export default function RenameOrganization() {
                         disabled={!hasAccess}
                       />
                       {!hasAccess && (
-                        <span title="No access">
+                        <span title={translateText("No access")}>
                           <LockIcon className="text-muted absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
                         </span>
                       )}
@@ -116,7 +121,7 @@ export default function RenameOrganization() {
                 disabled={form.getValues().name === "" || !hasAccess}
                 className="mt-4"
               >
-                Save
+                {translateText("Save")}
               </Button>
             )}
           </form>

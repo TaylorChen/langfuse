@@ -17,6 +17,7 @@ import { type DatabaseRow } from "@/src/server/api/services/sqlInterface";
 import { Chart } from "@/src/features/widgets/chart-library/Chart";
 import { timeSeriesToDataPoints } from "@/src/features/dashboard/lib/chart-data-adapters";
 import { useScheduledDashboardExecuteQuery } from "@/src/hooks/useDashboardQueryScheduler";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function ChartScores(props: {
   className?: string;
@@ -29,6 +30,7 @@ export function ChartScores(props: {
   metricsVersion?: ViewVersion;
   schedulerId?: string;
 }) {
+  const { translateText } = useI18n();
   const scoresQuery: QueryType = {
     view: "scores-numeric",
     dimensions: [{ field: "name" }, { field: "dataType" }, { field: "source" }],
@@ -88,8 +90,8 @@ export function ChartScores(props: {
   return (
     <DashboardCard
       className={props.className}
-      title="Scores"
-      description="Moving average per score"
+      title={translateText("Scores")}
+      description={translateText("Moving average per score")}
       isLoading={props.isLoading || scores.isPending}
     >
       {!isEmptyTimeSeries({ data: extractedScores }) ? (

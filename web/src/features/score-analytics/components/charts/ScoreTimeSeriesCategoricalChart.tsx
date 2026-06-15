@@ -14,6 +14,7 @@ import {
 import { formatChartTimestamp } from "../../lib/chart-formatters";
 import { ScoreChartTooltip } from "../../lib/ScoreChartTooltip";
 import { ScoreChartLegendContent } from "./ScoreChartLegendContent";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface CategoricalTimeSeriesChartProps {
   data: Array<{
@@ -41,6 +42,8 @@ export function ScoreTimeSeriesCategoricalChart({
   timeRange,
   colors,
 }: CategoricalTimeSeriesChartProps) {
+  const { translateText } = useI18n();
+
   // Transform categorical data into pivot format for Recharts
   const { chartData, categories } = useMemo(() => {
     // Group by timestamp and collect all categories
@@ -131,7 +134,7 @@ export function ScoreTimeSeriesCategoricalChart({
   if (chartData.length === 0 || categories.length === 0) {
     return (
       <div className="text-muted-foreground flex h-[200px] items-center justify-center text-sm">
-        No time series data available
+        {translateText("No time series data available")}
       </div>
     );
   }
@@ -144,7 +147,7 @@ export function ScoreTimeSeriesCategoricalChart({
   if (!hasAnyData) {
     return (
       <div className="text-muted-foreground flex h-[200px] items-center justify-center text-sm">
-        No data points available for the selected time range
+        {translateText("No data points available for the selected time range")}
       </div>
     );
   }
@@ -165,7 +168,11 @@ export function ScoreTimeSeriesCategoricalChart({
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          label={{ value: "Count", angle: -90, position: "insideLeft" }}
+          label={{
+            value: translateText("Count"),
+            angle: -90,
+            position: "insideLeft",
+          }}
           niceTicks="auto"
           tickFormatter={(value) => value.toLocaleString()}
         />

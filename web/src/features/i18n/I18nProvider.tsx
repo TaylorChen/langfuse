@@ -13,10 +13,18 @@ import {
   type SupportedLocale,
   type TranslationKey,
 } from "@/src/features/i18n/messages";
+import { literalTranslations } from "@/src/features/i18n/literals";
 
 type I18nContextValue = {
   locale: SupportedLocale;
-  t: (key: TranslationKey) => string;
+  t: (
+    key: TranslationKey,
+    values?: Record<string, string | number | undefined>,
+  ) => string;
+  translateText: (
+    text: string,
+    values?: Record<string, string | number | undefined>,
+  ) => string;
 };
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -29,12 +37,42 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       : defaultLocale;
 
   const t = useCallback(
-    (key: TranslationKey) =>
-      messages[locale][key] ?? messages[defaultLocale][key],
+    (
+      key: TranslationKey,
+      values?: Record<string, string | number | undefined>,
+    ) => {
+      const message = messages[locale][key] ?? messages[defaultLocale][key];
+
+      if (!values) return message;
+
+      return Object.entries(values).reduce(
+        (result, [name, value]) =>
+          result.replaceAll(`{${name}}`, String(value ?? "")),
+        message,
+      );
+    },
     [locale],
   );
 
-  const value = useMemo(() => ({ locale, t }), [locale, t]);
+  const translateText = useCallback(
+    (text: string, values?: Record<string, string | number | undefined>) => {
+      const message = literalTranslations[locale]?.[text] ?? text;
+
+      if (!values) return message;
+
+      return Object.entries(values).reduce(
+        (result, [name, value]) =>
+          result.replaceAll(`{${name}}`, String(value ?? "")),
+        message,
+      );
+    },
+    [locale],
+  );
+
+  const value = useMemo(
+    () => ({ locale, t, translateText }),
+    [locale, t, translateText],
+  );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

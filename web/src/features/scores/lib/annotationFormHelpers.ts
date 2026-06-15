@@ -19,16 +19,25 @@ export const validateNumericScore = ({
   value,
   minValue,
   maxValue,
+  translateText,
 }: {
   value?: number | null;
   minValue?: number | null;
   maxValue?: number | null;
+  translateText?: (
+    text: string,
+    values?: Record<string, string | number | undefined>,
+  ) => string;
 }): string | null => {
   if (
     (isPresent(maxValue) && Number(value) > maxValue) ||
     (isPresent(minValue) && Number(value) < minValue)
   ) {
-    return `Not in range: [${minValue ?? "-∞"},${maxValue ?? "∞"}]`;
+    const min = minValue ?? "-∞";
+    const max = maxValue ?? "∞";
+    return translateText
+      ? translateText("Not in range: [{min},{max}]", { min, max })
+      : `Not in range: [${min},${max}]`;
   }
   return null;
 };

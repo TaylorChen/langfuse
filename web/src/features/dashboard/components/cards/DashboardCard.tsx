@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/src/components/ui/card";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { cn } from "@/src/utils/tailwind";
 import { type ReactNode } from "react";
 
@@ -32,14 +33,20 @@ export const DashboardCard = ({
   headerClassName,
   headerRight,
 }: DashboardCardProps) => {
+  const { translateText } = useI18n();
+  const translatedTitle =
+    typeof title === "string" ? translateText(title) : title;
+  const translatedDescription =
+    typeof description === "string" ? translateText(description) : description;
+
   return (
     <Card className={cn("flex flex-col", className)}>
       <CardHeader className={cn("relative", headerClassName)}>
         <div className="items-top flex justify-between">
           <div className="flex flex-col gap-1.5">
-            <CardTitle>{title}</CardTitle>
-            {description ? (
-              <CardDescription>{description}</CardDescription>
+            <CardTitle>{translatedTitle}</CardTitle>
+            {translatedDescription ? (
+              <CardDescription>{translatedDescription}</CardDescription>
             ) : undefined}
           </div>
           {headerRight}

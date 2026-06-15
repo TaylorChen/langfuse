@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { useRouter } from "next/router";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type SettingsProps = {
   pages: Array<
@@ -27,6 +28,7 @@ export const PagedSettingsContainer = ({
   activeSlug,
 }: SettingsProps) => {
   const router = useRouter();
+  const { translateText } = useI18n();
   const availablePages = pages.filter((page) =>
     "show" in page
       ? typeof page.show === "function"
@@ -60,12 +62,12 @@ export const PagedSettingsContainer = ({
             value={currentPage.slug}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select a page" />
+              <SelectValue placeholder={translateText("Select a page")} />
             </SelectTrigger>
             <SelectContent>
               {availablePages.map((page) => (
                 <SelectItem key={page.title} value={page.slug}>
-                  {page.title}
+                  {translateText(page.title)}
                   {"href" in page && (
                     <ArrowUpRight size={14} className="ml-1 inline" />
                   )}
@@ -85,7 +87,7 @@ export const PagedSettingsContainer = ({
                 href={page.href}
                 className="flex flex-row items-center gap-2 font-semibold"
               >
-                {page.title}
+                {translateText(page.title)}
                 <ArrowUpRight size={14} className="inline" />
               </Link>
             ) : (
@@ -97,7 +99,7 @@ export const PagedSettingsContainer = ({
                   page.slug === currentPage.slug && "text-primary",
                 )}
               >
-                {page.title}
+                {translateText(page.title)}
               </span>
             ),
           )}

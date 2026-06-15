@@ -8,6 +8,7 @@ import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAcces
 import { api } from "@/src/utils/api";
 import { type RouterOutput } from "@/src/utils/types";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { Check, Copy, LockIcon, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -26,6 +27,7 @@ function CopyableSnippet({
   onCopy?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const { translateText } = useI18n();
 
   const handleCopy = async () => {
     try {
@@ -34,7 +36,7 @@ function CopyableSnippet({
       setCopied(true);
       setTimeout(() => setCopied(false), 1000);
     } catch {
-      toast.error("Failed to copy to clipboard");
+      toast.error(translateText("Failed to copy to clipboard"));
     }
   };
 
@@ -50,7 +52,7 @@ function CopyableSnippet({
         onClick={() => handleCopy()}
       >
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-        {copied ? "Copied" : "Copy prompt"}
+        {copied ? translateText("Copied") : translateText("Copy prompt")}
       </Button>
     </div>
   );
@@ -62,6 +64,7 @@ export function TracesSetupOnboardingCard({
   projectId: string;
 }) {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const hasApiKeyCreateAccess = useHasProjectAccess({
     projectId,
     scope: "apiKeys:CUD",
@@ -82,22 +85,27 @@ export function TracesSetupOnboardingCard({
       await mutCreateApiKey.mutateAsync({ projectId });
     } catch (error) {
       console.error("Error creating API key:", error);
-      toast.error("Failed to create API key");
+      toast.error(translateText("Failed to create API key"));
     }
   };
 
   return (
     <SplashScreen
-      waitingFor="Waiting for first trace"
-      title="Time to log your first trace, it only takes a minute"
-      description="Get your API keys first, then ask your coding agent to add observability with Langfuse to your application."
+      waitingFor={translateText("Waiting for first trace")}
+      title={translateText(
+        "Time to log your first trace, it only takes a minute",
+      )}
+      description={translateText(
+        "Get your API keys first, then ask your coding agent to add observability with Langfuse to your application.",
+      )}
       videoSrc="https://static.langfuse.com/prod-assets/onboarding/traces-overview-v1.mp4"
       videoPosition="bottom"
       steps={[
         {
-          title: "Create API keys",
-          description:
+          title: translateText("Create API keys"),
+          description: translateText(
             "Your application needs API keys to send traces to Langfuse.",
+          ),
           content: apiKeys ? (
             <ApiKeyRender
               generatedKeys={apiKeys}
@@ -112,7 +120,7 @@ export function TracesSetupOnboardingCard({
                   loading={mutCreateApiKey.isPending}
                   className="self-start"
                 >
-                  Create new API key
+                  {translateText("Create new API key")}
                 </Button>
               ) : (
                 <Button disabled className="self-start">
@@ -120,28 +128,29 @@ export function TracesSetupOnboardingCard({
                     className="mr-2 -ml-0.5 h-4 w-4"
                     aria-hidden="true"
                   />
-                  Create new API key
+                  {translateText("Create new API key")}
                 </Button>
               )}
               <ActionButton
                 href={`/project/${projectId}/settings/api-keys`}
                 variant="secondary"
               >
-                Manage API keys
+                {translateText("Manage API keys")}
               </ActionButton>
             </div>
           ),
         },
         {
-          title: "Add tracing with your coding agent",
+          title: translateText("Add tracing with your coding agent"),
           badge: (
             <Badge variant="tertiary" className="gap-1">
               <Sparkles className="h-3 w-3" />
-              Recommended
+              {translateText("Recommended")}
             </Badge>
           ),
-          description:
+          description: translateText(
             "Paste this prompt into Claude, Cursor, Copilot, or another coding agent.",
+          ),
           content: (
             <>
               <CopyableSnippet
@@ -165,16 +174,19 @@ export function TracesSetupOnboardingCard({
                     })
                   }
                 >
-                  or follow our docs to set up tracing manually
+                  {translateText(
+                    "or follow our docs to set up tracing manually",
+                  )}
                 </Link>
               </div>
             </>
           ),
         },
         {
-          title: "Run your app — traces will appear here",
-          description:
+          title: translateText("Run your app — traces will appear here"),
+          description: translateText(
             "Once your app makes an LLM call, traces show up within seconds.",
+          ),
         },
       ]}
     />

@@ -1,6 +1,8 @@
 import { Info } from "lucide-react";
 import { format } from "date-fns";
+import { zhCN } from "date-fns/locale/zh-CN";
 import { Button } from "@/src/components/ui/button";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type DatasetVersionWarningBannerProps = {
   selectedVersion: Date;
@@ -18,6 +20,8 @@ export function DatasetVersionWarningBanner({
   className = "",
   changeCounts,
 }: DatasetVersionWarningBannerProps) {
+  const { locale, t } = useI18n();
+  const dateLocale = locale === "zh-CN" ? zhCN : undefined;
   const totalChanges = changeCounts
     ? changeCounts.upserts + changeCounts.deletes
     : 0;
@@ -31,9 +35,9 @@ export function DatasetVersionWarningBanner({
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-center justify-between gap-4">
           <p className="text-muted-foreground text-sm wrap-break-word">
-            Viewing version from{" "}
+            {t("datasets.viewingVersionFrom")}{" "}
             <span className="text-foreground font-medium">
-              {format(selectedVersion, "MMM d, yyyy 'at' h:mm a")}
+              {format(selectedVersion, "PPp", { locale: dateLocale })}
             </span>
           </p>
           <Button
@@ -41,17 +45,29 @@ export function DatasetVersionWarningBanner({
             variant="link"
             className="h-auto shrink-0 p-0 text-sm underline-offset-4"
           >
-            Return to latest
+            {t("datasets.returnToLatest")}
           </Button>
         </div>
         {changeCounts && hasChanges && (
           <p className="text-muted-foreground text-xs">
-            {totalChanges} change{totalChanges !== 1 ? "s" : ""} since this
-            version,
-            {changeCounts.upserts > 0 &&
-              ` ${changeCounts.upserts} upsert${changeCounts.upserts !== 1 ? "s" : ""}`}
-            {changeCounts.deletes > 0 &&
-              ` ${changeCounts.deletes} delete${changeCounts.deletes !== 1 ? "s" : ""}`}
+            {t("datasets.changeSummary", {
+              total: totalChanges,
+              totalPlural: totalChanges !== 1 ? "s" : "",
+              upserts:
+                changeCounts.upserts > 0
+                  ? t("datasets.upsertSummary", {
+                      count: changeCounts.upserts,
+                      plural: changeCounts.upserts !== 1 ? "s" : "",
+                    })
+                  : "",
+              deletes:
+                changeCounts.deletes > 0
+                  ? t("datasets.deleteSummary", {
+                      count: changeCounts.deletes,
+                      plural: changeCounts.deletes !== 1 ? "s" : "",
+                    })
+                  : "",
+            })}
           </p>
         )}
       </div>

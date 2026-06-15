@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { CodeMirrorEditor } from "@/src/components/editor";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type JSONSchemaEditorMode = "json"; // Future: "json" | "builder"
 
@@ -46,6 +47,8 @@ export const JSONSchemaEditor: React.FC<JSONSchemaEditorProps> = ({
   disabled = false,
   showHelp = true,
 }) => {
+  const { translateText } = useI18n();
+
   const prettifyJson = () => {
     try {
       const parsedJson = JSON.parse(value);
@@ -53,8 +56,8 @@ export const JSONSchemaEditor: React.FC<JSONSchemaEditorProps> = ({
       onChange(prettified);
     } catch {
       showErrorToast(
-        "Failed to prettify JSON",
-        "Please verify your input is valid JSON",
+        translateText("Failed to prettify JSON"),
+        translateText("Please verify your input is valid JSON"),
         "WARNING",
       );
     }
@@ -66,14 +69,14 @@ export const JSONSchemaEditor: React.FC<JSONSchemaEditorProps> = ({
       <div className="flex flex-col gap-2">
         {showHelp && (
           <p className="text-muted-foreground text-sm">
-            Define the structure using JSON Schema format.{" "}
+            {translateText("Define the structure using JSON Schema format.")}{" "}
             <a
               href="https://json-schema.org/learn/miscellaneous-examples"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground inline-flex items-center underline"
             >
-              See JSON Schema examples
+              {translateText("See JSON Schema examples")}
               <ArrowUpRight className="ml-0.5 h-3 w-3" />
             </a>
           </p>
@@ -95,11 +98,11 @@ export const JSONSchemaEditor: React.FC<JSONSchemaEditorProps> = ({
             disabled={disabled}
             className="absolute top-3 right-3 text-xs"
           >
-            Prettify
+            {translateText("Prettify")}
           </Button>
         </div>
         <p className="text-muted-foreground text-xs">
-          Must be a valid JSON Schema object
+          {translateText("Must be a valid JSON Schema object")}
         </p>
       </div>
     );

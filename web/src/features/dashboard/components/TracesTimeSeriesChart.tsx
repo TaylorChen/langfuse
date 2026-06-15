@@ -14,6 +14,7 @@ import { mapLegacyUiTableFilterToView } from "@/src/features/dashboard/lib/dashb
 import { Chart } from "@/src/features/widgets/chart-library/Chart";
 import { timeSeriesToDataPoints } from "@/src/features/dashboard/lib/chart-data-adapters";
 import { useScheduledDashboardExecuteQuery } from "@/src/hooks/useDashboardQueryScheduler";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const TracesAndObservationsTimeSeriesChart = ({
   className,
@@ -36,6 +37,7 @@ export const TracesAndObservationsTimeSeriesChart = ({
   metricsVersion?: ViewVersion;
   schedulerId?: string;
 }) => {
+  const { translateText } = useI18n();
   const isV2 = metricsVersion === "v2";
 
   const tracesQuery: QueryType = {
@@ -75,7 +77,7 @@ export const TracesAndObservationsTimeSeriesChart = ({
           ts: new Date(item.time_dimension as any).getTime(),
           values: [
             {
-              label: "Traces",
+              label: translateText("Traces"),
               value: Number(item.count_count),
             },
           ],
@@ -180,7 +182,11 @@ export const TracesAndObservationsTimeSeriesChart = ({
   return (
     <DashboardCard
       className={className}
-      title={isV2 ? "Observations by time" : "Traces by time"}
+      title={
+        isV2
+          ? translateText("Observations by time")
+          : translateText("Traces by time")
+      }
       isLoading={
         isLoading || observations.isPending || (!isV2 && traces.isPending)
       }

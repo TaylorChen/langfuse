@@ -5,6 +5,7 @@ import {
   PLAYGROUND_EVENTS,
 } from "../types";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * Playground window registry for coordinating actions across multiple playground windows
@@ -33,6 +34,7 @@ const playgroundEventBus = new EventTarget();
  * @returns WindowCoordinationReturn interface with coordination functions
  */
 export const useWindowCoordination = (): WindowCoordinationReturn => {
+  const { translateText } = useI18n();
   const [isExecutingAll, setIsExecutingAll] = useState(false);
   const [hasAnyModelConfigured, setHasAnyModelConfigured] = useState(false);
   const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -141,8 +143,10 @@ export const useWindowCoordination = (): WindowCoordinationReturn => {
       if (!anyExecuting) {
         // No windows are executing - they must all be empty
         showErrorToast(
-          "No content to execute",
-          "Please add at least one message with content to any window.",
+          translateText("No content to execute"),
+          translateText(
+            "Please add at least one message with content to any window.",
+          ),
         );
         setIsExecutingAll(false);
       } else {
@@ -182,7 +186,7 @@ export const useWindowCoordination = (): WindowCoordinationReturn => {
         setTimeout(checkExecutionCompletion, 1000);
       }
     }, 500); // Check after 500ms
-  }, []);
+  }, [translateText]);
 
   /**
    * Stop all currently executing playground windows
@@ -226,11 +230,16 @@ export const useWindowCoordination = (): WindowCoordinationReturn => {
     }
 
     if (executingCount === totalCount) {
-      return `Executing all ${totalCount} windows`;
+      return translateText("Executing all {count} windows", {
+        count: String(totalCount),
+      });
     }
 
-    return `Executing ${executingCount} of ${totalCount} windows`;
-  }, []);
+    return translateText("Executing {executingCount} of {totalCount} windows", {
+      executingCount: String(executingCount),
+      totalCount: String(totalCount),
+    });
+  }, [translateText]);
 
   // Listen for model configuration changes
   useEffect(() => {

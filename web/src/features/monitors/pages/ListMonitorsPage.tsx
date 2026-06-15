@@ -1,4 +1,5 @@
 import { PlusIcon } from "lucide-react";
+import { type ComponentProps } from "react";
 
 import { ActionButton } from "@/src/components/ActionButton";
 import Page from "@/src/components/layouts/page";
@@ -13,19 +14,18 @@ import { MonitorsTable } from "@/src/features/monitors/components/MonitorsTable"
 import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
 import useProjectIdFromURL from "@/src/hooks/useProjectIdFromURL";
 import { api } from "@/src/utils/api";
-
-/** headerProps are shared by all of the ListMonitorPage headers */
-const headerProps = {
-  title: "Monitors",
-  help: {
-    description:
-      "Monitors notify your team and automated workflows of sudden cost spikes, quality drops, latency changes, and other important changes on the system.",
-  },
-};
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /** ListMonitorsPage displays the list of monitors for a project, or an onboarding splash when the project has none. */
 export default function ListMonitorsPage() {
+  const { t } = useI18n();
   const projectId = useProjectIdFromURL();
+  const headerProps = {
+    title: t("monitors.title"),
+    help: {
+      description: t("monitors.helpDescription"),
+    },
+  };
 
   const {
     isLoading,
@@ -39,21 +39,29 @@ export default function ListMonitorsPage() {
   return (
     <MonitorPagePermissions scope="monitors:read">
       {!projectId || isLoading ? (
-        <EmptyPage />
+        <EmptyPage headerProps={headerProps} />
       ) : isSuccess && hasMonitors ? (
-        <MainPage projectId={projectId} />
+        <MainPage projectId={projectId} headerProps={headerProps} />
       ) : (
-        <OnboardingPage projectId={projectId} />
+        <OnboardingPage projectId={projectId} headerProps={headerProps} />
       )}
     </MonitorPagePermissions>
   );
 }
 
 /** EmptyPage is an empty monitor page */
-const EmptyPage = () => <Page headerProps={headerProps}>{null}</Page>;
+const EmptyPage = ({ headerProps }: { headerProps: PageHeaderProps }) => (
+  <Page headerProps={headerProps}>{null}</Page>
+);
 
 /** OnboardingPage shows the onboarding message */
-const OnboardingPage = ({ projectId }: { projectId: string }) => {
+const OnboardingPage = ({
+  projectId,
+  headerProps,
+}: {
+  projectId: string;
+  headerProps: PageHeaderProps;
+}) => {
   /** hasCUDAccess is true if the user has permission to create monitors */
   const hasCUDAccess = useHasProjectAccess({
     projectId,
@@ -68,7 +76,14 @@ const OnboardingPage = ({ projectId }: { projectId: string }) => {
 };
 
 /** MainPage loads and displays the list of monitors  */
-const MainPage = ({ projectId }: { projectId: string }) => {
+const MainPage = ({
+  projectId,
+  headerProps,
+}: {
+  projectId: string;
+  headerProps: PageHeaderProps;
+}) => {
+  const { t } = useI18n();
   /** hasCUDAccess is true if the user has permission to create monitors */
   const hasCUDAccess = useHasProjectAccess({
     projectId,
@@ -104,7 +119,7 @@ const MainPage = ({ projectId }: { projectId: string }) => {
                 href={`/project/${projectId}/monitors/new`}
                 variant="default"
               >
-                New Monitor
+                {t("monitors.newMonitor")}
               </ActionButton>
             </>
           ),
@@ -115,3 +130,5 @@ const MainPage = ({ projectId }: { projectId: string }) => {
     </DataTableControlsProvider>
   );
 };
+
+type PageHeaderProps = ComponentProps<typeof Page>["headerProps"];

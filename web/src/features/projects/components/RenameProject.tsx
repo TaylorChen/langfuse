@@ -12,18 +12,21 @@ import {
   FormItem,
   FormMessage,
 } from "@/src/components/ui/form";
-import { projectNameSchema } from "@/src/features/auth/lib/projectNameSchema";
+import { createProjectNameSchema } from "@/src/features/auth/lib/projectNameSchema";
 import Header from "@/src/components/layouts/header";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
 import { LockIcon } from "lucide-react";
 import { useQueryProject } from "@/src/features/projects/hooks";
 import { useSession } from "next-auth/react";
 import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function RenameProject() {
+  const { translateText } = useI18n();
   const { update: updateSession } = useSession();
   const { project } = useQueryProject();
   const capture = usePostHogClientCapture();
+  const projectNameSchema = createProjectNameSchema(translateText);
   const hasAccess = useHasProjectAccess({
     projectId: project?.id,
     scope: "project:update",
@@ -60,20 +63,23 @@ export default function RenameProject() {
 
   return (
     <div>
-      <Header title="Project Name" />
+      <Header title={translateText("Project Name")} />
       <Card className="mb-4 p-3">
         {form.getValues().name !== "" ? (
           <p className="text-primary mb-4 text-sm">
-            Your Project will be renamed from &quot;
-            {project?.name ?? ""}
-            &quot; to &quot;
-            <b>{form.watch().name}</b>&quot;.
+            {translateText(
+              'Your Project will be renamed from "{oldName}" to "{newName}".',
+              {
+                oldName: project?.name ?? "",
+                newName: form.watch().name,
+              },
+            )}
           </p>
         ) : (
           <p className="text-primary mb-4 text-sm">
-            Your Project is currently named &quot;
-            <b>{project?.name ?? ""}</b>
-            &quot;.
+            {translateText('Your Project is currently named "{projectName}".', {
+              projectName: project?.name ?? "",
+            })}
           </p>
         )}
         <Form {...form}>
@@ -96,7 +102,7 @@ export default function RenameProject() {
                         disabled={!hasAccess}
                       />
                       {!hasAccess && (
-                        <span title="No access">
+                        <span title={translateText("No access")}>
                           <LockIcon className="text-muted absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
                         </span>
                       )}
@@ -114,7 +120,7 @@ export default function RenameProject() {
                 disabled={form.getValues().name === "" || !hasAccess}
                 className="mt-4"
               >
-                Save
+                {translateText("Save")}
               </Button>
             )}
           </form>

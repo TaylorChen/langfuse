@@ -4,6 +4,7 @@ import { Zap } from "lucide-react";
 import { type ButtonProps } from "@/src/components/ui/button";
 import { api } from "@/src/utils/api";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const AutomationButton = ({
   projectId,
@@ -11,6 +12,7 @@ export const AutomationButton = ({
 }: {
   projectId: string;
 } & ButtonProps) => {
+  const { translateText } = useI18n();
   const hasAccess = useHasProjectAccess({
     projectId,
     scope: "automations:read",
@@ -39,12 +41,12 @@ export const AutomationButton = ({
       href={`/project/${projectId}/automations`}
       icon={<Zap className="h-4 w-4" aria-hidden="true" />}
       hasAccess={hasAccess}
-      title="Automations"
+      title={translateText("Automations")}
       variant="outline"
       {...buttonProps}
     >
       <span className="hidden md:ml-1 md:inline">
-        Automations
+        {translateText("Automations")}
         {numberIndicator}
       </span>
     </ActionButton>

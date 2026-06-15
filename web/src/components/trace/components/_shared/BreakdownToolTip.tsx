@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import Decimal from "decimal.js";
 import { getMaxDecimals } from "@/src/features/models/utils";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface Details {
   [key: string]: number | undefined;
@@ -71,6 +72,7 @@ export const BreakdownTooltip = ({
   isCost = false,
   pricingTierName,
 }: BreakdownTooltipProps) => {
+  const { translateText } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
   // Aggregate details if array is provided
@@ -112,17 +114,23 @@ export const BreakdownTooltip = ({
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <span className="font-semibold">
-                {isCost ? "Cost breakdown" : "Usage breakdown"}
+                {isCost
+                  ? translateText("Cost breakdown")
+                  : translateText("Usage breakdown")}
               </span>
               {Array.isArray(details) && details.length > 0 && (
                 <span className="text-muted-foreground text-xs italic">
-                  Aggregate across {details.length}{" "}
-                  {details.length === 1 ? "generation" : "generations"}
+                  {translateText("Aggregate across {count} {unit}", {
+                    count: String(details.length),
+                    unit: translateText(
+                      details.length === 1 ? "generation" : "generations",
+                    ),
+                  })}
                 </span>
               )}
               {pricingTierName && (
                 <div className="text-muted-foreground flex justify-between text-xs">
-                  <span>Pricing Tier:</span>
+                  <span>{translateText("Pricing Tier:")}</span>
                   <span className="font-mono">{pricingTierName}</span>
                 </div>
               )}
@@ -130,7 +138,11 @@ export const BreakdownTooltip = ({
 
             {/* Input Section */}
             <Section
-              title={isCost ? "Input cost" : "Input usage"}
+              title={
+                isCost
+                  ? translateText("Input cost")
+                  : translateText("Input usage")
+              }
               details={aggregatedDetails}
               filterFn={(key) => key.includes("input")}
               formatValue={(v) => formatValueWithPadding(v, maxDecimals)}
@@ -138,7 +150,11 @@ export const BreakdownTooltip = ({
 
             {/* Output Section */}
             <Section
-              title={isCost ? "Output cost" : "Output usage"}
+              title={
+                isCost
+                  ? translateText("Output cost")
+                  : translateText("Output usage")
+              }
               details={aggregatedDetails}
               filterFn={(key) => key.includes("output")}
               formatValue={(v) => formatValueWithPadding(v, maxDecimals)}
@@ -148,13 +164,16 @@ export const BreakdownTooltip = ({
             <OtherSection
               details={aggregatedDetails}
               isCost={isCost}
+              translateText={translateText}
               formatValue={(v) => formatValueWithPadding(v, maxDecimals)}
             />
 
             {/* Total */}
             <div className="flex justify-between border-t border-b-4 border-double py-1">
               <span className="text-xs font-semibold">
-                {isCost ? "Total cost" : "Total usage"}
+                {isCost
+                  ? translateText("Total cost")
+                  : translateText("Total usage")}
               </span>
               <span className="font-mono text-xs font-semibold">
                 {formatValueWithPadding(
@@ -212,10 +231,16 @@ const Section = ({ title, details, filterFn, formatValue }: SectionProps) => {
 interface OtherSectionProps {
   details: Details;
   isCost: boolean;
+  translateText: (text: string) => string;
   formatValue: (value: number) => string;
 }
 
-const OtherSection = ({ details, isCost, formatValue }: OtherSectionProps) => {
+const OtherSection = ({
+  details,
+  isCost,
+  translateText,
+  formatValue,
+}: OtherSectionProps) => {
   const otherEntries = Object.entries(details)
     .filter(
       ([key]) =>
@@ -235,7 +260,7 @@ const OtherSection = ({ details, isCost, formatValue }: OtherSectionProps) => {
     <div className="flex flex-col gap-2">
       <div className="flex justify-between border-b pb-2">
         <span className="text-xs font-medium">
-          {isCost ? "Other cost" : "Other usage"}
+          {isCost ? translateText("Other cost") : translateText("Other usage")}
         </span>
         <span className="text-right font-mono text-xs font-medium">
           {formatValue(otherTotal)}

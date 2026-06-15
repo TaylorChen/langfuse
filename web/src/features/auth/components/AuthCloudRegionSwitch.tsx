@@ -18,6 +18,7 @@ import {
 } from "@/src/components/ui/dialog";
 import { useLangfuseCloudRegion } from "@/src/features/organizations/hooks";
 import { getAvailableCloudRegionOptions } from "@/src/features/organizations/cloudRegions";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function CloudRegionSwitch({
   isSignUpPage,
@@ -25,6 +26,7 @@ export function CloudRegionSwitch({
   isSignUpPage?: boolean;
 }) {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const { isLangfuseCloud, region: cloudRegion } = useLangfuseCloudRegion();
   const regions = getAvailableCloudRegionOptions(
     env.NEXT_PUBLIC_LANGFUSE_CLOUD_REGION ?? cloudRegion,
@@ -39,12 +41,14 @@ export function CloudRegionSwitch({
       <div className="flex w-full flex-col gap-2">
         <div>
           <span className="text-sm leading-none font-medium">
-            Data Region
+            {translateText("Data Region")}
             <DataRegionInfo />
           </span>
           {isSignUpPage && cloudRegion === "HIPAA" ? (
             <p className="text-muted-foreground text-xs">
-              Demo project is not available in the HIPAA data region.
+              {translateText(
+                "Demo project is not available in the HIPAA data region.",
+              )}
             </p>
           ) : null}
         </div>
@@ -83,15 +87,16 @@ export function CloudRegionSwitch({
         {cloudRegion === "HIPAA" && (
           <div className="bg-muted/50 text-muted-foreground mt-2 rounded-md p-3 text-xs">
             <p>
-              The Business Associate Agreement (BAA) is only effective on the
-              Cloud Pro and Teams plans.{" "}
+              {translateText(
+                "The Business Associate Agreement (BAA) is only effective on the Cloud Pro and Teams plans.",
+              )}{" "}
               <a
                 href="https://langfuse.com/security/hipaa"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-accent hover:text-hover-primary-accent underline"
               >
-                Learn more about HIPAA compliance →
+                {translateText("Learn more about HIPAA compliance →")}
               </a>
             </p>
           </div>
@@ -101,66 +106,76 @@ export function CloudRegionSwitch({
   );
 }
 
-const DataRegionInfo = () => (
-  <Dialog>
-    <DialogTrigger asChild>
-      <a
-        href="#"
-        className="text-primary-accent hover:text-hover-primary-accent ml-1 text-xs"
-        title="What is this?"
-        tabIndex={-1}
-      >
-        (what is this?)
-      </a>
-    </DialogTrigger>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Data Regions</DialogTitle>
-      </DialogHeader>
-      <DialogBody>
-        <DialogDescription className="flex flex-col gap-2">
-          <p>Langfuse Cloud is available in four data regions:</p>
-          <ul className="list-disc pl-5">
-            <li>US: Oregon (AWS us-west-2)</li>
-            <li>EU: Ireland (AWS eu-west-1)</li>
-            <li>JP: Tokyo (AWS ap-northeast-1)</li>
-            <li>
-              HIPAA: Oregon (AWS us-west-2) - HIPAA-compliant region (available
-              with Pro and Teams plans)
-            </li>
-          </ul>
-          <p>
-            Regions are strictly separated, and no data is shared across
-            regions. Choosing a region close to you can help improve speed and
-            comply with local data residency laws and privacy regulations.
-          </p>
-          <p>
-            You can have accounts in multiple regions. Each region requires a
-            separate subscription.
-          </p>
-          <p>
-            Learn more about{" "}
-            <a
-              href="https://langfuse.com/security/data-regions"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary-accent underline"
-            >
-              data regions
-            </a>{" "}
-            and{" "}
-            <a
-              href="https://langfuse.com/docs/data-security-privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary-accent underline"
-            >
-              data security & privacy
-            </a>
-            .
-          </p>
-        </DialogDescription>
-      </DialogBody>
-    </DialogContent>
-  </Dialog>
-);
+const DataRegionInfo = () => {
+  const { translateText } = useI18n();
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <a
+          href="#"
+          className="text-primary-accent hover:text-hover-primary-accent ml-1 text-xs"
+          title={translateText("What is this?")}
+          tabIndex={-1}
+        >
+          {translateText("(what is this?)")}
+        </a>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{translateText("Data Regions")}</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <DialogDescription className="flex flex-col gap-2">
+            <p>
+              {translateText(
+                "Langfuse Cloud is available in four data regions:",
+              )}
+            </p>
+            <ul className="list-disc pl-5">
+              <li>{translateText("US: Oregon (AWS us-west-2)")}</li>
+              <li>{translateText("EU: Ireland (AWS eu-west-1)")}</li>
+              <li>{translateText("JP: Tokyo (AWS ap-northeast-1)")}</li>
+              <li>
+                {translateText(
+                  "HIPAA: Oregon (AWS us-west-2) - HIPAA-compliant region (available with Pro and Teams plans)",
+                )}
+              </li>
+            </ul>
+            <p>
+              {translateText(
+                "Regions are strictly separated, and no data is shared across regions. Choosing a region close to you can help improve speed and comply with local data residency laws and privacy regulations.",
+              )}
+            </p>
+            <p>
+              {translateText(
+                "You can have accounts in multiple regions. Each region requires a separate subscription.",
+              )}
+            </p>
+            <p>
+              {translateText("Learn more about")}{" "}
+              <a
+                href="https://langfuse.com/security/data-regions"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary-accent underline"
+              >
+                {translateText("data regions")}
+              </a>{" "}
+              {translateText("and")}{" "}
+              <a
+                href="https://langfuse.com/docs/data-security-privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary-accent underline"
+              >
+                {translateText("data security & privacy")}
+              </a>
+              .
+            </p>
+          </DialogDescription>
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  );
+};

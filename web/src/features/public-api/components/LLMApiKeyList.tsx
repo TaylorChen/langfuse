@@ -26,10 +26,12 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
 import { CreateLLMApiKeyDialog } from "./CreateLLMApiKeyDialog";
 import { UpdateLLMApiKeyDialog } from "./UpdateLLMApiKeyDialog";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function LlmApiKeyList(props: { projectId: string }) {
   const [editingKeyId, setEditingKeyId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const { translateText } = useI18n();
 
   const hasAccess = useHasProjectAccess({
     projectId: props.projectId,
@@ -52,11 +54,13 @@ export function LlmApiKeyList(props: { projectId: string }) {
   if (!hasAccess) {
     return (
       <div>
-        <Header title="LLM Connections" />
+        <Header title={translateText("LLM Connections")} />
         <Alert>
-          <AlertTitle>Access Denied</AlertTitle>
+          <AlertTitle>{translateText("Access Denied")}</AlertTitle>
           <AlertDescription>
-            You do not have permission to view LLM API keys for this project.
+            {translateText(
+              "You do not have permission to view LLM API keys for this project.",
+            )}
           </AlertDescription>
         </Alert>
       </div>
@@ -65,27 +69,32 @@ export function LlmApiKeyList(props: { projectId: string }) {
 
   return (
     <div id="llm-api-keys">
-      <Header title="LLM Connections" />
+      <Header title={translateText("LLM Connections")} />
       <p className="mb-4 text-sm">
-        Connect your LLM services to enable evaluations and playground features.
-        Your provider will charge based on usage.
+        {translateText(
+          "Connect your LLM services to enable evaluations and playground features. Your provider will charge based on usage.",
+        )}
       </p>
       <Card className="mb-4 overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="text-primary md:table-cell">
-                Provider
+                {translateText("Provider")}
               </TableHead>
               <TableHead className="text-primary md:table-cell">
-                Adapter
+                {translateText("Adapter")}
               </TableHead>
               <TableHead className="text-primary md:table-cell">
-                Base URL
+                {translateText("Base URL")}
               </TableHead>
-              <TableHead className="text-primary">API Key</TableHead>
+              <TableHead className="text-primary">
+                {translateText("API Key")}
+              </TableHead>
               {hasExtraHeaderKeys ? (
-                <TableHead className="text-primary">Extra headers</TableHead>
+                <TableHead className="text-primary">
+                  {translateText("Extra headers")}
+                </TableHead>
               ) : null}
               <TableHead />
             </TableRow>
@@ -98,7 +107,7 @@ export function LlmApiKeyList(props: { projectId: string }) {
                   colSpan={6}
                   className="text-center"
                 >
-                  None
+                  {translateText("None")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -118,7 +127,7 @@ export function LlmApiKeyList(props: { projectId: string }) {
                     density="comfortable"
                     className="max-w-md overflow-auto font-mono"
                   >
-                    {apiKey.baseURL ?? "default"}
+                    {apiKey.baseURL ?? translateText("default")}
                   </TableCell>
                   <TableCell density="comfortable" className="font-mono">
                     {apiKey.displaySecretKey}
@@ -166,6 +175,7 @@ export function LlmApiKeyList(props: { projectId: string }) {
 // show dialog to let user confirm that this is a destructive action
 function DeleteApiKeyButton(props: { projectId: string; apiKeyId: string }) {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const hasAccess = useHasProjectAccess({
     projectId: props.projectId,
     scope: "llmApiKeys:delete",
@@ -188,10 +198,13 @@ function DeleteApiKeyButton(props: { projectId: string; apiKeyId: string }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="mb-5">Delete LLM Connection</DialogTitle>
+          <DialogTitle className="mb-5">
+            {translateText("Delete LLM Connection")}
+          </DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this connection? This action cannot
-            be undone.
+            {translateText(
+              "Are you sure you want to delete this connection? This action cannot be undone.",
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -214,10 +227,10 @@ function DeleteApiKeyButton(props: { projectId: string; apiKeyId: string }) {
             }}
             loading={mutDeleteApiKey.isPending}
           >
-            Permanently delete
+            {translateText("Permanently delete")}
           </Button>
           <Button variant="ghost" onClick={() => setOpen(false)}>
-            Cancel
+            {translateText("Cancel")}
           </Button>
         </DialogFooter>
       </DialogContent>

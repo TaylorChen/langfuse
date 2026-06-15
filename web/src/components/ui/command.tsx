@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogHeader,
 } from "@/src/components/ui/dialog";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const commandDialogSurfaceClass = "bg-background dark:bg-[rgb(15_23_42)]";
 
@@ -41,6 +42,8 @@ const CommandDialog = ({
 }: DialogProps & {
   filter?: React.ComponentProps<typeof CommandPrimitive>["filter"];
 }) => {
+  const { translateText } = useI18n();
+
   return (
     <Dialog {...props}>
       <DialogContent
@@ -52,7 +55,7 @@ const CommandDialog = ({
         overlayMode="invisible"
       >
         <DialogHeader className="sr-only p-0">
-          <DialogTitle>Search</DialogTitle>
+          <DialogTitle>{translateText("Search")}</DialogTitle>
         </DialogHeader>
         <DialogBody className="p-0">
           <Command

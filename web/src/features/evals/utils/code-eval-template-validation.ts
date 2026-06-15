@@ -40,6 +40,19 @@ type RuffWorkspace = {
   check(contents: string): RuffDiagnostic[];
   format(contents: string): string;
 };
+type TranslateText = (
+  text: string,
+  values?: Record<string, string | number | undefined>,
+) => string;
+
+const defaultTranslateText: TranslateText = (text, values) => {
+  if (!values) return text;
+  return Object.entries(values).reduce(
+    (result, [key, value]) =>
+      result.replaceAll(`{${key}}`, value === undefined ? "" : String(value)),
+    text,
+  );
+};
 
 const SYNTHETIC_ASSERTION_PREFIX = `
 type __LangfuseExpectedEvaluate = (
@@ -595,26 +608,30 @@ let ruffWorkspacePromise: Promise<RuffWorkspace> | null = null;
 export async function validateCodeEvalSourceWithLanguage({
   source,
   sourceCodeLanguage,
+  translateText = defaultTranslateText,
 }: {
   source: string;
   sourceCodeLanguage: CodeEvalSourceCodeLanguage;
+  translateText?: TranslateText;
 }): Promise<CodeEvalValidationResult> {
   if (sourceCodeLanguage === "PYTHON") {
-    return validateCodeEvalSourceWithPython(source);
+    return validateCodeEvalSourceWithPython(source, translateText);
   }
 
-  return validateCodeEvalSourceWithTypescript(source);
+  return validateCodeEvalSourceWithTypescript(source, translateText);
 }
 
 export async function validateCodeEvalSourceWithTypescript(
   source: string,
+  translateText: TranslateText = defaultTranslateText,
 ): Promise<CodeEvalValidationResult> {
   const tsModule = await import("typescript");
-  return validateCodeEvalSource(source, tsModule);
+  return validateCodeEvalSource(source, tsModule, translateText);
 }
 
 export async function validateCodeEvalSourceWithPython(
   source: string,
+  translateText: TranslateText = defaultTranslateText,
 ): Promise<CodeEvalValidationResult> {
   const sourceBytes = getUtf8ByteLength(source);
   const diagnostics: CodeEvalDiagnostic[] = [];
@@ -627,6 +644,7 @@ export async function validateCodeEvalSourceWithPython(
     sourceBytes,
     languageLabel: "Python",
     diagnostics,
+    translateText,
   });
 
   if (!hasPythonEvaluateFunction(source)) {
@@ -635,11 +653,13 @@ export async function validateCodeEvalSourceWithPython(
       from: evaluatePosition,
       to: clampToSourceRange(source, evaluatePosition + "evaluate".length),
       severity: "error",
-      message: "Evaluator source must define an evaluate function.",
+      message: translateText(
+        "Evaluator source must define an evaluate function.",
+      ),
     });
   }
 
-  collectPythonContractDiagnostics(source, diagnostics);
+  collectPythonContractDiagnostics(source, diagnostics, translateText);
 
   try {
     const ruffWorkspace = await getPythonRuffWorkspace();
@@ -660,8 +680,10 @@ export async function validateCodeEvalSourceWithPython(
       severity: "error",
       message:
         error instanceof Error
-          ? `Failed to lint Python source with Ruff: ${error.message}`
-          : "Failed to lint Python source with Ruff.",
+          ? translateText("Failed to lint Python source with Ruff: {message}", {
+              message: error.message,
+            })
+          : translateText("Failed to lint Python source with Ruff."),
     });
   }
 
@@ -682,6 +704,7 @@ export async function formatPythonCodeEvalSourceWithRuff(source: string) {
 export function validateCodeEvalSource(
   source: string,
   tsModule: TypeScriptModule,
+  translateText: TranslateText = defaultTranslateText,
 ): CodeEvalValidationResult {
   const sourceBytes = getUtf8ByteLength(source);
   const diagnostics: CodeEvalDiagnostic[] = [];
@@ -691,6 +714,7 @@ export function validateCodeEvalSource(
     sourceBytes,
     languageLabel: "TypeScript",
     diagnostics,
+    translateText,
   });
 
   const sourceFile = tsModule.createSourceFile(
@@ -704,14 +728,21 @@ export function validateCodeEvalSource(
   const evaluatePosition = findEvaluatePosition(sourceFile, tsModule) ?? 0;
   const hasEvaluate = hasEvaluateFunction(sourceFile, tsModule);
 
-  collectUnsupportedModuleSyntaxDiagnostics(sourceFile, diagnostics, tsModule);
+  collectUnsupportedModuleSyntaxDiagnostics(
+    sourceFile,
+    diagnostics,
+    tsModule,
+    translateText,
+  );
 
   if (!hasEvaluate) {
     diagnostics.push({
       from: evaluatePosition,
       to: clampToSourceRange(source, evaluatePosition + "evaluate".length),
       severity: "error",
-      message: "Evaluator source must define an evaluate function.",
+      message: translateText(
+        "Evaluator source must define an evaluate function.",
+      ),
     });
   }
 
@@ -851,6 +882,7 @@ function collectUnsupportedModuleSyntaxDiagnostics(
   sourceFile: ts.SourceFile,
   diagnostics: CodeEvalDiagnostic[],
   tsModule: TypeScriptModule,
+  translateText: TranslateText,
 ) {
   const visit = (node: ts.Node) => {
     if (
@@ -861,7 +893,9 @@ function collectUnsupportedModuleSyntaxDiagnostics(
         from: node.getStart(sourceFile),
         to: node.getEnd(),
         severity: "error",
-        message: "Imports and exports are not supported in code evaluators.",
+        message: translateText(
+          "Imports and exports are not supported in code evaluators.",
+        ),
       });
     }
 
@@ -878,8 +912,9 @@ function collectUnsupportedModuleSyntaxDiagnostics(
         from: node.getStart(sourceFile),
         to: node.getEnd(),
         severity: "error",
-        message:
+        message: translateText(
           "Exports are not supported. Define `function evaluate(ctx: EvaluationContext): EvaluationResult` instead.",
+        ),
       });
     }
 
@@ -970,18 +1005,23 @@ function collectBasicSourceDiagnostics({
   sourceBytes,
   languageLabel,
   diagnostics,
+  translateText,
 }: {
   source: string;
   sourceBytes: number;
   languageLabel: string;
   diagnostics: CodeEvalDiagnostic[];
+  translateText: TranslateText;
 }) {
   if (source.trim().length === 0) {
     diagnostics.push({
       from: 0,
       to: Math.max(1, source.length),
       severity: "error",
-      message: `Enter ${languageLabel} source code for the evaluator.`,
+      message: translateText(
+        "Enter {languageLabel} source code for the evaluator.",
+        { languageLabel },
+      ),
     });
   }
 
@@ -990,7 +1030,9 @@ function collectBasicSourceDiagnostics({
       from: 0,
       to: Math.max(1, source.length),
       severity: "error",
-      message: `Source code must be ${CODE_EVAL_SOURCE_MAX_BYTES} bytes or less.`,
+      message: translateText("Source code must be {maxBytes} bytes or less.", {
+        maxBytes: CODE_EVAL_SOURCE_MAX_BYTES,
+      }),
     });
   }
 }
@@ -998,6 +1040,7 @@ function collectBasicSourceDiagnostics({
 function collectPythonContractDiagnostics(
   source: string,
   diagnostics: CodeEvalDiagnostic[],
+  translateText: TranslateText,
 ) {
   if (source.trim().length === 0) return;
 
@@ -1006,7 +1049,12 @@ function collectPythonContractDiagnostics(
       from: 0,
       to: Math.min(source.length, PYTHON_CONTRACT_PREFIX.length),
       severity: "warning",
-      message: `Python evaluators should start with \`${PYTHON_CONTRACT_PREFIX}\`.`,
+      message: translateText(
+        "Python evaluators should start with `{prefix}`.",
+        {
+          prefix: PYTHON_CONTRACT_PREFIX,
+        },
+      ),
     });
   }
 
@@ -1019,8 +1067,9 @@ function collectPythonContractDiagnostics(
       from: evaluatePosition,
       to: clampToSourceRange(source, evaluatePosition + "evaluate".length),
       severity: "warning",
-      message:
+      message: translateText(
         "Python evaluators should use `def evaluate(ctx: EvaluationContext) -> EvaluationResult:`.",
+      ),
     });
   }
 }

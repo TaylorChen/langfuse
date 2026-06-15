@@ -51,6 +51,7 @@ import {
   shouldShowEvalTemplate,
 } from "@/src/features/evals/utils/code-eval-template-utils";
 import { SiPython, SiTypescript } from "react-icons/si";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export type EvalsTemplateRow = {
   name: string;
@@ -118,6 +119,7 @@ export default function EvalsTemplateTable({
   projectId: string;
 }) {
   const router = useRouter();
+  const { translateText } = useI18n();
   const codeEvalCapabilities = useIsCodeEvalEnabled();
   const { enabled: isCodeEvalEnabled, supportedSourceCodeLanguages } =
     codeEvalCapabilities;
@@ -200,13 +202,14 @@ export default function EvalsTemplateTable({
       setPendingCloneSubmission(null);
       setShowReferenceUpdateDialog(false);
       showSuccessToast({
-        title: "Evaluator cloned successfully",
-        description:
+        title: translateText("Evaluator cloned successfully"),
+        description: translateText(
           "This evaluator is now available and maintained on project level.",
+        ),
       });
     },
     onError: (error) => {
-      showErrorToast("Error cloning evaluator", error.message);
+      showErrorToast(translateText("Error cloning evaluator"), error.message);
     },
   });
 
@@ -237,7 +240,7 @@ export default function EvalsTemplateTable({
 
   const columns = [
     columnHelper.accessor("name", {
-      header: "Name",
+      header: translateText("Name"),
       id: "name",
       cell: (row) => {
         const name = row.getValue();
@@ -246,7 +249,7 @@ export default function EvalsTemplateTable({
     }),
     columnHelper.accessor("type", {
       id: "type",
-      header: "Type",
+      header: translateText("Type"),
       size: 120,
       cell: ({ row }) => (
         <TemplateTypeBadge
@@ -257,35 +260,35 @@ export default function EvalsTemplateTable({
     }),
     columnHelper.accessor("resultType", {
       id: "resultType",
-      header: "Score Result Type",
+      header: translateText("Score Result Type"),
       size: 120,
       cell: (row) => {
         const resultType = row.getValue();
 
         return (
           <Badge className="w-fit self-start" variant="outline-solid">
-            {resultType}
+            {translateText(resultType)}
           </Badge>
         );
       },
     }),
     columnHelper.accessor("maintainer", {
       id: "maintainer",
-      header: "Maintainer",
+      header: translateText("Maintainer"),
       size: 150,
       cell: (row) => {
         return (
           <div className="flex items-center gap-2">
             <MaintainerTooltip maintainer={row.getValue()} />
             <span className="text-muted-foreground">
-              {getMaintainerLabel(row.getValue())}
+              {translateText(getMaintainerLabel(row.getValue()))}
             </span>
           </div>
         );
       },
     }),
     columnHelper.accessor("latestCreatedAt", {
-      header: "Last Edited",
+      header: translateText("Last Edited"),
       id: "latestCreatedAt",
       size: 80,
       cell: (row) => {
@@ -293,7 +296,7 @@ export default function EvalsTemplateTable({
       },
     }),
     columnHelper.accessor("usageCount", {
-      header: "Usage Count",
+      header: translateText("Usage Count"),
       id: "usageCount",
       enableHiding: true,
       size: 80,
@@ -303,7 +306,7 @@ export default function EvalsTemplateTable({
       },
     }),
     columnHelper.accessor("latestVersion", {
-      header: "Latest Version",
+      header: translateText("Latest Version"),
       id: "latestVersion",
       enableHiding: true,
       size: 80,
@@ -312,7 +315,7 @@ export default function EvalsTemplateTable({
       },
     }),
     columnHelper.accessor("id", {
-      header: "Id",
+      header: translateText("Id"),
       id: "id",
       size: 100,
       enableHiding: true,
@@ -322,7 +325,7 @@ export default function EvalsTemplateTable({
       },
     }),
     columnHelper.accessor("actions", {
-      header: "Actions",
+      header: translateText("Actions"),
       id: "actions",
       size: 100,
       cell: ({ row }) => {
@@ -336,11 +339,13 @@ export default function EvalsTemplateTable({
             <ActionButton
               variant="outline"
               size="sm"
-              aria-label="apply"
+              aria-label={translateText("Apply")}
               disabled={isInvalid}
               title={
                 isInvalid
-                  ? "Evaluator requires project-level evaluation model. Set it up and start running evaluations."
+                  ? translateText(
+                      "Evaluator requires project-level evaluation model. Set it up and start running evaluations.",
+                    )
                   : undefined
               }
               hasAccess={hasAccess}
@@ -355,14 +360,14 @@ export default function EvalsTemplateTable({
                 }
               }}
             >
-              Use Evaluator
+              {translateText("Use Evaluator")}
             </ActionButton>
             {!isUserMaintained && !isCodeTemplate ? (
               <Button
-                aria-label="clone"
+                aria-label={translateText("Clone")}
                 variant="outline"
                 size="icon-xs"
-                title="Clone"
+                title={translateText("Clone")}
                 disabled={!hasAccess}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -374,10 +379,10 @@ export default function EvalsTemplateTable({
             ) : null}
             {isUserMaintained ? (
               <Button
-                aria-label="edit"
+                aria-label={translateText("Edit")}
                 variant="outline"
                 size="icon-xs"
-                title="Edit"
+                title={translateText("Edit")}
                 disabled={!hasAccess}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -426,7 +431,7 @@ export default function EvalsTemplateTable({
       name: template.name,
       resultType:
         template.type === EvalTemplateType.CODE
-          ? "Code-defined"
+          ? translateText("Code-defined")
           : getTemplateResultType(template.outputDefinition),
       maintainer: getMaintainer(template),
       latestCreatedAt: template.latestCreatedAt,
@@ -514,7 +519,7 @@ export default function EvalsTemplateTable({
           }
         >
           <DialogHeader>
-            <DialogTitle>Edit evaluator</DialogTitle>
+            <DialogTitle>{translateText("Edit evaluator")}</DialogTitle>
           </DialogHeader>
           <EvalTemplateForm
             projectId={projectId}
@@ -526,8 +531,8 @@ export default function EvalsTemplateTable({
               setEditTemplateId(null);
               utils.evals.templateNames.invalidate();
               showSuccessToast({
-                title: "Evaluator updated successfully",
-                description: "You can now use this evaluator.",
+                title: translateText("Evaluator updated successfully"),
+                description: translateText("You can now use this evaluator."),
               });
             }}
           />
@@ -551,7 +556,7 @@ export default function EvalsTemplateTable({
           }
         >
           <DialogHeader>
-            <DialogTitle>Clone evaluator</DialogTitle>
+            <DialogTitle>{translateText("Clone evaluator")}</DialogTitle>
           </DialogHeader>
           <EvalTemplateForm
             projectId={projectId}
@@ -597,9 +602,10 @@ export default function EvalsTemplateTable({
               setPendingCloneSubmission(null);
               utils.evals.templateNames.invalidate();
               showSuccessToast({
-                title: "Evaluator cloned successfully",
-                description:
-                  "This evaluator is now available and maintained on project level. ",
+                title: translateText("Evaluator cloned successfully"),
+                description: translateText(
+                  "This evaluator is now available and maintained on project level.",
+                ),
               });
             }}
           />
@@ -620,14 +626,19 @@ export default function EvalsTemplateTable({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update running evaluators?</DialogTitle>
+            <DialogTitle>
+              {translateText("Update running evaluators?")}
+            </DialogTitle>
             <DialogDescription>
-              Do you want all running evaluators attached to the original
-              Langfuse evaluator to reference your new project-level version?
+              {translateText(
+                "Do you want all running evaluators attached to the original Langfuse evaluator to reference your new project-level version?",
+              )}
               <br />
               <br />
-              <strong>Warning:</strong> This might break workflows if you have
-              changed variables or other critical aspects of the template.
+              <strong>{translateText("Warning:")}</strong>{" "}
+              {translateText(
+                "This might break workflows if you have changed variables or other critical aspects of the template.",
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -642,7 +653,7 @@ export default function EvalsTemplateTable({
                 }
               }}
             >
-              No, keep as is
+              {translateText("No, keep as is")}
             </Button>
             <Button
               onClick={() => {
@@ -654,7 +665,7 @@ export default function EvalsTemplateTable({
                 }
               }}
             >
-              Yes, update all references
+              {translateText("Yes, update all references")}
             </Button>
           </DialogFooter>
         </DialogContent>

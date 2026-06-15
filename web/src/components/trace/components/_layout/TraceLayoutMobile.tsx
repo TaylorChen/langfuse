@@ -15,6 +15,7 @@
 import { useState, createContext, useContext, type ReactNode } from "react";
 import { Button } from "@/src/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // Context for sharing accordion state with compound components
 interface TraceLayoutMobileContext {
@@ -61,6 +62,7 @@ TraceLayoutMobile.NavigationPanel = function Navigation({
   children: ReactNode;
 }) {
   const { isNavigationExpanded, setIsNavigationExpanded } = useLayoutContext();
+  const { t } = useI18n();
 
   return (
     <div className="flex shrink-0 flex-col border-b">
@@ -70,7 +72,7 @@ TraceLayoutMobile.NavigationPanel = function Navigation({
         className="flex w-full justify-between rounded-none px-4 py-3 text-left"
         onClick={() => setIsNavigationExpanded(!isNavigationExpanded)}
       >
-        <span className="font-medium">Navigation</span>
+        <span className="font-medium">{t("traceLog.navigation")}</span>
         {isNavigationExpanded ? (
           <ChevronUp className="h-4 w-4" />
         ) : (

@@ -26,6 +26,7 @@ import {
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { cn } from "@/src/utils/tailwind";
 import { api } from "@/src/utils/api";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type DatasetOption = {
   id: string;
@@ -43,6 +44,7 @@ export const RemoteExperimentDatasetStep = ({
   onBack: () => void;
   onContinue: (dataset: DatasetOption) => void;
 }) => {
+  const { translateText } = useI18n();
   const [datasetPopoverOpen, setDatasetPopoverOpen] = useState(false);
   const [selectedDatasetId, setSelectedDatasetId] = useState(
     initialDatasetId ?? "",
@@ -75,12 +77,13 @@ export const RemoteExperimentDatasetStep = ({
           onClick={onBack}
           className="inline-block self-start"
         >
-          ← Back
+          ← {translateText("Back")}
         </Button>
-        <DialogTitle>Select dataset</DialogTitle>
+        <DialogTitle>{translateText("Select dataset")}</DialogTitle>
         <DialogDescription>
-          Remote dataset run triggers are attached to a dataset. Choose the
-          dataset before configuring the remote experiment.
+          {translateText(
+            "Remote dataset run triggers are attached to a dataset. Choose the dataset before configuring the remote experiment.",
+          )}
         </DialogDescription>
       </DialogHeader>
 
@@ -89,7 +92,9 @@ export const RemoteExperimentDatasetStep = ({
           <Skeleton className="h-24 w-full" />
         ) : datasets.data && datasets.data.length > 0 ? (
           <div className="space-y-2">
-            <div className="text-sm font-medium">Dataset</div>
+            <div className="text-sm font-medium">
+              {translateText("Dataset")}
+            </div>
             <Popover
               open={datasetPopoverOpen}
               onOpenChange={setDatasetPopoverOpen}
@@ -101,7 +106,7 @@ export const RemoteExperimentDatasetStep = ({
                   aria-expanded={datasetPopoverOpen}
                   className="w-full justify-between px-2 font-normal"
                 >
-                  {selectedDataset?.name ?? "Select a dataset"}
+                  {selectedDataset?.name ?? translateText("Select a dataset")}
                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -111,12 +116,14 @@ export const RemoteExperimentDatasetStep = ({
               >
                 <InputCommand>
                   <InputCommandInput
-                    placeholder="Search datasets..."
+                    placeholder={translateText("Search datasets...")}
                     className="h-9"
                     variant="bottom"
                   />
                   <InputCommandList>
-                    <InputCommandEmpty>No dataset found.</InputCommandEmpty>
+                    <InputCommandEmpty>
+                      {translateText("No dataset found.")}
+                    </InputCommandEmpty>
                     <InputCommandGroup>
                       {datasets.data.map((dataset) => (
                         <InputCommandItem
@@ -146,9 +153,13 @@ export const RemoteExperimentDatasetStep = ({
           </div>
         ) : (
           <div className="rounded-md border p-4 text-sm">
-            <div className="font-medium">No datasets found</div>
+            <div className="font-medium">
+              {translateText("No datasets found")}
+            </div>
             <p className="text-muted-foreground mt-1">
-              Create a dataset before setting up a remote experiment trigger.
+              {translateText(
+                "Create a dataset before setting up a remote experiment trigger.",
+              )}
             </p>
           </div>
         )}
@@ -170,7 +181,7 @@ export const RemoteExperimentDatasetStep = ({
                 <Spinner size="sm" />
               </div>
             ) : null}
-            Continue
+            {translateText("Continue")}
           </Button>
         </div>
       </DialogFooter>

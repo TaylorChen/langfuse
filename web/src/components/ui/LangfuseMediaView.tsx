@@ -21,6 +21,7 @@ import {
   Video,
   Volume2,
 } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const LangfuseMediaView = ({
   mediaReferenceString,
@@ -31,6 +32,7 @@ export const LangfuseMediaView = ({
   mediaAPIReturnValue?: MediaReturnType;
   asFileIcon?: boolean;
 }) => {
+  const { translateText } = useI18n();
   let mediaData: { id: string; type: MediaContentType } | null = null;
 
   const projectId = useProjectIdFromURL();
@@ -58,10 +60,12 @@ export const LangfuseMediaView = ({
   if (!mediaData)
     return (
       <div className="flex items-center gap-2">
-        <span title="Invalid Langfuse Media Tag">
+        <span title={translateText("Invalid Langfuse Media Tag")}>
           <ImageOff className="h-4 w-4" />
         </span>
-        <span className="truncate text-sm">Invalid Langfuse Media Tag</span>
+        <span className="truncate text-sm">
+          {translateText("Invalid Langfuse Media Tag")}
+        </span>
       </div>
     );
 
@@ -114,6 +118,7 @@ function FileViewer({
   contentType: MediaContentType;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { translateText } = useI18n();
 
   if (!src) return null;
 
@@ -186,8 +191,10 @@ function FileViewer({
             variant="outline"
             size="icon-sm"
             onClick={openInNewTab}
-            aria-label={`Open ${fileName} in new tab`}
-            title={`Open ${fileName} in new tab`}
+            aria-label={translateText("Open {fileName} in new tab", {
+              fileName,
+            })}
+            title={translateText("Open {fileName} in new tab", { fileName })}
             className="shrink-0"
           >
             <ExternalLink className="h-4 w-4" />
@@ -198,8 +205,8 @@ function FileViewer({
           onClick={() => (isPreviewable ? setIsExpanded(true) : openInNewTab())}
           aria-label={
             isPreviewable
-              ? `Show ${fileName} inline`
-              : `Open ${fileName} in new tab`
+              ? translateText("Show {fileName} inline", { fileName })
+              : translateText("Open {fileName} in new tab", { fileName })
           }
           aria-expanded={isPreviewable ? isExpanded : undefined}
           title={fileName}
@@ -213,23 +220,27 @@ function FileViewer({
 }
 
 function AudioPlayer({ src }: { src?: string }) {
+  const { translateText } = useI18n();
+
   if (!src) return null;
 
   return (
     <audio controls className="w-full" preload="metadata">
       <source src={src} />
-      Your browser does not support the audio element.
+      {translateText("Your browser does not support the audio element.")}
     </audio>
   );
 }
 
 function VideoPlayer({ src }: { src?: string }) {
+  const { translateText } = useI18n();
+
   if (!src) return null;
 
   return (
     <video controls className="w-full" preload="metadata" playsInline>
       <source src={src} />
-      Your browser does not support the video element.
+      {translateText("Your browser does not support the video element.")}
     </video>
   );
 }

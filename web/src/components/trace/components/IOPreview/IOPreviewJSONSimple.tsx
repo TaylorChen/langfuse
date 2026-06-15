@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { type Prisma, type ScoreDomain, deepParseJson } from "@langfuse/shared";
 import { PrettyJsonView } from "@/src/components/ui/PrettyJsonView";
 import { type MediaReturnType } from "@/src/features/media/validation";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { CorrectedOutputField } from "./components/CorrectedOutputField";
 
 export interface IOPreviewJSONSimpleProps {
@@ -74,6 +75,8 @@ export function IOPreviewJSONSimple({
   environment = "default",
   showCorrections = true,
 }: IOPreviewJSONSimpleProps) {
+  const { translateText } = useI18n();
+
   // Parse data if not pre-parsed
   // IMPORTANT: Don't parse while isParsing=true to avoid double-parsing with different object references
   const effectiveInput = useMemo(() => {
@@ -99,7 +102,7 @@ export function IOPreviewJSONSimple({
     <div className="[&_.io-message-content]:px-2 [&_.io-message-header]:px-2">
       {showInput && (
         <PrettyJsonView
-          title="Input"
+          title={translateText("Input")}
           json={input}
           parsedJson={effectiveInput}
           isLoading={isLoading}
@@ -117,7 +120,7 @@ export function IOPreviewJSONSimple({
       )}
       {showOutput && (
         <PrettyJsonView
-          title="Output"
+          title={translateText("Output")}
           json={output}
           parsedJson={effectiveOutput}
           isLoading={isLoading}
@@ -144,7 +147,7 @@ export function IOPreviewJSONSimple({
       )}
       {showMetadata && (
         <PrettyJsonView
-          title="Metadata"
+          title={translateText("Metadata")}
           json={metadata}
           parsedJson={effectiveMetadata}
           isLoading={isLoading}

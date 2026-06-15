@@ -48,26 +48,32 @@ import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAcces
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { ActionHandlerRegistry } from "./actions";
-import { webhookSchema } from "./actions/WebhookActionForm";
+import { createWebhookSchema } from "./actions/WebhookActionForm";
 import { MultiSelect } from "@/src/features/filters/components/multi-select";
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
 import Link from "next/link";
 import { Info } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // Define Slack action schema
-const slackSchema = z.object({
-  channelId: z.string().min(1, "Channel is required"),
-  channelName: z.string().min(1, "Channel name is required"),
-  messageTemplate: z.string().optional(),
-});
+const createSlackSchema = (translateText: (text: string) => string) =>
+  z.object({
+    channelId: z.string().min(1, translateText("Channel is required")),
+    channelName: z.string().min(1, translateText("Channel name is required")),
+    messageTemplate: z.string().optional(),
+  });
 
 // Define GitHub Dispatch action schema
-const githubDispatchSchema = z.object({
-  url: z.url("Invalid URL"),
-  eventType: z.string().min(1, "Event type is required").max(100),
-  githubToken: z.string(),
-  displayGitHubToken: z.string().optional(),
-});
+const createGithubDispatchSchema = (translateText: (text: string) => string) =>
+  z.object({
+    url: z.url(translateText("Invalid URL")),
+    eventType: z
+      .string()
+      .min(1, translateText("Event type is required"))
+      .max(100),
+    githubToken: z.string(),
+    displayGitHubToken: z.string().optional(),
+  });
 
 /** promptEventActionDefaults is the default eventAction set for a fresh prompt-source automation. */
 const promptEventActionDefaults: string[] = ["created", "updated", "deleted"];
@@ -157,44 +163,46 @@ export const automationCreateHref = (
 };
 
 // Define schemas for form validation
-const baseFormSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
-  eventSource: z.string().min(1, "Event source is required"),
-  eventAction: z.array(z.string()),
-  status: z.enum(["ACTIVE", "INACTIVE"]),
-  filter: z.array(z.any()).optional(),
-});
-
-const formSchema = z
-  .discriminatedUnion("actionType", [
-    baseFormSchema.extend({
-      actionType: z.literal("WEBHOOK"),
-      webhook: webhookSchema,
-    }),
-    baseFormSchema.extend({
-      actionType: z.literal("SLACK"),
-      slack: slackSchema,
-    }),
-    baseFormSchema.extend({
-      actionType: z.literal("GITHUB_DISPATCH"),
-      githubDispatch: githubDispatchSchema,
-    }),
-  ])
-  .superRefine((data, ctx) => {
-    // Prompt-source triggers require at least one event action; monitor-source triggers don't use this field.
-    if (
-      data.eventSource === TriggerEventSource.Prompt &&
-      data.eventAction.length === 0
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["eventAction"],
-        message: "At least one event action is required",
-      });
-    }
+const createFormSchema = (translateText: (text: string) => string) => {
+  const baseFormSchema = z.object({
+    name: z.string().min(1, translateText("Name is required")).max(100),
+    eventSource: z.string().min(1, translateText("Event source is required")),
+    eventAction: z.array(z.string()),
+    status: z.enum(["ACTIVE", "INACTIVE"]),
+    filter: z.array(z.any()).optional(),
   });
 
-type FormValues = z.infer<typeof formSchema>;
+  return z
+    .discriminatedUnion("actionType", [
+      baseFormSchema.extend({
+        actionType: z.literal("WEBHOOK"),
+        webhook: createWebhookSchema(translateText),
+      }),
+      baseFormSchema.extend({
+        actionType: z.literal("SLACK"),
+        slack: createSlackSchema(translateText),
+      }),
+      baseFormSchema.extend({
+        actionType: z.literal("GITHUB_DISPATCH"),
+        githubDispatch: createGithubDispatchSchema(translateText),
+      }),
+    ])
+    .superRefine((data, ctx) => {
+      // Prompt-source triggers require at least one event action; monitor-source triggers don't use this field.
+      if (
+        data.eventSource === TriggerEventSource.Prompt &&
+        data.eventAction.length === 0
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["eventAction"],
+          message: translateText("At least one event action is required"),
+        });
+      }
+    });
+};
+
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
 /** EventSourceField renders the trigger source picker and routes changes through onSourceChange so the parent can reset dependent fields. */
 const EventSourceField = ({
@@ -207,13 +215,14 @@ const EventSourceField = ({
   disabled: boolean;
 }) => {
   const { isLangfuseCloud } = useLangfuseCloudRegion();
+  const { translateText } = useI18n();
   return (
     <FormField
       control={control}
       name="eventSource"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Event Source</FormLabel>
+          <FormLabel>{translateText("Event Source")}</FormLabel>
           <Select
             onValueChange={(value) =>
               onSourceChange(value as TriggerEventSource)
@@ -223,24 +232,28 @@ const EventSourceField = ({
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select an event source" />
+                <SelectValue
+                  placeholder={translateText("Select an event source")}
+                />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value={TriggerEventSource.Prompt}>Prompt</SelectItem>
+              <SelectItem value={TriggerEventSource.Prompt}>
+                {translateText("Prompt")}
+              </SelectItem>
               {(isLangfuseCloud ||
                 field.value === TriggerEventSource.Monitor) && (
                 <SelectItem value={TriggerEventSource.Monitor}>
-                  Monitor
+                  {translateText("Monitor")}
                 </SelectItem>
               )}
               <SelectItem disabled={true} value="planned">
-                More coming soon...
+                {translateText("More coming soon...")}
               </SelectItem>
             </SelectContent>
           </Select>
           <FormDescription>
-            The event that triggers this automation.
+            {translateText("The event that triggers this automation.")}
           </FormDescription>
           <FormMessage />
         </FormItem>
@@ -256,88 +269,105 @@ const PromptTriggerFields = ({
 }: {
   control: Control<FormValues>;
   disabled: boolean;
-}) => (
-  <>
-    <FormField
-      control={control}
-      name="eventAction"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Event Action</FormLabel>
-          <FormControl>
-            <MultiSelect
-              title="Event Actions"
-              label="Actions"
-              values={field.value}
-              onValueChange={field.onChange}
-              options={[
-                {
-                  value: "created",
-                  description: "Whenever a new prompt version is created",
-                },
-                {
-                  value: "updated",
-                  description:
-                    "Whenever tags or labels on a prompt version are updated",
-                },
-                {
-                  value: "deleted",
-                  description: "Whenever a prompt version is deleted",
-                },
-              ]}
-              className="my-0 w-auto overflow-hidden"
-              disabled={disabled}
-              labelTruncateCutOff={4}
-            />
-          </FormControl>
-          <FormDescription>
-            The actions on the event source that trigger this automation.
-          </FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={control}
-      name="filter"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Filter</FormLabel>
-          <FormControl>
-            <InlineFilterBuilder
-              columns={webhookActionFilterOptions()}
-              filterState={field.value || []}
-              onChange={field.onChange}
-              disabled={disabled}
-            />
-          </FormControl>
-          <FormDescription>
-            Add conditions to narrow down when this trigger fires.
-          </FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  </>
-);
+}) => {
+  const { translateText } = useI18n();
+
+  return (
+    <>
+      <FormField
+        control={control}
+        name="eventAction"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{translateText("Event Action")}</FormLabel>
+            <FormControl>
+              <MultiSelect
+                title={translateText("Event Actions")}
+                label={translateText("Actions")}
+                values={field.value}
+                onValueChange={field.onChange}
+                options={[
+                  {
+                    value: "created",
+                    description: translateText(
+                      "Whenever a new prompt version is created",
+                    ),
+                  },
+                  {
+                    value: "updated",
+                    description: translateText(
+                      "Whenever tags or labels on a prompt version are updated",
+                    ),
+                  },
+                  {
+                    value: "deleted",
+                    description: translateText(
+                      "Whenever a prompt version is deleted",
+                    ),
+                  },
+                ]}
+                className="my-0 w-auto overflow-hidden"
+                disabled={disabled}
+                labelTruncateCutOff={4}
+              />
+            </FormControl>
+            <FormDescription>
+              {translateText(
+                "The actions on the event source that trigger this automation.",
+              )}
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="filter"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{translateText("Filter")}</FormLabel>
+            <FormControl>
+              <InlineFilterBuilder
+                columns={webhookActionFilterOptions()}
+                filterState={field.value || []}
+                onChange={field.onChange}
+                disabled={disabled}
+              />
+            </FormControl>
+            <FormDescription>
+              {translateText(
+                "Add conditions to narrow down when this trigger fires.",
+              )}
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </>
+  );
+};
 
 /** MonitorTriggerFields renders an info card explaining that monitors connect to this automation via the create-monitor page. */
-const MonitorTriggerFields = ({ projectId }: { projectId: string }) => (
-  <Alert>
-    <Info className="h-4 w-4" />
-    <AlertTitle>How Monitors Connect</AlertTitle>
-    <AlertDescription>
-      Add this automation to a monitor from the{" "}
-      <Link
-        href={`/project/${projectId}/monitors/new`}
-        className="text-primary underline underline-offset-2"
-      >
-        create monitors page
-      </Link>
-      .
-    </AlertDescription>
-  </Alert>
-);
+const MonitorTriggerFields = ({ projectId }: { projectId: string }) => {
+  const { translateText } = useI18n();
+
+  return (
+    <Alert>
+      <Info className="h-4 w-4" />
+      <AlertTitle>{translateText("How Monitors Connect")}</AlertTitle>
+      <AlertDescription>
+        {translateText("Add this automation to a monitor from the")}{" "}
+        <Link
+          href={`/project/${projectId}/monitors/new`}
+          className="text-primary underline underline-offset-2"
+        >
+          {translateText("create monitors page")}
+        </Link>
+        .
+      </AlertDescription>
+    </Alert>
+  );
+};
 
 interface AutomationFormProps {
   projectId: string;
@@ -363,6 +393,7 @@ export const AutomationForm = ({
   prefill,
 }: AutomationFormProps) => {
   const router = useRouter();
+  const { translateText } = useI18n();
   const hasAccess = useHasProjectAccess({
     projectId,
     scope: "automations:CUD",
@@ -479,6 +510,10 @@ export const AutomationForm = ({
   };
 
   // Initialize form with default values or values from existing automation
+  const formSchema = React.useMemo(
+    () => createFormSchema(translateText),
+    [translateText],
+  );
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: getDefaultValues(),
@@ -488,20 +523,21 @@ export const AutomationForm = ({
   const onSubmit = async (data: FormValues) => {
     if (!hasAccess) {
       showErrorToast(
-        "Permission Denied",
-        "You don't have permission to modify automations.",
+        translateText("Permission Denied"),
+        translateText("You don't have permission to modify automations."),
       );
       return;
     }
 
     // Use action handler to validate and build config
     const handler = ActionHandlerRegistry.getHandler(data.actionType);
-    const validation = handler.validateFormData(data);
+    const validation = handler.validateFormData(data, translateText);
 
     if (!validation.isValid) {
       showErrorToast(
-        "Validation Error",
-        validation.errors?.join(", ") || "Please fill in all required fields",
+        translateText("Validation Error"),
+        validation.errors?.map((error) => translateText(error)).join(", ") ||
+          translateText("Please fill in all required fields"),
       );
       return;
     }
@@ -523,8 +559,10 @@ export const AutomationForm = ({
       });
 
       showSuccessToast({
-        title: "Automation Updated",
-        description: `Successfully updated automation "${data.name}".`,
+        title: translateText("Automation Updated"),
+        description: translateText(
+          'Successfully updated automation "{name}".',
+        ).replace("{name}", data.name),
       });
 
       onSuccess?.(automation.id);
@@ -542,8 +580,10 @@ export const AutomationForm = ({
       });
 
       showSuccessToast({
-        title: "Automation Created",
-        description: `Successfully created automation "${data.name}".`,
+        title: translateText("Automation Created"),
+        description: translateText(
+          'Successfully created automation "{name}".',
+        ).replace("{name}", data.name),
       });
 
       onSuccess?.(
@@ -556,7 +596,9 @@ export const AutomationForm = ({
 
   // Update button text based on if we're editing an existing automation
   const submitButtonText =
-    isEditing && automation ? "Update Automation" : "Save Automation";
+    isEditing && automation
+      ? translateText("Update Automation")
+      : translateText("Save Automation");
 
   // Update required fields based on action type
   const handleActionTypeChange = (value: ActionTypes) => {
@@ -625,12 +667,12 @@ export const AutomationForm = ({
               <FormField
                 control={form.control}
                 name="name"
-                rules={{ required: "Name is required" }}
+                rules={{ required: translateText("Name is required") }}
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Input
-                        placeholder="Automation name"
+                        placeholder={translateText("Automation name")}
                         {...field}
                         autoFocus={!automation}
                         disabled={!hasAccess || !isEditing}
@@ -647,7 +689,9 @@ export const AutomationForm = ({
               name="status"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center gap-2">
-                  <FormLabel className="text-sm font-medium">Active</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    {translateText("Active")}
+                  </FormLabel>
                   <FormControl>
                     <Switch
                       checked={field.value === "ACTIVE"}
@@ -666,9 +710,9 @@ export const AutomationForm = ({
 
         <Card>
           <CardHeader>
-            <CardTitle>Trigger</CardTitle>
+            <CardTitle>{translateText("Trigger")}</CardTitle>
             <CardDescription>
-              Configure when this automation should run.
+              {translateText("Configure when this automation should run.")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -690,9 +734,9 @@ export const AutomationForm = ({
 
         <Card>
           <CardHeader>
-            <CardTitle>Action</CardTitle>
+            <CardTitle>{translateText("Action")}</CardTitle>
             <CardDescription>
-              Configure what happens when the trigger fires.
+              {translateText("Configure what happens when the trigger fires.")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -701,7 +745,7 @@ export const AutomationForm = ({
               name="actionType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Action Type</FormLabel>
+                  <FormLabel>{translateText("Action Type")}</FormLabel>
                   <Select
                     onValueChange={handleActionTypeChange}
                     value={field.value}
@@ -709,7 +753,9 @@ export const AutomationForm = ({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select an action type" />
+                        <SelectValue
+                          placeholder={translateText("Select an action type")}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -717,22 +763,24 @@ export const AutomationForm = ({
                         (actionType) => (
                           <SelectItem key={actionType} value={actionType}>
                             {actionType === "WEBHOOK"
-                              ? "Webhook"
+                              ? translateText("Webhook")
                               : actionType === "SLACK"
-                                ? "Slack"
+                                ? translateText("Slack")
                                 : actionType === "GITHUB_DISPATCH"
-                                  ? "GitHub Dispatch"
-                                  : "Annotation Queue"}
+                                  ? translateText("GitHub Dispatch")
+                                  : translateText("Annotation Queue")}
                           </SelectItem>
                         ),
                       )}
                       <SelectItem disabled={true} value="planned">
-                        More coming soon...
+                        {translateText("More coming soon...")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    The type of action to perform when the trigger fires.
+                    {translateText(
+                      "The type of action to perform when the trigger fires.",
+                    )}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -769,7 +817,7 @@ export const AutomationForm = ({
             <div className="grow"></div>
             <div className="flex gap-3">
               <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
+                {translateText("Cancel")}
               </Button>
               <Button
                 type="submit"

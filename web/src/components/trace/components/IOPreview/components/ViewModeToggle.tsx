@@ -1,6 +1,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Switch } from "@/src/components/ui/switch";
 import { useJsonBetaToggle } from "@/src/components/trace/hooks/useJsonBetaToggle";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export type ViewMode = "pretty" | "json" | "json-beta";
 
@@ -15,6 +16,7 @@ export function ViewModeToggle({
   onViewChange,
   compensateScrollRef,
 }: ViewModeToggleProps) {
+  const { translateText } = useI18n();
   const {
     jsonBetaEnabled,
     selectedViewTab,
@@ -32,7 +34,7 @@ export function ViewModeToggle({
       >
         <TabsList className="h-fit p-0.5">
           <TabsTrigger value="pretty" className="h-fit px-1 text-xs">
-            Formatted
+            {translateText("Formatted")}
           </TabsTrigger>
           <TabsTrigger value="json" className="h-fit px-1 text-xs">
             JSON
@@ -46,7 +48,9 @@ export function ViewModeToggle({
             checked={jsonBetaEnabled}
             onCheckedChange={handleBetaToggle}
           />
-          <span className="text-muted-foreground text-xs">Beta</span>
+          <span className="text-muted-foreground text-xs">
+            {translateText("Beta")}
+          </span>
         </div>
       )}
     </div>

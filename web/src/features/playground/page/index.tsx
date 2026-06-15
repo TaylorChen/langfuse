@@ -16,6 +16,7 @@ import {
 } from "@/src/components/ChatMessages/MessageSearch";
 import useProjectIdFromURL from "@/src/hooks/useProjectIdFromURL";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * PlaygroundPage Component
@@ -39,6 +40,7 @@ import Spinner from "@/src/components/design-system/Spinner/Spinner";
  * - Clean single-header design
  */
 export default function PlaygroundPage() {
+  const { translateText } = useI18n();
   const [isMac, setIsMac] = useState(false);
 
   useEffect(() => {
@@ -97,8 +99,10 @@ export default function PlaygroundPage() {
 
   const getMessageSearchPageLabel = useCallback(
     (_pageId: string, pageIndex: number) =>
-      windowIds.length > 1 ? `Window ${pageIndex + 1}` : null,
-    [windowIds.length],
+      windowIds.length > 1
+        ? translateText("Window {index}", { index: String(pageIndex + 1) })
+        : null,
+    [translateText, windowIds.length],
   );
 
   // Don't render until window IDs are loaded
@@ -125,7 +129,12 @@ export default function PlaygroundPage() {
   // Execution status and control states
   const executionStatus = globalIsExecutingAll
     ? getExecutionStatus() ||
-      `Executing ${windowIds.length} window${windowIds.length === 1 ? "" : "s"}`
+      translateText("Executing {count} {windowLabel}", {
+        count: String(windowIds.length),
+        windowLabel: translateText(
+          windowIds.length === 1 ? "window" : "windows",
+        ),
+      })
     : getExecutionStatus();
   const isRunAllDisabled = globalIsExecutingAll || !hasAnyModelConfigured;
 
@@ -156,8 +165,12 @@ export default function PlaygroundPage() {
               {/* Window Count Display - Hidden on mobile */}
               <div className="text-muted-foreground hidden items-center gap-2 text-sm md:flex">
                 <span className="whitespace-nowrap">
-                  {windowIds.length} window
-                  {windowIds.length === 1 ? "" : "s"}
+                  {translateText("{count} {windowLabel}", {
+                    count: String(windowIds.length),
+                    windowLabel: translateText(
+                      windowIds.length === 1 ? "window" : "windows",
+                    ),
+                  })}
                 </span>
                 {executionStatus && (
                   <>
@@ -180,8 +193,12 @@ export default function PlaygroundPage() {
                 className="hidden shrink-0 gap-1 md:flex"
                 title={
                   !hasAnyModelConfigured
-                    ? "Please configure a model in Project Settings first"
-                    : "Execute all playground windows simultaneously"
+                    ? translateText(
+                        "Please configure a model in Project Settings first",
+                      )
+                    : translateText(
+                        "Execute all playground windows simultaneously",
+                      )
                 }
               >
                 {globalIsExecutingAll ? (
@@ -190,7 +207,7 @@ export default function PlaygroundPage() {
                   <Play className="h-3 w-3" />
                 )}
                 <span className="hidden items-center gap-1 lg:inline-flex">
-                  <span>Run All</span>
+                  <span>{translateText("Run All")}</span>
                   <KeyboardShortcut keys={[isMac ? "⌘" : "Ctrl", "Enter"]} />
                 </span>
               </Button>

@@ -53,6 +53,7 @@ import {
   useTableRowIsSelected,
   useTableSelectAll,
 } from "@/src/components/table/table-selection-store";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface DataTableProps<TData, TValue> {
   columns: LangfuseColumnDef<TData, TValue>[];
@@ -202,6 +203,8 @@ export function DataTable<TData extends object, TValue>({
   topAlignCells = false,
   cellPadding = "compact",
 }: DataTableProps<TData, TValue>) {
+  const { t, translateText } = useI18n();
+  const defaultNoResultsMessage = t("common.noResults");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const rowheighttw = getRowHeightTailwindClass(rowHeight, customRowHeights);
   const capture = usePostHogClientCapture();
@@ -416,7 +419,7 @@ export function DataTable<TData extends object, TValue>({
                               />
                             )}
                             {orderBy?.column === columnDef.id
-                              ? renderOrderingIndicator(orderBy)
+                              ? renderOrderingIndicator(orderBy, translateText)
                               : null}
 
                             <div
@@ -451,6 +454,7 @@ export function DataTable<TData extends object, TValue>({
                 data={data}
                 help={help}
                 noResultsMessage={noResultsMessage}
+                defaultNoResultsMessage={defaultNoResultsMessage}
                 onRowClick={hasRowClickAction ? handleOnRowClick : undefined}
                 getRowClassName={getRowClassName}
                 highlightAllRows={highlightAllRows}
@@ -472,6 +476,7 @@ export function DataTable<TData extends object, TValue>({
                 data={data}
                 help={help}
                 noResultsMessage={noResultsMessage}
+                defaultNoResultsMessage={defaultNoResultsMessage}
                 onRowClick={hasRowClickAction ? handleOnRowClick : undefined}
                 getRowClassName={getRowClassName}
                 highlightAllRows={highlightAllRows}
@@ -502,12 +507,15 @@ export function DataTable<TData extends object, TValue>({
   );
 }
 
-function renderOrderingIndicator(orderBy?: OrderByState) {
+function renderOrderingIndicator(
+  orderBy: OrderByState | undefined,
+  translateText: (text: string) => string,
+) {
   if (!orderBy) return null;
   if (orderBy.order === "ASC") return <span className="ml-1">▲</span>;
   else
     return (
-      <span className="ml-1" title="Sort by this column">
+      <span className="ml-1" title={translateText("Sort by this column")}>
         ▼
       </span>
     );
@@ -521,6 +529,7 @@ interface TableBodyComponentProps<TData> {
   data: AsyncTableData<TData[]>;
   help?: { description: string; href: string };
   noResultsMessage?: React.ReactNode;
+  defaultNoResultsMessage: string;
   onRowClick?: (row: TData, event?: React.MouseEvent) => void;
   getRowClassName?: (row: TData) => string;
   highlightAllRows?: boolean;
@@ -599,6 +608,7 @@ function TableBodyComponent<TData>({
   data,
   help,
   noResultsMessage,
+  defaultNoResultsMessage,
   onRowClick,
   getRowClassName,
   highlightAllRows,
@@ -754,7 +764,7 @@ function TableBodyComponent<TData>({
             <div className="pointer-events-none absolute left-[50%] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center">
               {noResultsMessage ?? (
                 <>
-                  No results.{" "}
+                  {defaultNoResultsMessage}{" "}
                   {help && (
                     <DocPopup description={help.description} href={help.href} />
                   )}

@@ -18,6 +18,7 @@ import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePos
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
 import { Input } from "@/src/components/ui/input";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
@@ -35,6 +36,7 @@ export function DataTablePagination<TData>({
   canJumpPages = true,
 }: DataTablePaginationProps<TData>) {
   const capture = usePostHogClientCapture();
+  const { t } = useI18n();
 
   const currentPage = table.getState().pagination.pageIndex + 1;
   const [inputState, setInputState] = useState<number | string>(currentPage);
@@ -83,10 +85,10 @@ export function DataTablePagination<TData>({
       <div className="flex flex-wrap items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium whitespace-nowrap md:hidden">
-            Rows
+            {t("table.rows")}
           </p>
           <p className="hidden text-sm font-medium whitespace-nowrap md:block">
-            Rows per page
+            {t("table.rowsPerPage")}
           </p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
@@ -112,7 +114,7 @@ export function DataTablePagination<TData>({
         <div className="flex items-center justify-center gap-1 text-sm font-medium whitespace-nowrap">
           {table.getPageCount() !== -1 ? (
             <>
-              Page
+              {t("table.page")}
               {canJumpPages && (
                 <Input
                   type="number"
@@ -140,15 +142,17 @@ export function DataTablePagination<TData>({
               {!canJumpPages && <span>{currentPage}</span>}
             </>
           ) : (
-            `Page ${currentPage}`
+            `${t("table.page")} ${currentPage}`
           )}
           {!hideTotalCount && (
             <>
               {pageCount !== -1 ? (
-                <span>of {pageCount}</span>
+                <span>
+                  {t("table.of")} {pageCount}
+                </span>
               ) : (
                 <span>
-                  of{" "}
+                  {t("table.of")}{" "}
                   {isLoading ? (
                     <span className="ml-1 inline-flex align-middle">
                       <Spinner size="xxs" variant="muted" display="inline" />
@@ -175,7 +179,7 @@ export function DataTablePagination<TData>({
               }}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to first page</span>
+              <span className="sr-only">{t("table.goToFirstPage")}</span>
               <ChevronsLeft className="h-4 w-4" />
             </Button>
           )}
@@ -190,7 +194,7 @@ export function DataTablePagination<TData>({
             }}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Go to previous page</span>
+            <span className="sr-only">{t("table.goToPreviousPage")}</span>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -204,7 +208,7 @@ export function DataTablePagination<TData>({
             }}
             disabled={!table.getCanNextPage() || pageCount === -1}
           >
-            <span className="sr-only">Go to next page</span>
+            <span className="sr-only">{t("table.goToNextPage")}</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
           {canJumpPages && (
@@ -219,7 +223,7 @@ export function DataTablePagination<TData>({
               }}
               disabled={!table.getCanNextPage() || pageCount === -1}
             >
-              <span className="sr-only">Go to last page</span>
+              <span className="sr-only">{t("table.goToLastPage")}</span>
               <ChevronsRight className="h-4 w-4" />
             </Button>
           )}

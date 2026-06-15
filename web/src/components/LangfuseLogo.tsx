@@ -4,6 +4,7 @@ import { VersionLabel } from "./VersionLabel";
 import { env } from "@/src/env.mjs";
 import { useUiCustomization } from "@/src/ee/features/ui-customization/useUiCustomization";
 import { PlusIcon } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const LangfuseIcon = ({
   size = 32,
@@ -11,19 +12,24 @@ export const LangfuseIcon = ({
 }: {
   size?: number;
   className?: string;
-}) => (
-  // eslint-disable-next-line @next/next/no-img-element
-  <img
-    src={`${env.NEXT_PUBLIC_BASE_PATH ?? ""}/icon.svg`}
-    width={size}
-    height={size}
-    alt="Langfuse Icon"
-    className={className}
-  />
-);
+}) => {
+  const { translateText } = useI18n();
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`${env.NEXT_PUBLIC_BASE_PATH ?? ""}/icon.svg`}
+      width={size}
+      height={size}
+      alt={translateText("Langfuse Icon")}
+      className={className}
+    />
+  );
+};
 
 const LangfuseLogotypeOrCustomized = () => {
   const uiCustomization = useUiCustomization();
+  const { translateText } = useI18n();
 
   if (uiCustomization?.logoLightModeHref && uiCustomization?.logoDarkModeHref) {
     // logo is a url, maximum aspect ratio of 1:3 needs to be supported according to docs
@@ -32,7 +38,7 @@ const LangfuseLogotypeOrCustomized = () => {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={uiCustomization.logoLightModeHref}
-          alt="Langfuse Logo"
+          alt={translateText("Langfuse Logo")}
           className={cn(
             "group-data-[collapsible=icon]:hidden dark:hidden",
             "max-h-4 max-w-14",
@@ -41,7 +47,7 @@ const LangfuseLogotypeOrCustomized = () => {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={uiCustomization.logoDarkModeHref}
-          alt="Langfuse Logo"
+          alt={translateText("Langfuse Logo")}
           className={cn(
             "hidden group-data-[collapsible=icon]:hidden dark:block",
             "max-h-4 max-w-14",
@@ -59,13 +65,13 @@ const LangfuseLogotypeOrCustomized = () => {
       <img
         className="-ml-1.5 max-h-6 max-w-22 group-data-[collapsible=icon]:hidden dark:hidden"
         src={`${env.NEXT_PUBLIC_BASE_PATH ?? ""}/wordart-black.svg`}
-        alt="Langfuse Logo"
+        alt={translateText("Langfuse Logo")}
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className="-ml-1.5 hidden max-h-6 max-w-22 group-data-[collapsible=icon]:hidden dark:block"
         src={`${env.NEXT_PUBLIC_BASE_PATH ?? ""}/wordart-white.svg`}
-        alt="Langfuse Logo"
+        alt={translateText("Langfuse Logo")}
       />
       <LangfuseIcon
         size={28}

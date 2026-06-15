@@ -57,6 +57,7 @@ import { composeAggregateScoreKey } from "@/src/features/scores/lib/aggregateSco
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { ExperimentCompareTable } from "./ExperimentCompareTable";
 import { useExperimentNames } from "@/src/features/experiments/hooks/useExperimentNames";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import {
   useExperimentItemsFilterOptions,
   type ScoreColumnDef,
@@ -249,6 +250,7 @@ export default function ExperimentItemsTable({
   projectId,
   hideControls = false,
 }: ExperimentItemsTableProps) {
+  const { translateText } = useI18n();
   const { setDetailPageList } = useDetailPageLists();
   const [selectedRows, setSelectedRows] = useState<RowSelectionState>({});
   const [showRunEvaluationDialog, setShowRunEvaluationDialog] = useState(false);
@@ -655,7 +657,7 @@ export default function ExperimentItemsTable({
     {
       accessorKey: "itemId",
       id: "itemId",
-      header: "Item ID",
+      header: translateText("Item ID"),
       size: 150,
       enableHiding: true,
       cell: ({ row }) => {
@@ -666,7 +668,8 @@ export default function ExperimentItemsTable({
     {
       accessorKey: "observationId",
       id: "observationId",
-      header: () => renderExperimentSpecificHeader("Observation ID"),
+      header: () =>
+        renderExperimentSpecificHeader(translateText("Observation ID")),
       size: 180,
       enableHiding: true,
       cell: ({ row }) => {
@@ -783,7 +786,7 @@ export default function ExperimentItemsTable({
     {
       accessorKey: "experimentId",
       id: "experimentId",
-      header: () => renderExperimentSpecificHeader("Experiment"),
+      header: () => renderExperimentSpecificHeader(translateText("Experiment")),
       size: 150,
       defaultHidden: true,
       enableHiding: true,
@@ -811,7 +814,7 @@ export default function ExperimentItemsTable({
     {
       accessorKey: "input",
       id: "input",
-      header: "Input",
+      header: translateText("Input"),
       size: 300,
       enableHiding: true,
       cell: ({ row }) => {
@@ -827,7 +830,7 @@ export default function ExperimentItemsTable({
     {
       accessorKey: "expectedOutput",
       id: "expectedOutput",
-      header: "Expected Output",
+      header: translateText("Expected Output"),
       size: 300,
       enableHiding: true,
       cell: ({ row }) => {
@@ -844,7 +847,7 @@ export default function ExperimentItemsTable({
     {
       accessorKey: "output",
       id: "output",
-      header: "Output",
+      header: translateText("Output"),
       size: 300,
       enableHiding: true,
       cell: ({ row }) => {
@@ -862,7 +865,7 @@ export default function ExperimentItemsTable({
     },
     {
       accessorKey: "observationScores",
-      header: "Observation Scores",
+      header: translateText("Observation Scores"),
       id: "observationScores",
       enableHiding: true,
       defaultHidden: true,
@@ -875,7 +878,7 @@ export default function ExperimentItemsTable({
     },
     {
       accessorKey: "traceScores",
-      header: "Trace Scores",
+      header: translateText("Trace Scores"),
       id: "traceScores",
       enableHiding: true,
       defaultHidden: true,
@@ -1035,8 +1038,8 @@ export default function ExperimentItemsTable({
         {
           id: ActionId.ObservationBatchEvaluation,
           type: BatchActionType.Create,
-          label: "Evaluate",
-          description: "Run evaluators on selected items",
+          label: translateText("Evaluate"),
+          description: translateText("Run evaluators on selected items"),
           icon: <LightbulbIcon className="h-4 w-4 sm:mr-2" />,
           customDialog: true,
           accessCheck: {
@@ -1155,7 +1158,7 @@ export default function ExperimentItemsTable({
               ) : (
                 <div className="flex flex-1 items-center justify-center">
                   <span className="text-muted-foreground text-sm">
-                    Please select a baseline experiment.
+                    {translateText("Please select a baseline experiment.")}
                   </span>
                 </div>
               )
@@ -1180,7 +1183,7 @@ export default function ExperimentItemsTable({
                 noResultsMessage={
                   !hasSelectedRuns ? (
                     <span className="text-muted-foreground text-sm">
-                      Please select a baseline experiment.
+                      {translateText("Please select a baseline experiment.")}
                     </span>
                   ) : undefined
                 }

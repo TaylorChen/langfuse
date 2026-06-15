@@ -11,6 +11,7 @@ import {
   type UseFieldArrayInsert,
 } from "react-hook-form";
 import { toast } from "sonner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const resolveAlphabeticalPosition = (
   name: string,
@@ -50,6 +51,7 @@ export function useScoreConfigSelection({
     changedValueId?: string,
   ) => void;
 } {
+  const { translateText } = useI18n();
   const { emptySelectedConfigIds, setEmptySelectedConfigIds } =
     useEmptyScoreConfigs(emptySelectedConfigIdsStorageKey);
 
@@ -105,7 +107,7 @@ export function useScoreConfigSelection({
         // Config was deselected
         const field = controlledFields[fieldIndex];
         if (field?.id) {
-          toast.error("Cannot deselect a populated score");
+          toast.error(translateText("Cannot deselect a populated score"));
           return;
         } else {
           // No score -> remove row from form and empty selected config ids
@@ -123,6 +125,7 @@ export function useScoreConfigSelection({
       remove,
       emptySelectedConfigIds,
       setEmptySelectedConfigIds,
+      translateText,
     ],
   );
 

@@ -12,6 +12,7 @@ import { ItemBadge } from "@/src/components/ItemBadge";
 import { NewDatasetItemFromTraceId } from "@/src/components/session/NewDatasetItemFromTrace";
 import { CreateNewAnnotationQueueItem } from "@/src/features/annotation-queues/components/CreateNewAnnotationQueueItem";
 import { useSessionDetailStore } from "@/src/components/session/SessionDetailStoreProvider";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const TraceSkeleton = () => {
   return (
@@ -55,6 +56,8 @@ const TraceRow = React.memo(
     traceCommentCounts: Map<string, number> | undefined;
     showCorrections: boolean;
   }) => {
+    const { translateText } = useI18n();
+
     return (
       <Card className="border-border shadow-none">
         <div className="grid md:grid-cols-[1fr_1px_358px] lg:grid-cols-[1fr_1px_30rem]">
@@ -83,7 +86,7 @@ const TraceRow = React.memo(
                 <ItemBadge type="TRACE" isSmall />
                 <div className="flex flex-col">
                   <span className="text-xs font-medium">
-                    {trace.name} ({trace.id})&nbsp;↗
+                    {trace.name ?? translateText("Trace")} ({trace.id})&nbsp;↗
                   </span>
                   <span className="text-muted-foreground text-xs">
                     {trace.timestamp.toLocaleString()}
@@ -133,7 +136,7 @@ const TraceRow = React.memo(
               </div>
             </div>
             <div className="flex-1">
-              <p className="mb-1 font-medium">Scores</p>
+              <p className="mb-1 font-medium">{translateText("Scores")}</p>
               <div className="flex flex-wrap content-start items-start gap-1">
                 <GroupedScoreBadges scores={trace.scores} />
               </div>

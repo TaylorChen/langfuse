@@ -40,6 +40,7 @@ import {
   getDashboardQuerySchedulerMaxConcurrent,
   useDashboardQueryScheduler,
 } from "@/src/hooks/useDashboardQueryScheduler";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const HOME_DASHBOARD_CARD_IDS = {
   traces: "home:traces",
@@ -55,6 +56,7 @@ const HOME_DASHBOARD_CARD_IDS = {
 } as const;
 
 export default function Dashboard() {
+  const { translateText } = useI18n();
   const router = useRouter();
   const projectId = router.query.projectId as string;
   const { timeRange, setTimeRange } = useDashboardDateRange();
@@ -219,8 +221,8 @@ export default function Dashboard() {
                 }
               />
               <MultiSelect
-                title="Environment"
-                label="Env"
+                title={translateText("Environment")}
+                label={translateText("Env")}
                 values={selectedEnvironments}
                 onValueChange={useDebounce(setSelectedEnvironments)}
                 options={environmentOptions.map((env) => ({

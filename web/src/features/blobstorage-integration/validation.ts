@@ -1,15 +1,20 @@
 import type { z } from "zod";
 
+type TranslateText = (text: string) => string;
+
+const defaultTranslateText: TranslateText = (text) => text;
+
 export function validateExportFieldGroups(
   data: { exportSource: string; exportFieldGroups: unknown[] },
   ctx: z.RefinementCtx,
+  translateText: TranslateText = defaultTranslateText,
 ) {
   // Field groups apply to all export sources (legacy observations honor them
   // too), so core is required regardless of the selected source.
   if (!data.exportFieldGroups.includes("core")) {
     ctx.addIssue({
       code: "custom",
-      message: "The Core field group is required",
+      message: translateText("The Core field group is required"),
       path: ["exportFieldGroups"],
     });
   }
@@ -31,6 +36,7 @@ export const AZURE_CONTAINER_NAME_ERROR =
 export function validateAzureContainerName(
   data: { type: string; bucketName: string },
   ctx: z.RefinementCtx,
+  translateText: TranslateText = defaultTranslateText,
 ) {
   if (!data.bucketName) return;
   if (
@@ -39,7 +45,7 @@ export function validateAzureContainerName(
   ) {
     ctx.addIssue({
       code: "custom",
-      message: AZURE_CONTAINER_NAME_ERROR,
+      message: translateText(AZURE_CONTAINER_NAME_ERROR),
       path: ["bucketName"],
     });
   }

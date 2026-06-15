@@ -25,6 +25,7 @@ import { type DatabaseRow } from "@/src/server/api/services/sqlInterface";
 import { Chart } from "@/src/features/widgets/chart-library/Chart";
 import { timeSeriesToDataPoints } from "@/src/features/dashboard/lib/chart-data-adapters";
 import { useScheduledDashboardExecuteQuery } from "@/src/hooks/useDashboardQueryScheduler";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const ModelUsageChart = ({
   className,
@@ -49,6 +50,7 @@ export const ModelUsageChart = ({
   metricsVersion?: ViewVersion;
   schedulerId?: string;
 }) => {
+  const { translateText } = useI18n();
   const {
     allModels,
     selectedModels,
@@ -337,7 +339,7 @@ export const ModelUsageChart = ({
   return (
     <DashboardCard
       className={className}
-      title="Model Usage"
+      title={translateText("Model Usage")}
       isLoading={
         isLoading || (queryResult.isPending && selectedModels.length > 0)
       }

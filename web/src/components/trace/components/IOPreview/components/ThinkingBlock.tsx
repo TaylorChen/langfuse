@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface ThinkingBlockProps {
   content: string;
@@ -14,6 +15,7 @@ export function ThinkingBlock({
   defaultExpanded = false,
 }: ThinkingBlockProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const { t } = useI18n();
   const displayContent = summary || content;
 
   return (
@@ -30,7 +32,7 @@ export function ThinkingBlock({
             expanded && "rotate-90",
           )}
         />
-        <span className="text-xs font-medium">Thinking</span>
+        <span className="text-xs font-medium">{t("ioPreview.thinking")}</span>
         {!expanded && (
           <span className="line-clamp-1 text-xs italic">{displayContent}</span>
         )}
@@ -56,6 +58,7 @@ export function RedactedThinkingBlock({
   defaultExpanded = false,
 }: RedactedThinkingBlockProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const { t } = useI18n();
 
   return (
     <div className="my-2 px-1">
@@ -71,9 +74,13 @@ export function RedactedThinkingBlock({
             expanded && "rotate-90",
           )}
         />
-        <span className="text-xs font-medium">Thinking (redacted)</span>
+        <span className="text-xs font-medium">
+          {t("ioPreview.thinkingRedacted")}
+        </span>
         {!expanded && (
-          <span className="text-xs italic">[Encrypted thinking data]</span>
+          <span className="text-xs italic">
+            {t("ioPreview.encryptedThinkingData")}
+          </span>
         )}
       </button>
 

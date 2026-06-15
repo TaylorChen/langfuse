@@ -53,6 +53,7 @@ import { MENTION_USER_PREFIX } from "@/src/features/comments/lib/mentionParser";
 import { type SelectionData } from "./contexts/InlineCommentSelectionContext";
 import { Badge } from "@/src/components/ui/badge";
 import { useTheme } from "next-themes";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // IO field background colors - same as IOPreviewJSON.tsx
 const IO_FIELD_COLORS = {
@@ -107,6 +108,7 @@ export function CommentList({
   const session = useSession();
   const router = useRouter();
   const { resolvedTheme } = useTheme();
+  const { t, translateText } = useI18n();
   const isDark = resolvedTheme === "dark";
   const [cursorPosition, setCursorPosition] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -492,7 +494,7 @@ export function CommentList({
           <Spinner size="sm" variant="muted" />
         </span>
         <span className="text-muted-foreground text-sm opacity-60">
-          Loading comments...
+          {translateText("Loading comments...")}
         </span>
       </div>
     );
@@ -507,20 +509,20 @@ export function CommentList({
     >
       {cardView && (
         <div className="shrink-0 border-b px-2 py-1 text-sm font-medium">
-          Comments ({comments.data?.length ?? 0})
+          {t("comments.titleWithCount", { count: comments.data?.length ?? 0 })}
         </div>
       )}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {!cardView && (
           <div className="shrink-0 border-b">
             <div className="flex items-center justify-between gap-2 px-2 py-1.5">
-              <div className="text-sm font-medium">Comments</div>
+              <div className="text-sm font-medium">{t("comments.title")}</div>
               <div className="relative max-w-xs flex-1">
                 <Search className="text-muted-foreground absolute top-1/2 left-2 h-3.5 w-3.5 -translate-y-1/2" />
                 <Input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search comments..."
+                  placeholder={t("comments.searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-7 pr-7 pl-7 text-xs"
@@ -552,9 +554,12 @@ export function CommentList({
             <div className="text-muted-foreground px-2 pb-1 text-xs">
               {searchQuery.trim()
                 ? filteredComments && filteredComments.length > 0
-                  ? `Showing ${filteredComments.length} of ${comments.data?.length ?? 0} comments`
-                  : "No comments match your search"
-                : `${comments.data?.length ?? 0} comments`}
+                  ? t("comments.showingCount", {
+                      shown: filteredComments.length,
+                      total: comments.data?.length ?? 0,
+                    })
+                  : t("comments.noSearchResults")
+                : t("comments.count", { count: comments.data?.length ?? 0 })}
             </div>
           </div>
         )}
@@ -590,7 +595,9 @@ export function CommentList({
                   {/* Name + timestamp inline */}
                   <div className="mb-1.5 flex items-center gap-2 pt-1.5 text-xs leading-none">
                     <span className="text-foreground font-medium">
-                      {comment.authorUserName ?? comment.authorUserId ?? "User"}
+                      {comment.authorUserName ??
+                        comment.authorUserId ??
+                        t("comments.unknownUser")}
                     </span>
                     <span className="text-muted-foreground/50">·</span>
                     <span className="text-muted-foreground/70">
@@ -634,7 +641,7 @@ export function CommentList({
                           align="start"
                           className="px-2 py-1 text-xs"
                         >
-                          The location of the text commented on
+                          {t("comments.locationTooltip")}
                         </TooltipContent>
                       </Tooltip>
                     )}
@@ -681,14 +688,10 @@ export function CommentList({
                       type="button"
                       size="icon-xs"
                       variant="ghost"
-                      title="Delete comment"
+                      title={t("comments.deleteTitle")}
                       loading={deleteCommentMutation.isPending}
                       onClick={() => {
-                        if (
-                          confirm(
-                            "Are you sure you want to delete this comment?",
-                          )
-                        )
+                        if (confirm(t("comments.deleteConfirm")))
                           deleteCommentMutation.mutateAsync({
                             commentId: comment.id,
                             projectId,
@@ -709,9 +712,9 @@ export function CommentList({
         {hasWriteAccess && (
           <div className="bg-background shrink-0 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]">
             <div className="text-muted-foreground relative flex flex-row items-center justify-between text-xs">
-              <span className="sr-only">New comment</span>
+              <span className="sr-only">{t("comments.newComment")}</span>
               <span></span>
-              <span>Markdown and @-mentions support</span>
+              <span>{t("comments.markdownSupport")}</span>
             </div>
             <div className="border-border/60 relative mt-0.5 min-h-[70px] rounded-lg border pt-1">
               {/* Visually hidden header for accessibility */}
@@ -726,7 +729,7 @@ export function CommentList({
                         <div>
                           <FormControl>
                             <Textarea
-                              placeholder="Add a comment..."
+                              placeholder={t("comments.addPlaceholder")}
                               {...field}
                               ref={(el) => {
                                 if (textareaRef.current !== el) {
@@ -786,7 +789,7 @@ export function CommentList({
                           type="submit"
                           size="icon-xs"
                           variant="outline"
-                          title="Submit comment"
+                          title={t("comments.submitTitle")}
                           loading={createCommentMutation.isPending}
                           onClick={() => {
                             form.handleSubmit(onSubmit)();
@@ -802,7 +805,7 @@ export function CommentList({
                         className="w-auto p-2"
                       >
                         <div className="flex items-center gap-2 text-sm">
-                          <span>Send comment</span>
+                          <span>{t("comments.send")}</span>
                           <KeyboardShortcut keys={["⌘", "Enter"]} />
                         </div>
                       </HoverCardContent>

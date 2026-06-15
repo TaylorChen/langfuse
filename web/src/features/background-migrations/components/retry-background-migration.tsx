@@ -10,6 +10,7 @@ import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function RetryBackgroundMigration({
   backgroundMigrationName,
@@ -18,6 +19,7 @@ export function RetryBackgroundMigration({
   backgroundMigrationName: string;
   isRetryable: boolean;
 }) {
+  const { translateText } = useI18n();
   const utils = api.useUtils();
   const [isOpen, setIsOpen] = useState(false);
   const [adminApiKey, setAdminApiKey] = useState("");
@@ -27,12 +29,14 @@ export function RetryBackgroundMigration({
     api.backgroundMigrations.retry.useMutation({
       onSuccess: () => {
         utils.backgroundMigrations.invalidate();
-        toast.success("Migration scheduled for retry");
+        toast.success(translateText("Migration scheduled for retry"));
         setIsOpen(false);
         setAdminApiKey("");
       },
       onError: (error) => {
-        toast.error(error?.message || "Failed to retry migration");
+        toast.error(
+          error?.message || translateText("Failed to retry migration"),
+        );
       },
       onSettled: () => {
         setIsLoading(false);
@@ -41,7 +45,7 @@ export function RetryBackgroundMigration({
 
   const handleRetry = async () => {
     if (!adminApiKey.trim()) {
-      toast.error("Admin API key is required");
+      toast.error(translateText("Admin API key is required"));
       return;
     }
     setIsLoading(true);
@@ -64,21 +68,22 @@ export function RetryBackgroundMigration({
       </PopoverTrigger>
       <PopoverContent className="w-96">
         <h2 className="text-md mb-3 font-semibold">
-          Retry Background Migration
+          {translateText("Retry Background Migration")}
         </h2>
         <p className="mb-4 text-sm">
-          This action schedules the migration for retry. Restart the worker
-          containers to re-initiate the migration.
+          {translateText(
+            "This action schedules the migration for retry. Restart the worker containers to re-initiate the migration.",
+          )}
         </p>
 
         <div className="mb-4">
           <Label htmlFor="admin-api-key" className="text-sm font-medium">
-            Admin API Key
+            {translateText("Admin API Key")}
           </Label>
           <Input
             id="admin-api-key"
             type="password"
-            placeholder="Enter admin API key"
+            placeholder={translateText("Enter admin API key")}
             value={adminApiKey}
             onChange={(e) => setAdminApiKey(e.target.value)}
             className="mt-1"
@@ -88,15 +93,17 @@ export function RetryBackgroundMigration({
             name="admin-api-key"
           />
           <p className="text-muted-foreground mt-1 text-xs">
-            Required for security. This key must match your ADMIN_API_KEY
-            environment variable{" ("}
+            {translateText(
+              "Required for security. This key must match your ADMIN_API_KEY environment variable",
+            )}{" "}
+            {"("}
             <a
               href="https://langfuse.com/self-hosting/administration/organization-management-api#authentication"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary underline"
             >
-              Docs
+              {translateText("Docs")}
             </a>
             {")."}
           </p>
@@ -112,7 +119,7 @@ export function RetryBackgroundMigration({
             }}
             disabled={isLoading}
           >
-            Cancel
+            {translateText("Cancel")}
           </Button>
           <Button
             type="button"
@@ -121,7 +128,7 @@ export function RetryBackgroundMigration({
             onClick={handleRetry}
             disabled={isLoading}
           >
-            Retry Migration
+            {translateText("Retry Migration")}
           </Button>
         </div>
       </PopoverContent>

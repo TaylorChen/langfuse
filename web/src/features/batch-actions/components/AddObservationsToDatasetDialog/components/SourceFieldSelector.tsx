@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import type { SourceField } from "../types";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type SourceFieldSelectorProps = {
   value: SourceField;
@@ -18,6 +19,8 @@ export function SourceFieldSelector({
   onChange,
   disabled = false,
 }: SourceFieldSelectorProps) {
+  const { t } = useI18n();
+
   return (
     <Select
       value={value}
@@ -28,9 +31,9 @@ export function SourceFieldSelector({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="input">Input</SelectItem>
-        <SelectItem value="output">Output</SelectItem>
-        <SelectItem value="metadata">Metadata</SelectItem>
+        <SelectItem value="input">{t("common.input")}</SelectItem>
+        <SelectItem value="output">{t("common.output")}</SelectItem>
+        <SelectItem value="metadata">{t("common.metadata")}</SelectItem>
       </SelectContent>
     </Select>
   );

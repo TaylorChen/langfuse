@@ -16,6 +16,7 @@ import {
 import { useLazyEvaluatorExecutionCounts } from "@/src/features/evals/hooks/useLazyEvaluatorExecutionCounts";
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const JobExecutionCounts = ({
   isLoading,
@@ -34,6 +35,7 @@ const JobExecutionCounts = ({
 
 export const EvaluatorDetail = () => {
   const router = useRouter();
+  const { translateText } = useI18n();
   const projectId = router.query.projectId as string;
   const evaluatorId = router.query.evaluatorId as string;
 
@@ -76,11 +78,11 @@ export const EvaluatorDetail = () => {
     allTemplates.isLoading ||
     !allTemplates.data
   ) {
-    return <div className="p-3">Loading...</div>;
+    return <div className="p-3">{translateText("Loading...")}</div>;
   }
 
   if (evaluator.data && evaluator.data.evalTemplate === null) {
-    return <div>Evaluator not found</div>;
+    return <div>{translateText("Evaluator not found")}</div>;
   }
 
   const existingEvaluator =
@@ -101,7 +103,7 @@ export const EvaluatorDetail = () => {
       headerProps={{
         title: evaluator.data
           ? `${evaluator.data.scoreName}: ${evaluator.data.id}`
-          : "Loading...",
+          : translateText("Loading..."),
         itemType: "EVALUATOR",
         breadcrumb: [
           {
@@ -146,11 +148,11 @@ export const EvaluatorDetail = () => {
             <div className="mx-3 mt-3">
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Unsupported filters</AlertTitle>
+                <AlertTitle>{translateText("Unsupported filters")}</AlertTitle>
                 <AlertDescription>
-                  This evaluator contains deprecated or unsupported filters. The
-                  filters must be removed. Until the filters are removed, the
-                  evaluator is paused and will not be run.{" "}
+                  {translateText(
+                    "This evaluator contains deprecated or unsupported filters. The filters must be removed. Until the filters are removed, the evaluator is paused and will not be run.",
+                  )}
                 </AlertDescription>
               </Alert>
             </div>

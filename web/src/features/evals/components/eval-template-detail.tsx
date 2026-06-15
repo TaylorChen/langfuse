@@ -25,9 +25,11 @@ import {
   SidePanelTitle,
 } from "@/src/components/ui/side-panel";
 import { LangfuseIcon } from "@/src/components/LangfuseLogo";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const EvalTemplateDetail = () => {
   const router = useRouter();
+  const { translateText } = useI18n();
   const projectId = router.query.projectId as string;
   const templateId = router.query.id as string;
   const mode = router.query.mode;
@@ -93,7 +95,7 @@ export const EvalTemplateDetail = () => {
         itemType: "EVALUATOR",
         breadcrumb: [
           {
-            name: "Evaluator Library",
+            name: translateText("Evaluator Library"),
             href: `/project/${router.query.projectId as string}/evals/templates`,
           },
         ],
@@ -123,7 +125,7 @@ export const EvalTemplateDetail = () => {
       }}
     >
       {allTemplates.isLoading || !allTemplates.data || !template.data ? (
-        <div className="p-3">Loading...</div>
+        <div className="p-3">{translateText("Loading...")}</div>
       ) : isEditing ? (
         <div className="overflow-y-auto p-3 pt-1">
           <EvalTemplateForm
@@ -145,10 +147,13 @@ export const EvalTemplateDetail = () => {
               setIsEditing={setIsEditing}
             />
           </div>
-          <SidePanel mobileTitle="Change history" id="change-history">
+          <SidePanel
+            mobileTitle={translateText("Change history")}
+            id="change-history"
+          >
             <SidePanelHeader>
               <SidePanelTitle className="text-base font-semibold">
-                Change history
+                {translateText("Change history")}
               </SidePanelTitle>
             </SidePanelHeader>
             <SidePanelContent>
@@ -205,6 +210,7 @@ export function EvalVersionDropdown(props: {
   onSelect?: (template: EvalTemplate) => void;
 }) {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const handleSelect = (value: string) => {
     const selectedTemplate = props.options?.find(
       (template) => template.id === value,
@@ -222,7 +228,7 @@ export function EvalVersionDropdown(props: {
       defaultValue={props.defaultOption ? props.defaultOption.id : undefined}
     >
       <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Version" />
+        <SelectValue placeholder={translateText("Version")} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
@@ -248,6 +254,7 @@ export function UpdateTemplate({
   setIsEditing: (isEditing: boolean) => void;
   isCustom: boolean;
 }) {
+  const { translateText } = useI18n();
   const hasAccess = useHasProjectAccess({
     projectId,
     scope: "evalTemplate:CUD",
@@ -264,7 +271,7 @@ export function UpdateTemplate({
       <div className="flex items-center gap-2">
         <LangfuseIcon size={16} />
         <span className="text-muted-foreground text-sm font-medium">
-          View only
+          {translateText("View only")}
         </span>
       </div>
     );
@@ -272,7 +279,7 @@ export function UpdateTemplate({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-medium">Edit mode</span>
+      <span className="text-sm font-medium">{translateText("Edit mode")}</span>
       <Switch
         checked={isEditing}
         onCheckedChange={handlePromptEdit}

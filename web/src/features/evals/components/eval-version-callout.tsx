@@ -7,6 +7,7 @@ import {
   isExperimentTarget,
   isDatasetTarget,
 } from "@/src/features/evals/utils/typeHelpers";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface EvalVersionCalloutProps {
   targetObject: string;
@@ -22,6 +23,7 @@ interface CalloutContent {
 const getCalloutContent = (
   targetObject: string,
   evalCapabilities: EvalCapabilities,
+  translateText: (text: string) => string,
 ): CalloutContent => {
   const hidden = { visible: false, title: "", description: "" };
 
@@ -33,19 +35,19 @@ const getCalloutContent = (
 
     return {
       visible: true,
-      title: "Please verify your SDK version",
+      title: translateText("Please verify your SDK version"),
       description: (
         <>
-          This evaluator targets observations, which require JS SDK v4+ or
-          Python SDK v3+. You can still configure this evaluator now—it will
-          start running once you upgrade.{" "}
+          {translateText(
+            "This evaluator targets observations, which require JS SDK v4+ or Python SDK v3+. You can still configure this evaluator now—it will start running once you upgrade.",
+          )}{" "}
           <a
             href="https://langfuse.com/docs/observability/sdk/upgrade-path"
             target="_blank"
             rel="noopener noreferrer"
             className="text-dark-blue font-medium hover:opacity-80"
           >
-            Learn more
+            {translateText("Learn more")}
           </a>
           .
         </>
@@ -58,19 +60,21 @@ const getCalloutContent = (
     if (!evalCapabilities.isNewCompatible) {
       return {
         visible: true,
-        title: "Please verify you are using the Experiment Runner SDK",
+        title: translateText(
+          "Please verify you are using the Experiment Runner SDK",
+        ),
         description: (
           <>
-            The Experiment Runner SDK requires JS SDK v4.4+ or Python SDK v3.9+.
-            You can still configure this evaluator now—it will start running
-            once you upgrade.{" "}
+            {translateText(
+              "The Experiment Runner SDK requires JS SDK v4.4+ or Python SDK v3.9+. You can still configure this evaluator now—it will start running once you upgrade.",
+            )}{" "}
             <a
               href="https://langfuse.com/docs/evaluation/experiments/experiments-via-sdk#experiment-runner-sdk"
               target="_blank"
               rel="noopener noreferrer"
               className="text-dark-blue font-medium hover:opacity-80"
             >
-              Learn more about the Experiment Runner SDK.
+              {translateText("Learn more about the Experiment Runner SDK.")}
             </a>
             .
           </>
@@ -85,20 +89,19 @@ const getCalloutContent = (
   if (isDatasetTarget(targetObject)) {
     return {
       visible: true,
-      title: "Legacy low-level SDK methods",
+      title: translateText("Legacy low-level SDK methods"),
       description: (
         <>
-          This evaluator targets traces from legacy low-level SDK methods for
-          dataset runs that manually linked dataset items to traces. Consider
-          upgrading to the Experiment Runner SDK for improved performance and
-          features.{" "}
+          {translateText(
+            "This evaluator targets traces from legacy low-level SDK methods for dataset runs that manually linked dataset items to traces. Consider upgrading to the Experiment Runner SDK for improved performance and features.",
+          )}{" "}
           <a
             href="https://langfuse.com/docs/evaluation/experiments/experiments-via-sdk#experiment-runner-sdk"
             target="_blank"
             rel="noopener noreferrer"
             className="text-dark-blue font-medium hover:opacity-80"
           >
-            Learn more
+            {translateText("Learn more")}
           </a>
           .
         </>
@@ -110,18 +113,19 @@ const getCalloutContent = (
   if (isTraceTarget(targetObject)) {
     return {
       visible: true,
-      title: "Consider upgrading to observation evaluators",
+      title: translateText("Consider upgrading to observation evaluators"),
       description: (
         <>
-          Observation evaluators provide more granular control and an easier
-          workflow. We strongly recommend upgrading to observation evaluators.{" "}
+          {translateText(
+            "Observation evaluators provide more granular control and an easier workflow. We strongly recommend upgrading to observation evaluators.",
+          )}{" "}
           <a
             href="https://langfuse.com/faq/all/llm-as-a-judge-migration"
             target="_blank"
             rel="noopener noreferrer"
             className="text-dark-blue font-medium hover:opacity-80"
           >
-            Learn more
+            {translateText("Learn more")}
           </a>
           .
         </>
@@ -136,7 +140,12 @@ export function EvalVersionCallout({
   targetObject,
   evalCapabilities,
 }: EvalVersionCalloutProps) {
-  const content = getCalloutContent(targetObject, evalCapabilities);
+  const { translateText } = useI18n();
+  const content = getCalloutContent(
+    targetObject,
+    evalCapabilities,
+    translateText,
+  );
 
   if (!content.visible) {
     return null;

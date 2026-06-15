@@ -9,8 +9,10 @@ import {
 import useSessionStorage from "@/src/components/useSessionStorage";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
 import { useEffect } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function ExperimentAnalytics() {
+  const { translateText } = useI18n();
   const router = useRouter();
   const projectId = router.query.projectId as string;
 
@@ -63,11 +65,12 @@ export default function ExperimentAnalytics() {
           </div>
           <div className="space-y-2">
             <h3 className="text-xl font-semibold tracking-tight">
-              Analytics Coming Soon
+              {translateText("Analytics Coming Soon")}
             </h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              We are working on adding advanced analytics capabilities for
-              experiments.
+              {translateText(
+                "We are working on adding advanced analytics capabilities for experiments.",
+              )}
             </p>
           </div>
         </div>

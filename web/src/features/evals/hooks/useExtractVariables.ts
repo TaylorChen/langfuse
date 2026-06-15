@@ -2,6 +2,7 @@ import { type PreviewData } from "@/src/features/evals/hooks/usePreviewData";
 import { type VariableMapping } from "@/src/features/evals/utils/evaluator-form-utils";
 import { api } from "@/src/utils/api";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import {
   EvalTargetObject,
   extractValueFromObjectAsString,
@@ -54,6 +55,7 @@ export function useExtractVariables({
   isLoading: boolean;
 }) {
   const utils = api.useUtils();
+  const { translateText } = useI18n();
   const [extractedVariables, setExtractedVariables] = useState<
     ExtractedVariable[]
   >([]);
@@ -79,8 +81,8 @@ export function useExtractVariables({
       extractionError.kind === "jsonPath"
         ? "Invalid JSONPath in variable mapping"
         : "Failed to extract variable";
-    showErrorToast(title, extractionError.message, "WARNING");
-  }, [extractionError]);
+    showErrorToast(translateText(title), extractionError.message, "WARNING");
+  }, [extractionError, translateText]);
 
   useEffect(() => {
     // Return early conditions
@@ -210,7 +212,10 @@ export function useExtractVariables({
         console.error("Error extracting variables:", error);
         setExtractionError({
           kind: "unexpected",
-          message: error instanceof Error ? error.message : "Unknown error",
+          message:
+            error instanceof Error
+              ? error.message
+              : translateText("Unknown error"),
         });
         setExtractedVariables(
           variables.map((variable) => ({
@@ -231,6 +236,7 @@ export function useExtractVariables({
     id,
     utils.observations.byId,
     previewData,
+    translateText,
   ]);
 
   return { extractedVariables, isExtracting };

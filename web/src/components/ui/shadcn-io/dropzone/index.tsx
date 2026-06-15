@@ -7,6 +7,7 @@ import type { DropEvent, DropzoneOptions, FileRejection } from "react-dropzone";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type DropzoneContextType = {
   src?: File[];
@@ -121,6 +122,7 @@ export const DropzoneContent = ({
   className,
 }: DropzoneContentProps) => {
   const { src } = useDropzoneContext();
+  const { locale, translateText } = useI18n();
 
   if (!src) {
     return null;
@@ -130,6 +132,10 @@ export const DropzoneContent = ({
     return children;
   }
 
+  const fileNames = new Intl.ListFormat(locale).format(
+    src.slice(0, maxLabelItems).map((file) => file.name),
+  );
+
   return (
     <div className={cn("flex flex-col items-center justify-center", className)}>
       <div className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-md">
@@ -137,13 +143,14 @@ export const DropzoneContent = ({
       </div>
       <p className="my-2 w-full truncate text-sm font-medium">
         {src.length > maxLabelItems
-          ? `${new Intl.ListFormat("en").format(
-              src.slice(0, maxLabelItems).map((file) => file.name),
-            )} and ${src.length - maxLabelItems} more`
-          : new Intl.ListFormat("en").format(src.map((file) => file.name))}
+          ? translateText("{files} and {count} more", {
+              files: fileNames,
+              count: src.length - maxLabelItems,
+            })
+          : new Intl.ListFormat(locale).format(src.map((file) => file.name))}
       </p>
       <p className="text-muted-foreground w-full text-xs text-wrap">
-        Drag and drop or click to replace
+        {translateText("Drag and drop or click to replace")}
       </p>
     </div>
   );
@@ -159,6 +166,7 @@ export const DropzoneEmptyState = ({
   className,
 }: DropzoneEmptyStateProps) => {
   const { src, accept, maxSize, minSize, maxFiles } = useDropzoneContext();
+  const { locale, translateText } = useI18n();
 
   if (src) {
     return null;
@@ -171,16 +179,24 @@ export const DropzoneEmptyState = ({
   let caption = "";
 
   if (accept) {
-    caption += "Accepts ";
-    caption += new Intl.ListFormat("en").format(Object.keys(accept));
+    caption += translateText("Accepts {fileTypes}", {
+      fileTypes: new Intl.ListFormat(locale).format(Object.keys(accept)),
+    });
   }
 
   if (minSize && maxSize) {
-    caption += ` between ${renderBytes(minSize)} and ${renderBytes(maxSize)}`;
+    caption += ` ${translateText("between {minSize} and {maxSize}", {
+      minSize: renderBytes(minSize),
+      maxSize: renderBytes(maxSize),
+    })}`;
   } else if (minSize) {
-    caption += ` at least ${renderBytes(minSize)}`;
+    caption += ` ${translateText("at least {minSize}", {
+      minSize: renderBytes(minSize),
+    })}`;
   } else if (maxSize) {
-    caption += ` less than ${renderBytes(maxSize)}`;
+    caption += ` ${translateText("less than {maxSize}", {
+      maxSize: renderBytes(maxSize),
+    })}`;
   }
 
   return (
@@ -189,10 +205,12 @@ export const DropzoneEmptyState = ({
         <UploadIcon size={16} />
       </div>
       <p className="my-2 w-full truncate text-sm font-medium text-wrap">
-        Upload {maxFiles === 1 ? "a file" : "files"}
+        {maxFiles === 1
+          ? translateText("Upload a file")
+          : translateText("Upload files")}
       </p>
       <p className="text-muted-foreground w-full truncate text-xs text-wrap">
-        Drag and drop or click to upload
+        {translateText("Drag and drop or click to upload")}
       </p>
       {caption && (
         <p className="text-muted-foreground text-xs text-wrap">{caption}.</p>

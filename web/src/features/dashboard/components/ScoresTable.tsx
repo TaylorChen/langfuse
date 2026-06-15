@@ -20,6 +20,7 @@ import {
 } from "@/src/features/scores/lib/helpers";
 import { type DatabaseRow } from "@/src/server/api/services/sqlInterface";
 import { NoDataOrLoading } from "@/src/components/NoDataOrLoading";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const dropValuesForCategoricalScores = (
   value: number,
@@ -56,6 +57,7 @@ export const ScoresTable = ({
   isLoading?: boolean;
   metricsVersion?: ViewVersion;
 }) => {
+  const { translateText } = useI18n();
   const localFilters = createTracesTimeFilter(
     globalFilterState,
     "scoreTimestamp",
@@ -146,7 +148,7 @@ export const ScoresTable = ({
 
   if (!zeroValueScores || !oneValueScores) {
     return (
-      <DashboardCard title={"Scores"} isLoading={false}>
+      <DashboardCard title={translateText("Scores")} isLoading={false}>
         <NoDataOrLoading isLoading={false} />
       </DashboardCard>
     );
@@ -194,7 +196,7 @@ export const ScoresTable = ({
   return (
     <DashboardCard
       className={className}
-      title="Scores"
+      title={translateText("Scores")}
       isLoading={
         isLoading ||
         metrics.isPending ||
@@ -204,9 +206,11 @@ export const ScoresTable = ({
     >
       <DashboardTable
         headers={[
-          "Name",
+          translateText("Name"),
           <RightAlignedCell key="count">#</RightAlignedCell>,
-          <RightAlignedCell key="average">Avg</RightAlignedCell>,
+          <RightAlignedCell key="average">
+            {translateText("Avg")}
+          </RightAlignedCell>,
           <RightAlignedCell key="zero">0</RightAlignedCell>,
           <RightAlignedCell key="one">1</RightAlignedCell>,
         ]}

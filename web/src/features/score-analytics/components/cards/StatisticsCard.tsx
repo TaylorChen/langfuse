@@ -21,6 +21,7 @@ import {
   interpretRMSE,
 } from "@/src/features/score-analytics/lib/statistics-utils";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * StatisticsCard - Smart card component for displaying score statistics
@@ -38,14 +39,17 @@ import Spinner from "@/src/components/design-system/Spinner/Spinner";
  */
 export function StatisticsCard() {
   const { data, isLoading, params } = useScoreAnalytics();
+  const { t, translateText } = useI18n();
 
   // Loading state
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Statistics</CardTitle>
-          <CardDescription>Loading statistics...</CardDescription>
+          <CardTitle>{t("scoreAnalytics.statistics")}</CardTitle>
+          <CardDescription>
+            {t("scoreAnalytics.loadingStatistics")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center py-12">
           <Spinner size="xl" variant="muted" />
@@ -59,11 +63,11 @@ export function StatisticsCard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Statistics</CardTitle>
-          <CardDescription>No data available</CardDescription>
+          <CardTitle>{t("scoreAnalytics.statistics")}</CardTitle>
+          <CardDescription>{t("scoreAnalytics.noData")}</CardDescription>
         </CardHeader>
         <CardContent className="text-muted-foreground py-12 text-center text-sm">
-          Select a score to view statistics
+          {t("scoreAnalytics.selectScoreToViewStatistics")}
         </CardContent>
       </Card>
     );
@@ -109,7 +113,7 @@ export function StatisticsCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          Statistics
+          {t("scoreAnalytics.statistics")}
           {data.samplingMetadata.isSampled && (
             <SamplingDetailsHoverCard
               samplingMetadata={data.samplingMetadata}
@@ -121,7 +125,9 @@ export function StatisticsCard() {
         <CardDescription>
           {score2
             ? `${score1.name} vs ${score2.name}`
-            : `${score1.name} - Select a second score for comparison`}
+            : t("scoreAnalytics.selectSecondScoreDescription", {
+                name: score1.name,
+              })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -133,18 +139,20 @@ export function StatisticsCard() {
           {dataType === "NUMERIC" ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <MetricCard
-                label="Total"
+                label={t("scoreAnalytics.total")}
                 value={
                   showScore1Data
                     ? statistics.score1.total.toLocaleString()
                     : "--"
                 }
-                helpText={`Total number of ${score1.name} scores`}
+                helpText={t("scoreAnalytics.totalScoresHelp", {
+                  name: score1.name,
+                })}
                 isPlaceholder={!showScore1Data}
                 isContext
               />
               <MetricCard
-                label="Mean"
+                label={t("scoreAnalytics.mean")}
                 value={
                   showScore1Data && statistics.score1.mean !== null
                     ? statistics.score1.mean.toFixed(2)
@@ -152,12 +160,14 @@ export function StatisticsCard() {
                       ? "--"
                       : "N/A"
                 }
-                helpText={`Average value for ${score1.name}`}
+                helpText={t("scoreAnalytics.averageValueHelp", {
+                  name: score1.name,
+                })}
                 isPlaceholder={!showScore1Data}
                 isContext
               />
               <MetricCard
-                label="Std Dev"
+                label={t("scoreAnalytics.stdDev")}
                 value={
                   showScore1Data && statistics.score1.std !== null
                     ? statistics.score1.std.toFixed(2)
@@ -165,7 +175,9 @@ export function StatisticsCard() {
                       ? "--"
                       : "N/A"
                 }
-                helpText={`Standard deviation for ${score1.name}`}
+                helpText={t("scoreAnalytics.standardDeviationHelp", {
+                  name: score1.name,
+                })}
                 isPlaceholder={!showScore1Data}
                 isContext
               />
@@ -173,18 +185,20 @@ export function StatisticsCard() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <MetricCard
-                label="Total"
+                label={t("scoreAnalytics.total")}
                 value={
                   showScore1Data
                     ? statistics.score1.total.toLocaleString()
                     : "--"
                 }
-                helpText={`Total number of ${score1.name} scores`}
+                helpText={t("scoreAnalytics.totalScoresHelp", {
+                  name: score1.name,
+                })}
                 isPlaceholder={!showScore1Data}
                 isContext
               />
               <MetricCard
-                label="Mode"
+                label={t("scoreAnalytics.mode")}
                 value={
                   showScore1Data && statistics.score1.mode
                     ? `${statistics.score1.mode.category} (${statistics.score1.mode.count.toLocaleString()})`
@@ -192,12 +206,12 @@ export function StatisticsCard() {
                       ? "--"
                       : "N/A"
                 }
-                helpText="Most frequent category and its count"
+                helpText={t("scoreAnalytics.modeHelp")}
                 isPlaceholder={!showScore1Data}
                 isContext
               />
               <MetricCard
-                label="Mode %"
+                label={t("scoreAnalytics.modePercentage")}
                 value={
                   showScore1Data && statistics.score1.modePercentage !== null
                     ? `${statistics.score1.modePercentage.toFixed(1)}%`
@@ -205,7 +219,7 @@ export function StatisticsCard() {
                       ? "--"
                       : "N/A"
                 }
-                helpText="Percentage of observations with the most frequent category"
+                helpText={t("scoreAnalytics.modePercentageHelp")}
                 isPlaceholder={!showScore1Data}
                 isContext
               />
@@ -217,24 +231,26 @@ export function StatisticsCard() {
         {showScore2Section && (
           <div>
             <h4 className="mb-2 text-xs font-semibold">
-              {score2?.name ?? "Score 2"}
+              {score2?.name ?? t("scoreAnalytics.score2")}
               {score2?.source ? ` (${score2.source})` : ""}
             </h4>
             {dataType === "NUMERIC" ? (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <MetricCard
-                  label="Total"
+                  label={t("scoreAnalytics.total")}
                   value={
                     showScore2Data && statistics.score2
                       ? statistics.score2.total.toLocaleString()
                       : "--"
                   }
-                  helpText={`Total number of ${score2?.name ?? "Score 2"} scores`}
+                  helpText={t("scoreAnalytics.totalScoresHelp", {
+                    name: score2?.name ?? t("scoreAnalytics.score2"),
+                  })}
                   isPlaceholder={!showScore2Data}
                   isContext
                 />
                 <MetricCard
-                  label="Mean"
+                  label={t("scoreAnalytics.mean")}
                   value={
                     showScore2Data &&
                     statistics.score2 &&
@@ -244,12 +260,14 @@ export function StatisticsCard() {
                         ? "--"
                         : "N/A"
                   }
-                  helpText={`Average value for ${score2?.name ?? "Score 2"}`}
+                  helpText={t("scoreAnalytics.averageValueHelp", {
+                    name: score2?.name ?? t("scoreAnalytics.score2"),
+                  })}
                   isPlaceholder={!showScore2Data}
                   isContext
                 />
                 <MetricCard
-                  label="Std Dev"
+                  label={t("scoreAnalytics.stdDev")}
                   value={
                     showScore2Data &&
                     statistics.score2 &&
@@ -259,7 +277,9 @@ export function StatisticsCard() {
                         ? "--"
                         : "N/A"
                   }
-                  helpText={`Standard deviation for ${score2?.name ?? "Score 2"}`}
+                  helpText={t("scoreAnalytics.standardDeviationHelp", {
+                    name: score2?.name ?? t("scoreAnalytics.score2"),
+                  })}
                   isPlaceholder={!showScore2Data}
                   isContext
                 />
@@ -267,18 +287,20 @@ export function StatisticsCard() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <MetricCard
-                  label="Total"
+                  label={t("scoreAnalytics.total")}
                   value={
                     showScore2Data && statistics.score2
                       ? statistics.score2.total.toLocaleString()
                       : "--"
                   }
-                  helpText={`Total number of ${score2?.name ?? "Score 2"} scores`}
+                  helpText={t("scoreAnalytics.totalScoresHelp", {
+                    name: score2?.name ?? t("scoreAnalytics.score2"),
+                  })}
                   isPlaceholder={!showScore2Data}
                   isContext
                 />
                 <MetricCard
-                  label="Mode"
+                  label={t("scoreAnalytics.mode")}
                   value={
                     showScore2Data && statistics.score2?.mode
                       ? `${statistics.score2.mode.category} (${statistics.score2.mode.count.toLocaleString()})`
@@ -286,12 +308,12 @@ export function StatisticsCard() {
                         ? "--"
                         : "N/A"
                   }
-                  helpText="Most frequent category and its count"
+                  helpText={t("scoreAnalytics.modeHelp")}
                   isPlaceholder={!showScore2Data}
                   isContext
                 />
                 <MetricCard
-                  label="Mode %"
+                  label={t("scoreAnalytics.modePercentage")}
                   value={
                     showScore2Data &&
                     statistics.score2 &&
@@ -301,7 +323,7 @@ export function StatisticsCard() {
                         ? "--"
                         : "N/A"
                   }
-                  helpText="Percentage of observations with the most frequent category"
+                  helpText={t("scoreAnalytics.modePercentageHelp")}
                   isPlaceholder={!showScore2Data}
                   isContext
                 />
@@ -313,19 +335,21 @@ export function StatisticsCard() {
         {/* Section 3: Comparison Metrics - Always show to set expectations */}
         {showComparisonSection && (
           <div>
-            <h4 className="mb-2 text-xs font-semibold">Comparison</h4>
+            <h4 className="mb-2 text-xs font-semibold">
+              {t("scoreAnalytics.comparison")}
+            </h4>
             {dataType === "NUMERIC" ? (
               <div className="space-y-4">
                 {/* First row: Matched, Pearson, Spearman */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <MetricCard
-                    label="Matched"
+                    label={t("scoreAnalytics.matched")}
                     value={
                       showComparisonMetrics && statistics.comparison
                         ? statistics.comparison.matchedCount.toLocaleString()
                         : "--"
                     }
-                    helpText="Number of observations with both scores"
+                    helpText={t("scoreAnalytics.matchedHelp")}
                     warning={
                       hasCartesianProduct
                         ? {
@@ -333,20 +357,18 @@ export function StatisticsCard() {
                             content: (
                               <div className="space-y-2 text-xs">
                                 <p className="font-semibold">
-                                  Matched count exceeds individual score counts
-                                  due to Cartesian product
+                                  {t("scoreAnalytics.cartesianWarningTitle")}
                                 </p>
                                 <p>
-                                  This occurs when multiple scores of the same
-                                  name/source exist on a single attachment point
-                                  (trace/observation/session/run). Each
-                                  combination creates a match.
+                                  {t(
+                                    "scoreAnalytics.cartesianWarningDescription",
+                                  )}
                                 </p>
                                 <p className="text-muted-foreground">
-                                  <strong>Example:</strong> If one trace has 2
-                                  &quot;gpt4&quot; scores and 3
-                                  &quot;gemini&quot; scores, this creates 6
-                                  matched pairs (2 × 3 = 6).
+                                  <strong>
+                                    {t("scoreAnalytics.example")}:
+                                  </strong>{" "}
+                                  {t("scoreAnalytics.cartesianWarningExample")}
                                 </p>
                               </div>
                             ),
@@ -357,7 +379,7 @@ export function StatisticsCard() {
                     isPlaceholder={!showComparisonMetrics}
                   />
                   <MetricCard
-                    label="Pearson r"
+                    label={t("scoreAnalytics.pearsonR")}
                     value={
                       showComparisonMetrics &&
                       statistics.comparison &&
@@ -373,14 +395,15 @@ export function StatisticsCard() {
                       statistics.comparison.pearsonCorrelation !== null
                         ? interpretPearsonCorrelation(
                             statistics.comparison.pearsonCorrelation,
+                            translateText,
                           )
                         : undefined
                     }
-                    helpText="Linear correlation (-1 to 1)"
+                    helpText={t("scoreAnalytics.linearCorrelationHelp")}
                     isPlaceholder={!showComparisonMetrics}
                   />
                   <MetricCard
-                    label="Spearman ρ"
+                    label={t("scoreAnalytics.spearmanRho")}
                     value={
                       showComparisonMetrics &&
                       statistics.comparison &&
@@ -396,10 +419,11 @@ export function StatisticsCard() {
                       statistics.comparison.spearmanCorrelation !== null
                         ? interpretSpearmanCorrelation(
                             statistics.comparison.spearmanCorrelation,
+                            translateText,
                           )
                         : undefined
                     }
-                    helpText="Rank correlation (-1 to 1)"
+                    helpText={t("scoreAnalytics.rankCorrelationHelp")}
                     isPlaceholder={!showComparisonMetrics}
                   />
                 </div>
@@ -421,10 +445,14 @@ export function StatisticsCard() {
                       showComparisonMetrics &&
                       statistics.comparison &&
                       statistics.comparison.mae !== null
-                        ? interpretMAE(statistics.comparison.mae)
+                        ? interpretMAE(
+                            statistics.comparison.mae,
+                            undefined,
+                            translateText,
+                          )
                         : undefined
                     }
-                    helpText="Mean Absolute Error"
+                    helpText={t("scoreAnalytics.meanAbsoluteErrorHelp")}
                     isPlaceholder={!showComparisonMetrics}
                   />
                   <MetricCard
@@ -442,10 +470,14 @@ export function StatisticsCard() {
                       showComparisonMetrics &&
                       statistics.comparison &&
                       statistics.comparison.rmse !== null
-                        ? interpretRMSE(statistics.comparison.rmse)
+                        ? interpretRMSE(
+                            statistics.comparison.rmse,
+                            undefined,
+                            translateText,
+                          )
                         : undefined
                     }
-                    helpText="Root Mean Square Error"
+                    helpText={t("scoreAnalytics.rootMeanSquareErrorHelp")}
                     isPlaceholder={!showComparisonMetrics}
                   />
                 </div>
@@ -455,13 +487,13 @@ export function StatisticsCard() {
                 {/* First row: Matched, Agreement */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <MetricCard
-                    label="Matched"
+                    label={t("scoreAnalytics.matched")}
                     value={
                       showComparisonMetrics && statistics.comparison
                         ? statistics.comparison.matchedCount.toLocaleString()
                         : "--"
                     }
-                    helpText="Number of observations with both scores"
+                    helpText={t("scoreAnalytics.matchedHelp")}
                     warning={
                       hasCartesianProduct
                         ? {
@@ -469,20 +501,18 @@ export function StatisticsCard() {
                             content: (
                               <div className="space-y-2 text-xs">
                                 <p className="font-semibold">
-                                  Matched count exceeds individual score counts
-                                  due to Cartesian product
+                                  {t("scoreAnalytics.cartesianWarningTitle")}
                                 </p>
                                 <p>
-                                  This occurs when multiple scores of the same
-                                  name/source exist on a single attachment point
-                                  (trace/observation/session/run). Each
-                                  combination creates a match.
+                                  {t(
+                                    "scoreAnalytics.cartesianWarningDescription",
+                                  )}
                                 </p>
                                 <p className="text-muted-foreground">
-                                  <strong>Example:</strong> If one trace has 2
-                                  &quot;gpt4&quot; scores and 3
-                                  &quot;gemini&quot; scores, this creates 6
-                                  matched pairs (2 × 3 = 6).
+                                  <strong>
+                                    {t("scoreAnalytics.example")}:
+                                  </strong>{" "}
+                                  {t("scoreAnalytics.cartesianWarningExample")}
                                 </p>
                               </div>
                             ),
@@ -493,7 +523,7 @@ export function StatisticsCard() {
                     isPlaceholder={!showComparisonMetrics}
                   />
                   <MetricCard
-                    label="Agreement"
+                    label={t("scoreAnalytics.agreement")}
                     value={
                       showComparisonMetrics && overallAgreement !== null
                         ? `${(overallAgreement * 100).toFixed(1)}%`
@@ -503,10 +533,13 @@ export function StatisticsCard() {
                     }
                     interpretation={
                       showComparisonMetrics && overallAgreement !== null
-                        ? interpretOverallAgreement(overallAgreement)
+                        ? interpretOverallAgreement(
+                            overallAgreement,
+                            translateText,
+                          )
                         : undefined
                     }
-                    helpText="Overall agreement percentage"
+                    helpText={t("scoreAnalytics.agreementHelp")}
                     isPlaceholder={!showComparisonMetrics}
                   />
                 </div>
@@ -514,7 +547,7 @@ export function StatisticsCard() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div />
                   <MetricCard
-                    label="Cohen's κ"
+                    label={t("scoreAnalytics.cohensKappa")}
                     value={
                       showComparisonMetrics && cohensKappa !== null
                         ? cohensKappa.toFixed(3)
@@ -524,14 +557,14 @@ export function StatisticsCard() {
                     }
                     interpretation={
                       showComparisonMetrics && cohensKappa !== null
-                        ? interpretCohensKappa(cohensKappa)
+                        ? interpretCohensKappa(cohensKappa, translateText)
                         : undefined
                     }
-                    helpText="Inter-rater reliability (-1 to 1)"
+                    helpText={t("scoreAnalytics.interRaterReliabilityHelp")}
                     isPlaceholder={!showComparisonMetrics}
                   />
                   <MetricCard
-                    label="F1 Score"
+                    label={t("scoreAnalytics.f1Score")}
                     value={
                       showComparisonMetrics && f1Score !== null
                         ? f1Score.toFixed(3)
@@ -541,10 +574,10 @@ export function StatisticsCard() {
                     }
                     interpretation={
                       showComparisonMetrics && f1Score !== null
-                        ? interpretF1Score(f1Score)
+                        ? interpretF1Score(f1Score, translateText)
                         : undefined
                     }
-                    helpText="Weighted F1 score (0 to 1)"
+                    helpText={t("scoreAnalytics.weightedF1Help")}
                     isPlaceholder={!showComparisonMetrics}
                   />
                 </div>

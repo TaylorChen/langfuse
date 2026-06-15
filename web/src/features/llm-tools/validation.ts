@@ -1,13 +1,24 @@
 import { z } from "zod";
 import { LLMJSONSchema } from "@langfuse/shared";
 
-export const LLMToolNameSchema = z
-  .string()
-  .regex(
-    /^[a-zA-Z0-9\._-]+$/,
-    "Name must contain only alphanumeric letters, hyphens, periods and underscores",
-  )
-  .min(1, "Name is required");
+type TranslateText = (text: string) => string;
+
+const defaultTranslateText: TranslateText = (text) => text;
+
+export const createLLMToolNameSchema = (
+  translateText: TranslateText = defaultTranslateText,
+) =>
+  z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9\._-]+$/,
+      translateText(
+        "Name must contain only alphanumeric letters, hyphens, periods and underscores",
+      ),
+    )
+    .min(1, translateText("Name is required"));
+
+export const LLMToolNameSchema = createLLMToolNameSchema();
 
 export const LLMToolInput = z.object({
   name: LLMToolNameSchema,

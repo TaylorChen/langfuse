@@ -37,6 +37,7 @@ import {
   useOptionalMessageSearchActions,
   useOptionalMessageSearchPageId,
 } from "./MessageSearch";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type ChatMessageProps = Pick<
   MessagesContext,
@@ -95,6 +96,7 @@ export const ChatMessageComponent: React.FC<ChatMessageProps> = ({
   index: _index,
   toolCallIds,
 }) => {
+  const { translateText } = useI18n();
   const [roleIndex, setRoleIndex] = useState(1);
   const playgroundContext = useOptionalPlaygroundContext();
   const searchPageId = useOptionalMessageSearchPageId();
@@ -280,7 +282,7 @@ export const ChatMessageComponent: React.FC<ChatMessageProps> = ({
           <div className="bg-background sticky top-0 bottom-0 z-10 flex w-16 shrink-0 flex-col gap-1">
             {isPlaceholder ? (
               <span className="bg-accent text-muted-foreground inline-flex h-6 w-full items-center justify-center rounded-md px-4 font-mono text-[9px]">
-                placeholder
+                {translateText("placeholder")}
               </span>
             ) : (
               <Button
@@ -289,7 +291,7 @@ export const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                 variant="ghost"
                 className="text-muted-foreground hover:bg-accent hover:text-accent-foreground h-6 w-full px-1 py-0 text-[10px] font-semibold"
               >
-                {capitalize(message.role)}
+                {translateText(capitalize(message.role))}
               </Button>
             )}
           </div>
@@ -308,10 +310,12 @@ export const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                   }
                 >
                   <SelectTrigger
-                    title="Select Tool Call ID"
+                    title={translateText("Select Tool Call ID")}
                     className="bg-muted h-[25px] w-[96px] border-0 text-[9px]"
                   >
-                    <SelectValue placeholder="Select Call ID" />
+                    <SelectValue
+                      placeholder={translateText("Select Call ID")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {toolCallIds?.map((id) => (
@@ -352,7 +356,7 @@ export const ChatMessageComponent: React.FC<ChatMessageProps> = ({
             size="icon"
             onClick={() => deleteMessage(message.id)}
             className="h-5 w-5 shrink-0 rounded-full p-0 opacity-60 transition-all hover:opacity-100"
-            aria-label="Delete message"
+            aria-label={translateText("Delete message")}
           >
             <MinusCircleIcon size={14} />
           </Button>
@@ -370,6 +374,7 @@ const MemoizedEditor = memo(function MemoizedEditor(props: {
   onEditorMount: () => void;
   enableSearchKeymap: boolean;
 }) {
+  const { translateText } = useI18n();
   const {
     value,
     role,
@@ -378,7 +383,9 @@ const MemoizedEditor = memo(function MemoizedEditor(props: {
     onEditorMount,
     enableSearchKeymap,
   } = props;
-  const placeholder = `Enter ${getRoleNamePlaceholder(role)} here.`;
+  const placeholder = translateText("Enter {roleName} here.", {
+    roleName: translateText(getRoleNamePlaceholder(role)),
+  });
 
   return (
     <CodeMirrorEditor

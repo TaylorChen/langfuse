@@ -21,6 +21,7 @@ import {
 } from "@/src/features/widgets/utils";
 import { useV4Beta } from "@/src/features/events/hooks/useV4Beta";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // ============================================================================
 // Types
@@ -179,6 +180,7 @@ export function WidgetContent({
   className,
   entityDimensionLabelMap,
 }: WidgetContentProps) {
+  const { translateText } = useI18n();
   const { isBetaEnabled } = useV4Beta();
   const [retryCount, setRetryCount] = useState(0);
 
@@ -387,7 +389,9 @@ export function WidgetContent({
       <div
         className={`bg-background flex items-center justify-center rounded-lg border p-4`}
       >
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">
+          {translateText("Loading...")}
+        </div>
       </div>
     );
   }

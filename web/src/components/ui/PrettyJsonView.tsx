@@ -59,6 +59,7 @@ import {
   getValueStringLength,
 } from "@/src/components/table/ValueCell";
 import { ItemBadge, type LangfuseItemType } from "@/src/components/ItemBadge";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 // Constants for table layout
 const INDENTATION_PER_LEVEL = 16;
@@ -558,6 +559,7 @@ function JsonPrettyTable({
   stickyTopLevelKey?: boolean;
   showObservationTypeBadge?: boolean;
 }) {
+  const { translateText } = useI18n();
   const headerRef = useRef<HTMLTableRowElement>(null);
   const topLevelRowRef = useRef<HTMLTableRowElement>(null);
   const [stickyOffsets, setStickyOffsets] = useState({ header: 32, row: 32 });
@@ -583,7 +585,7 @@ function JsonPrettyTable({
   const columns: LangfuseColumnDef<JsonTableRow, unknown>[] = [
     {
       accessorKey: "key",
-      header: "Path",
+      header: translateText("Path"),
       size: 35,
       cell: ({ row }) => {
         // we need to calculate the indentation here for a good line break
@@ -675,7 +677,7 @@ function JsonPrettyTable({
     },
     {
       accessorKey: "value",
-      header: "Value",
+      header: translateText("Value"),
       size: 65,
       cell: ({ row }) => (
         <ValueCell
@@ -879,6 +881,8 @@ export function PrettyJsonView(props: {
   /** Content to render between header and main content (e.g., thinking blocks) */
   afterHeader?: React.ReactNode;
 }) {
+  const { translateText } = useI18n();
+
   // Use pre-parsed data if available, otherwise parse on-demand
   const parsedJson = useMemo(() => {
     // If pre-parsed data is provided, use it directly (skip parsing)
@@ -1335,7 +1339,7 @@ export function PrettyJsonView(props: {
               <Skeleton className="h-3 w-2/3" />
               {props.isParsing && (
                 <div className="text-muted-foreground mt-2 text-xs">
-                  Parsing in background...
+                  {translateText("Parsing in background...")}
                 </div>
               )}
             </div>
@@ -1441,7 +1445,7 @@ export function PrettyJsonView(props: {
       {shouldRenderStandaloneMedia && remainingMarkdownMedia.length > 0 && (
         <>
           <div className="text-muted-foreground my-1 px-2 py-1 text-xs">
-            Media
+            {translateText("Media")}
           </div>
           <div className="flex flex-wrap gap-2 p-4 pt-1">
             {remainingMarkdownMedia.map((m) => (
@@ -1460,7 +1464,7 @@ export function PrettyJsonView(props: {
         !isMarkdownMode && (
           <>
             <div className="text-muted-foreground my-1 px-2 py-1 text-xs">
-              Media
+              {translateText("Media")}
             </div>
             <div className="flex flex-wrap gap-2 p-4 pt-1">
               {props.media.map((m) => (
@@ -1516,7 +1520,9 @@ export function PrettyJsonView(props: {
                   size="icon-xs"
                   onClick={handleJsonToggleCollapse}
                   className="hover:bg-border -mr-2"
-                  title={jsonIsCollapsed ? "Expand all" : "Collapse all"}
+                  title={translateText(
+                    jsonIsCollapsed ? "Expand all" : "Collapse all",
+                  )}
                 >
                   {jsonIsCollapsed ? (
                     <UnfoldVertical className="h-3 w-3" />

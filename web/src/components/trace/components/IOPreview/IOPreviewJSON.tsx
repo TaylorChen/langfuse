@@ -26,6 +26,7 @@ import { type CommentedPathsByField } from "@/src/components/ui/AdvancedJsonView
 import { type ExpansionState } from "@/src/components/ui/AdvancedJsonViewer/types";
 import { type Prisma, type ScoreDomain, deepParseJson } from "@langfuse/shared";
 import { CorrectedOutputField } from "./components/CorrectedOutputField";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const VIRTUALIZATION_THRESHOLD = 3333;
 
@@ -100,6 +101,7 @@ function IOPreviewJSONInner({
   showCorrections = true,
 }: IOPreviewJSONProps) {
   const selectionContext = useInlineCommentSelectionOptional();
+  const { t, translateText } = useI18n();
 
   const handleAddComment = useCallback(() => {
     if (selectionContext?.selection && onAddInlineComment) {
@@ -252,7 +254,7 @@ function IOPreviewJSONInner({
     if (showInput) {
       result.push({
         key: "input",
-        title: "Input",
+        title: translateText("Input"),
         data: effectiveInput,
         backgroundColor: inputBgColor,
         minHeight: "200px",
@@ -261,7 +263,7 @@ function IOPreviewJSONInner({
     if (showOutput) {
       result.push({
         key: "output",
-        title: "Output",
+        title: translateText("Output"),
         data: effectiveOutput,
         backgroundColor: outputBgColor,
         minHeight: "200px",
@@ -270,7 +272,7 @@ function IOPreviewJSONInner({
     if (showCorrections) {
       result.push({
         key: "corrections",
-        title: "Output correction",
+        title: t("ioPreview.outputCorrection"),
         data: null,
         hideData: true, // Hide key/value display, only show header/footer
         backgroundColor: outputBgColor,
@@ -292,7 +294,7 @@ function IOPreviewJSONInner({
     if (showMetadata) {
       result.push({
         key: "metadata",
-        title: "Metadata",
+        title: translateText("Metadata"),
         data: effectiveMetadata,
         backgroundColor: metadataBgColor,
         minHeight: "200px",
@@ -315,6 +317,8 @@ function IOPreviewJSONInner({
     projectId,
     traceId,
     environment,
+    t,
+    translateText,
   ]);
 
   // Wait for parsing to complete before rendering to avoid flicker
@@ -322,7 +326,9 @@ function IOPreviewJSONInner({
     return (
       <div className="flex min-h-0 flex-1 flex-col border-t border-b">
         <div className="flex h-full items-center justify-center">
-          <div className="text-muted-foreground text-sm">Parsing data...</div>
+          <div className="text-muted-foreground text-sm">
+            {t("ioPreview.parsingData")}
+          </div>
         </div>
       </div>
     );
@@ -367,7 +373,7 @@ function IOPreviewJSONInner({
         <Command className="flex-1 rounded-none border-0 bg-transparent">
           <CommandInput
             showBorder={false}
-            placeholder="Search across all sections..."
+            placeholder={t("ioPreview.searchAllSections")}
             className="h-7 border-0 focus:ring-0"
             value={searchQuery}
             onValueChange={setSearchQuery}
@@ -390,8 +396,11 @@ function IOPreviewJSONInner({
         {searchQuery && (
           <span className="text-muted-foreground text-xs whitespace-nowrap">
             {searchMatchCount > 0
-              ? `${currentMatchIndex + 1} of ${searchMatchCount}`
-              : "No matches"}
+              ? t("ioPreview.matchCounter", {
+                  current: currentMatchIndex + 1,
+                  total: searchMatchCount,
+                })
+              : t("ioPreview.noMatches")}
           </span>
         )}
 
@@ -403,7 +412,7 @@ function IOPreviewJSONInner({
               size="icon"
               className="h-7 w-7"
               onClick={handlePreviousMatch}
-              title="Previous match (Shift+Enter)"
+              title={t("ioPreview.previousMatch")}
             >
               <ChevronUp className="h-3.5 w-3.5" />
             </Button>
@@ -412,7 +421,7 @@ function IOPreviewJSONInner({
               size="icon"
               className="h-7 w-7"
               onClick={handleNextMatch}
-              title="Next match (Enter)"
+              title={t("ioPreview.nextMatch")}
             >
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
@@ -425,7 +434,9 @@ function IOPreviewJSONInner({
           size="icon"
           className="h-7 w-7"
           onClick={handleCycleWrapMode}
-          title={`String wrap mode: ${stringWrapMode}`}
+          title={t("ioPreview.stringWrapMode", {
+            mode: translateText(stringWrapMode),
+          })}
         >
           {wrapIcon}
         </Button>
@@ -436,7 +447,7 @@ function IOPreviewJSONInner({
           size="icon"
           className="h-7 w-7"
           onClick={handleCopy}
-          title="Copy to clipboard"
+          title={t("ioPreview.copyToClipboard")}
         >
           <Copy className="h-3.5 w-3.5" />
         </Button>
@@ -444,7 +455,9 @@ function IOPreviewJSONInner({
 
       {/* Section navigation hint bar */}
       <div className="bg-background flex h-6 shrink-0 items-center gap-1.5 border-b px-2">
-        <span className="text-muted-foreground text-xs">Jump to:</span>
+        <span className="text-muted-foreground text-xs">
+          {t("ioPreview.jumpTo")}
+        </span>
         {sections.map((section, index) => (
           <span key={section.key} className="flex items-center">
             <button
@@ -462,18 +475,20 @@ function IOPreviewJSONInner({
           <HoverCard>
             <HoverCardTrigger asChild>
               <span className="bg-muted text-muted-foreground ml-auto cursor-help rounded px-1.5 py-px text-[10px] font-medium">
-                Virtualized
+                {t("ioPreview.virtualized")}
               </span>
             </HoverCardTrigger>
             <HoverCardContent className="w-80" side="bottom" align="end">
               <div className="space-y-2">
-                <p className="text-sm font-medium">Virtualized View</p>
+                <p className="text-sm font-medium">
+                  {t("ioPreview.virtualizedView")}
+                </p>
                 <p className="text-muted-foreground text-xs">
-                  This view is using virtualization due to a large number of
-                  keys ({rowCounts.input.toLocaleString()} input,{" "}
-                  {rowCounts.output.toLocaleString()} output,{" "}
-                  {rowCounts.metadata.toLocaleString()} metadata). Only visible
-                  rows are rendered for optimal performance.
+                  {t("ioPreview.virtualizedDescription", {
+                    input: rowCounts.input.toLocaleString(),
+                    output: rowCounts.output.toLocaleString(),
+                    metadata: rowCounts.metadata.toLocaleString(),
+                  })}
                 </p>
               </div>
             </HoverCardContent>

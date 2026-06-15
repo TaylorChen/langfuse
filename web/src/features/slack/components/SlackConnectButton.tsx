@@ -4,6 +4,7 @@ import { SiSlack } from "react-icons/si";
 import { api } from "@/src/utils/api";
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /**
  * Props for the SlackConnectButton component
@@ -38,11 +39,13 @@ export const SlackConnectButton: React.FC<SlackConnectButtonProps> = ({
   disabled = false,
   variant = "default",
   size = "default",
-  buttonText = "Connect Slack",
+  buttonText,
   onSuccess,
   onError,
   showText = true,
 }) => {
+  const { t } = useI18n();
+  const resolvedButtonText = buttonText ?? t("slack.connectSlack");
   const [isConnecting, setIsConnecting] = useState(false);
   const popupRef = useRef<Window | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -79,9 +82,9 @@ export const SlackConnectButton: React.FC<SlackConnectButtonProps> = ({
   // Handle connect button click
   const handleConnect = async () => {
     if (!integrationStatus?.installUrl) {
-      const errorMessage = "Install URL not available. Please try again.";
+      const errorMessage = t("slack.installUrlUnavailable");
       onError?.(new Error(errorMessage));
-      showErrorToast("Connection Failed", errorMessage);
+      showErrorToast(t("slack.connectionFailed"), errorMessage);
       return;
     }
 
@@ -96,7 +99,7 @@ export const SlackConnectButton: React.FC<SlackConnectButtonProps> = ({
       );
 
       if (!popup) {
-        throw new Error("Popup blocked. Please allow popups and try again.");
+        throw new Error(t("slack.popupBlocked"));
       }
 
       // Store popup reference
@@ -114,8 +117,10 @@ export const SlackConnectButton: React.FC<SlackConnectButtonProps> = ({
           setIsConnecting(false);
 
           showSuccessToast({
-            title: "Slack Connected",
-            description: `Successfully connected to ${event.data.teamName}.`,
+            title: t("slack.slackConnected"),
+            description: t("slack.slackConnectedDescription", {
+              teamName: event.data.teamName,
+            }),
           });
 
           onSuccess?.();
@@ -132,7 +137,7 @@ export const SlackConnectButton: React.FC<SlackConnectButtonProps> = ({
           popup.close();
           setIsConnecting(false);
 
-          showErrorToast("Connection Failed", event.data.error);
+          showErrorToast(t("slack.connectionFailed"), event.data.error);
           onError?.(new Error(event.data.error));
 
           // Clean up event listener and interval
@@ -169,9 +174,9 @@ export const SlackConnectButton: React.FC<SlackConnectButtonProps> = ({
     } catch (error) {
       setIsConnecting(false);
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to connect to Slack";
+        error instanceof Error ? error.message : t("slack.failedToConnect");
       onError?.(new Error(errorMessage));
-      showErrorToast("Connection Failed", errorMessage);
+      showErrorToast(t("slack.connectionFailed"), errorMessage);
     }
   };
 
@@ -184,7 +189,9 @@ export const SlackConnectButton: React.FC<SlackConnectButtonProps> = ({
       className="flex items-center gap-2"
     >
       <SiSlack className="h-4 w-4" />
-      {showText && <span>{isConnecting ? "Connecting..." : buttonText}</span>}
+      {showText && (
+        <span>{isConnecting ? t("slack.connecting") : resolvedButtonText}</span>
+      )}
     </Button>
   );
 };

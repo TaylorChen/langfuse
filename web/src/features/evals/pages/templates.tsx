@@ -11,11 +11,13 @@ import {
   EVALS_TABS,
 } from "@/src/features/navigation/utils/evals-tabs";
 import { ManageDefaultEvalModel } from "@/src/features/evals/components/manage-default-eval-model";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function TemplatesPage() {
   const router = useRouter();
   const projectId = router.query.projectId as string;
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const hasWriteAccess = useHasProjectAccess({
     projectId,
     scope: "evalTemplate:CUD",
@@ -63,7 +65,7 @@ export default function TemplatesPage() {
                 ) : (
                   <Lock className="mr-2 h-4 w-4" />
                 )}
-                Custom Evaluator
+                {translateText("Custom Evaluator")}
               </Link>
             </Button>
           </>

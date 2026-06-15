@@ -27,11 +27,13 @@ import { DatasetVersionWarningBanner } from "@/src/features/datasets/components/
 import { useState } from "react";
 import { useDatasetVersion } from "@/src/features/datasets/hooks/useDatasetVersion";
 import { getDatasetBreadcrumb } from "@/src/features/datasets/utils/getDatasetBreadcrumb";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 function DatasetItemsView() {
   const router = useRouter();
   const projectId = router.query.projectId as string;
   const datasetId = router.query.datasetId as string;
+  const { t } = useI18n();
 
   const { selectedVersion, resetToLatest } = useDatasetVersion();
   const isViewingOldVersion = selectedVersion !== null;
@@ -147,7 +149,7 @@ function DatasetItemsView() {
               variant="outline"
               size="icon"
               onClick={() => setIsVersionPanelOpen(!isVersionPanelOpen)}
-              title="Version History"
+              title={t("datasets.versionHistory")}
             >
               <History className="h-4 w-4" />
             </Button>
@@ -175,7 +177,7 @@ function DatasetItemsView() {
               open: isVersionPanelOpen,
               onOpenChange: handlePanelOpenChange,
             }}
-            mobileTitle="Version History"
+            mobileTitle={t("datasets.versionHistory")}
           >
             <SidePanelContent className="h-full">
               <DatasetVersionHistoryPanel

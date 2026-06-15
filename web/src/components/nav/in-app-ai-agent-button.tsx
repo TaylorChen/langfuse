@@ -25,6 +25,7 @@ import { useHasEntitlement } from "@/src/features/entitlements/hooks";
 import { AIFeaturesDisabledNotice } from "@/src/features/organizations/components/AIFeaturesDisabledNotice";
 import { useQueryProjectOrOrganization } from "@/src/features/projects/hooks";
 import { useSupportDrawer } from "@/src/features/support-chat/SupportDrawerProvider";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { cn } from "@/src/utils/tailwind";
 
 const IN_APP_AI_AGENT_WINDOW_Z_INDEX = 51;
@@ -32,6 +33,7 @@ const IN_APP_AI_AGENT_WINDOW_Z_INDEX = 51;
 export const InAppAiAgentButton = () => {
   const session = useSession();
   const { organization } = useQueryProjectOrOrganization();
+  const { translateText } = useI18n();
   const { isAvailable, open, setOpen, isExpanded, setIsExpanded } =
     useInAppAiAgent();
   const hasInAppAgentEntitlement = useHasEntitlement("in-app-agent");
@@ -127,7 +129,7 @@ export const InAppAiAgentButton = () => {
     <>
       <SidebarMenuButton ref={buttonRef} isActive={open} onClick={handleClick}>
         <BotMessageSquare className="h-4 w-4" />
-        Assistant
+        {translateText("Assistant")}
       </SidebarMenuButton>
       {open && portalContainer
         ? createPortal(
@@ -163,12 +165,15 @@ export const InAppAiAgentButton = () => {
       <Dialog open={enableDialogOpen} onOpenChange={setEnableDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>AI features are disabled</DialogTitle>
+            <DialogTitle>
+              {translateText("AI features are disabled")}
+            </DialogTitle>
           </DialogHeader>
           <DialogBody>
             <AIFeaturesDisabledNotice organizationId={organization?.id}>
-              The assistant requires AI features to be enabled for this
-              organization.
+              {translateText(
+                "The assistant requires AI features to be enabled for this organization.",
+              )}
             </AIFeaturesDisabledNotice>
           </DialogBody>
           <DialogFooter>
@@ -178,7 +183,7 @@ export const InAppAiAgentButton = () => {
                 variant="outline"
                 onClick={() => setEnableDialogOpen(false)}
               >
-                Close
+                {translateText("Close")}
               </Button>
             </div>
           </DialogFooter>

@@ -15,6 +15,7 @@ import {
   singleRunToExperimentsUrl,
   toExperimentsResultsUrl,
 } from "@/src/features/experiments/utils/experimentUrlTranslation";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const PREVIEW_FAST_DESCRIPTION =
   "Get a more performant Langfuse experience. Upgrade SDKs to the latest major for real-time data. This is a personal setting.";
@@ -30,6 +31,7 @@ function asArrayValue(value: string | string[] | undefined) {
 }
 
 export function V4SidebarToggle() {
+  const { translateText } = useI18n();
   const router = useRouter();
   const {
     isBetaEnabled,
@@ -115,7 +117,7 @@ export function V4SidebarToggle() {
               htmlFor="v4-beta-toggle"
               className="block min-w-0 flex-1 cursor-pointer truncate text-sm font-normal"
             >
-              Fast (Preview)
+              {translateText("Fast (Preview)")}
             </Label>
           </div>
           <Tooltip>
@@ -128,7 +130,7 @@ export function V4SidebarToggle() {
                   onCheckedChange={handleToggle}
                   disabled={isLoading}
                   className="shrink-0"
-                  aria-label="Toggle Preview (fast)"
+                  aria-label={translateText("Toggle Preview (fast)")}
                   aria-describedby={PREVIEW_FAST_DESCRIPTION_ID}
                 />
               </div>

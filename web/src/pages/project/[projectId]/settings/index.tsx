@@ -33,6 +33,7 @@ import { env } from "@/src/env.mjs";
 import { NotificationSettings } from "@/src/features/notifications/components/NotificationSettings";
 import { WebCalloutIntegrationCard } from "@/src/features/web-callouts/components/WebCalloutSettingsPage";
 import { DeveloperToolsSettings } from "@/src/features/developer-tools/components/DeveloperToolsSettings";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type ProjectSettingsPage = {
   title: string;
@@ -88,27 +89,7 @@ export const getProjectSettingsPages = ({
         <HostNameProject />
         <RenameProject />
         {showRetentionSettings && <ConfigureRetention />}
-        <div>
-          <Header title="Debug Information" />
-          <JSONView
-            title="Metadata"
-            json={{
-              project: {
-                name: project.name,
-                id: project.id,
-                ...project.metadata,
-              },
-              org: {
-                name: organization.name,
-                id: organization.id,
-                ...organization.metadata,
-              },
-              ...(env.NEXT_PUBLIC_LANGFUSE_CLOUD_REGION && {
-                cloudRegion: env.NEXT_PUBLIC_LANGFUSE_CLOUD_REGION,
-              }),
-            }}
-          />
-        </div>
+        <DebugInformation project={project} organization={organization} />
         <SettingsDangerZone
           items={[
             {
@@ -261,13 +242,14 @@ export default function SettingsPage() {
   const { project, organization } = useQueryProject();
   const router = useRouter();
   const pages = useProjectSettingsPages();
+  const { translateText } = useI18n();
 
   if (!project || !organization) return null;
 
   return (
     <ContainerPage
       headerProps={{
-        title: "Project Settings",
+        title: translateText("Project Settings"),
       }}
     >
       <PagedSettingsContainer
@@ -278,7 +260,42 @@ export default function SettingsPage() {
   );
 }
 
+const DebugInformation = ({
+  project,
+  organization,
+}: {
+  project: { id: string; name: string; metadata: Record<string, unknown> };
+  organization: { id: string; name: string; metadata: Record<string, unknown> };
+}) => {
+  const { translateText } = useI18n();
+
+  return (
+    <div>
+      <Header title={translateText("Debug Information")} />
+      <JSONView
+        title={translateText("Metadata")}
+        json={{
+          project: {
+            name: project.name,
+            id: project.id,
+            ...project.metadata,
+          },
+          org: {
+            name: organization.name,
+            id: organization.id,
+            ...organization.metadata,
+          },
+          ...(env.NEXT_PUBLIC_LANGFUSE_CLOUD_REGION && {
+            cloudRegion: env.NEXT_PUBLIC_LANGFUSE_CLOUD_REGION,
+          }),
+        }}
+      />
+    </div>
+  );
+};
+
 const Integrations = (props: { projectId: string }) => {
+  const { t, translateText } = useI18n();
   const hasAccess = useHasProjectAccess({
     projectId: props.projectId,
     scope: "integrations:CRUD",
@@ -290,14 +307,13 @@ const Integrations = (props: { projectId: string }) => {
 
   return (
     <div>
-      <Header title="Integrations" />
+      <Header title={translateText("Integrations")} />
       <div className="space-y-6">
         <Card className="p-3">
           {}
           <PostHogLogo className="text-foreground mb-4 w-40" />
           <p className="text-primary mb-4 text-sm">
-            We have teamed up with PostHog (OSS product analytics) to make
-            Langfuse Events/Metrics available in your Posthog Dashboards.
+            {t("integrations.posthogDescription")}
           </p>
           <div className="flex items-center gap-2">
             <ActionButton
@@ -305,14 +321,14 @@ const Integrations = (props: { projectId: string }) => {
               hasAccess={hasAccess}
               href={`/project/${props.projectId}/settings/integrations/posthog`}
             >
-              Configure
+              {translateText("Configure")}
             </ActionButton>
             <Button asChild variant="ghost">
               <Link
                 href="https://langfuse.com/integrations/analytics/posthog"
                 target="_blank"
               >
-                Integration Docs ↗
+                {t("integrations.docs")}
               </Link>
             </Button>
           </div>
@@ -321,8 +337,7 @@ const Integrations = (props: { projectId: string }) => {
         <Card className="p-3">
           <MixpanelLogo className="text-foreground mb-4 w-20" />
           <p className="text-primary mb-4 text-sm">
-            Integrate with Mixpanel to sync your Langfuse traces, generations,
-            and scores for advanced product analytics and insights.
+            {t("integrations.mixpanelDescription")}
           </p>
           <div className="flex items-center gap-2">
             <ActionButton
@@ -330,25 +345,23 @@ const Integrations = (props: { projectId: string }) => {
               hasAccess={hasAccess}
               href={`/project/${props.projectId}/settings/integrations/mixpanel`}
             >
-              Configure
+              {translateText("Configure")}
             </ActionButton>
             <Button asChild variant="ghost">
               <Link
                 href="https://langfuse.com/integrations/analytics/mixpanel"
                 target="_blank"
               >
-                Integration Docs ↗
+                {t("integrations.docs")}
               </Link>
             </Button>
           </div>
         </Card>
 
         <Card className="p-3">
-          <span className="font-semibold">Blob Storage</span>
+          <span className="font-semibold">{translateText("Blob Storage")}</span>
           <p className="text-primary mb-4 text-sm">
-            Configure scheduled exports of your trace data to S3 compatible
-            storages or Azure Blob Storage. Set up a scheduled export to your
-            own storage for data analysis or backup purposes.
+            {t("integrations.blobStorageDescription")}
           </p>
           <div className="flex items-center gap-2">
             <ActionButton
@@ -357,14 +370,14 @@ const Integrations = (props: { projectId: string }) => {
               hasEntitlement={allowBlobStorageIntegration}
               href={`/project/${props.projectId}/settings/integrations/blobstorage`}
             >
-              Configure
+              {translateText("Configure")}
             </ActionButton>
             <Button asChild variant="ghost">
               <Link
                 href="https://langfuse.com/docs/query-traces#blob-storage"
                 target="_blank"
               >
-                Integration Docs ↗
+                {t("integrations.docs")}
               </Link>
             </Button>
           </div>
@@ -373,11 +386,10 @@ const Integrations = (props: { projectId: string }) => {
         <Card className="p-3">
           <div className="mb-4 flex items-center gap-2">
             <SiSlack className="text-foreground h-5 w-5" />
-            <span className="font-semibold">Slack</span>
+            <span className="font-semibold">{translateText("Slack")}</span>
           </div>
           <p className="text-primary mb-4 text-sm">
-            Connect a Slack workspace and create channel automations to receive
-            Langfuse alerts natively in Slack.
+            {t("integrations.slackDescription")}
           </p>
           <div className="flex items-center gap-2">
             <ActionButton
@@ -385,7 +397,7 @@ const Integrations = (props: { projectId: string }) => {
               hasAccess={hasAccess}
               href={`/project/${props.projectId}/settings/integrations/slack`}
             >
-              Configure
+              {translateText("Configure")}
             </ActionButton>
           </div>
         </Card>

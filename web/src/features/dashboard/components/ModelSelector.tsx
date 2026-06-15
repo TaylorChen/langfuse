@@ -19,6 +19,7 @@ import { type FilterState } from "@langfuse/shared";
 import { type ViewVersion } from "@langfuse/shared/query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const ModelSelectorPopover = ({
   allModels,
@@ -36,6 +37,7 @@ export const ModelSelectorPopover = ({
   handleSelectAll: () => void;
 }) => {
   const [open, setOpen] = useState(false);
+  const { translateText } = useI18n();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -52,8 +54,13 @@ export const ModelSelectorPopover = ({
       </PopoverTrigger>
       <PopoverContent className="w-56 p-0">
         <InputCommand>
-          <InputCommandInput placeholder="Search models..." variant="bottom" />
-          <InputCommandEmpty>No model found.</InputCommandEmpty>
+          <InputCommandInput
+            placeholder={translateText("Search models...")}
+            variant="bottom"
+          />
+          <InputCommandEmpty>
+            {translateText("No model found.")}
+          </InputCommandEmpty>
           <InputCommandGroup>
             <InputCommandItem onSelect={handleSelectAll}>
               <Check
@@ -63,7 +70,7 @@ export const ModelSelectorPopover = ({
                 )}
               />
               <span>
-                <p className="font-semibold">Select All</p>
+                <p className="font-semibold">{translateText("Select All")}</p>
               </span>
             </InputCommandItem>
             <InputCommandSeparator className="my-1" />
@@ -88,7 +95,7 @@ export const ModelSelectorPopover = ({
                     )}
                   />
                   {!model.model || model.model === "" ? (
-                    <i>none</i>
+                    <i>{translateText("none")}</i>
                   ) : (
                     model.model
                   )}
@@ -113,6 +120,7 @@ export const useModelSelection = (
     queryId: string;
   },
 ) => {
+  const { translateText } = useI18n();
   const allModels = useAllModels(
     projectId,
     globalFilterState,
@@ -128,8 +136,8 @@ export const useModelSelection = (
   const isAllSelected = selectedModels.length === allModels.length;
 
   const buttonText = isAllSelected
-    ? "All models"
-    : `${selectedModels.length} selected`;
+    ? translateText("All models")
+    : translateText("{count} selected", { count: selectedModels.length });
 
   const handleSelectAll = () => {
     setSelectedModels(isAllSelected ? [] : [...allModels.map((m) => m.model)]);

@@ -1,10 +1,12 @@
 import { ErrorPage } from "@/src/components/error-page";
 import ContainerPage from "@/src/components/layouts/container-page";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { WebCalloutSettingsPage } from "@/src/features/web-callouts/components/WebCalloutSettingsPage";
 import { api } from "@/src/utils/api";
 import { useRouter } from "next/router";
 
 export default function WebCalloutsSettings() {
+  const { t } = useI18n();
   const router = useRouter();
   const projectId = router.query.projectId as string | undefined;
   const availability = api.webCallouts.availability.useQuery(
@@ -18,16 +20,22 @@ export default function WebCalloutsSettings() {
 
   if (availability.data?.enabled !== true) {
     return (
-      <ErrorPage title="Page not found" message="This page does not exist." />
+      <ErrorPage
+        title={t("common.pageNotFound")}
+        message={t("common.pageDoesNotExist")}
+      />
     );
   }
 
   return (
     <ContainerPage
       headerProps={{
-        title: "Web Callouts",
+        title: t("webCallouts.title"),
         breadcrumb: [
-          { name: "Settings", href: `/project/${projectId}/settings` },
+          {
+            name: t("common.settings"),
+            href: `/project/${projectId}/settings`,
+          },
         ],
       }}
     >

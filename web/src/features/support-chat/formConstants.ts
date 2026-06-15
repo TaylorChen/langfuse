@@ -138,19 +138,33 @@ export const IntegrationTypeSchema = z.enum([
 ]);
 export type IntegrationType = z.infer<typeof IntegrationTypeSchema>;
 
-export const SupportFormSchema = z.object({
-  messageType: MessageTypeSchema.default("Question"),
-  severity: SeveritySchema,
-  integrationType: z.string().optional(),
-  topic: z
-    .union([TopicSchema, z.literal("")])
-    .refine((val) => val !== "", { message: "Please select a topic." })
-    .transform((val) => val as z.infer<typeof TopicSchema>),
-  message: z
-    .string()
-    .trim()
-    .min(1, "Please provide a description of your issue."),
-});
+type TranslateText = (
+  text: string,
+  values?: Record<string, string | number | undefined>,
+) => string;
+
+const defaultTranslateText: TranslateText = (text) => text;
+
+export const createSupportFormSchema = (
+  translateText: TranslateText = defaultTranslateText,
+) =>
+  z.object({
+    messageType: MessageTypeSchema.default("Question"),
+    severity: SeveritySchema,
+    integrationType: z.string().optional(),
+    topic: z
+      .union([TopicSchema, z.literal("")])
+      .refine((val) => val !== "", {
+        message: translateText("Please select a topic."),
+      })
+      .transform((val) => val as z.infer<typeof TopicSchema>),
+    message: z
+      .string()
+      .trim()
+      .min(1, translateText("Please provide a description of your issue.")),
+  });
+
+export const SupportFormSchema = createSupportFormSchema();
 export type SupportFormValues = z.infer<typeof SupportFormSchema>;
 
 export const MESSAGE_TYPES = MessageTypeSchema.options;

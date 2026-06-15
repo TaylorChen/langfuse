@@ -11,6 +11,7 @@ import { formatMetric } from "@/src/features/widgets/chart-library/utils";
 import { barListToDataPoints } from "@/src/features/dashboard/lib/chart-data-adapters";
 import { traceViewQuery } from "@/src/features/dashboard/lib/dashboard-utils";
 import { useScheduledDashboardExecuteQuery } from "@/src/hooks/useDashboardQueryScheduler";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const TracesBarListChart = ({
   className,
@@ -32,6 +33,7 @@ export const TracesBarListChart = ({
   schedulerId?: string;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { translateText } = useI18n();
 
   const isV2 = metricsVersion === "v2";
   const traceNameField = isV2 ? "traceName" : "name";
@@ -102,7 +104,7 @@ export const TracesBarListChart = ({
       return {
         name: item[traceNameField]
           ? (item[traceNameField] as string)
-          : "Unknown",
+          : translateText("Unknown"),
         value: Number(item[countField]),
       };
     }) ?? [];
@@ -179,8 +181,10 @@ export const TracesBarListChart = ({
           maxLength={maxNumberOfEntries.collapsed}
           expandText={
             transformedTraces.length > maxNumberOfEntries.expanded
-              ? `Show top ${maxNumberOfEntries.expanded}`
-              : "Show all"
+              ? translateText("Show top {count}", {
+                  count: maxNumberOfEntries.expanded,
+                })
+              : translateText("Show all")
           }
         />
       </>

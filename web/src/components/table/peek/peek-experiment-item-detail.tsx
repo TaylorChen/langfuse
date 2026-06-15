@@ -3,6 +3,7 @@ import { usePeekData } from "@/src/components/table/peek/hooks/usePeekData";
 import { Trace } from "@/src/components/trace/Trace";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { TablePeekView } from "@/src/components/table/peek";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const PeekViewExperimentItemDetail = ({ projectId }: { projectId: string }) => {
   const router = useRouter();
@@ -51,11 +52,16 @@ export const TablePeekViewExperimentItemDetail = (
   const { projectId } = props;
   const router = useRouter();
   const peekId = router.query.peek as string | undefined;
+  const { translateText } = useI18n();
 
   return (
     <TablePeekView
       {...props}
-      title={peekId ? `Experiment Item: ${peekId}` : undefined}
+      title={
+        peekId
+          ? translateText("Experiment Item: {id}", { id: peekId })
+          : undefined
+      }
     >
       <PeekViewExperimentItemDetail projectId={projectId} />
     </TablePeekView>

@@ -35,6 +35,7 @@ import {
   type CodeEvalSourceCodeLanguage,
   type CodeEvalValidationResult,
 } from "@/src/features/evals/utils/code-eval-template-validation";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type CodeEvalTemplateFormBodyProps = {
   sourceCode: string;
@@ -260,6 +261,7 @@ export function CodeEvalTemplateFormBody({
   validationResult,
   headerAction,
 }: CodeEvalTemplateFormBodyProps) {
+  const { translateText } = useI18n();
   const { resolvedTheme } = useTheme();
   const codeMirrorViewRef = useRef<EditorView | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
@@ -399,7 +401,7 @@ export function CodeEvalTemplateFormBody({
             {isFormatting && (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
             )}
-            Format
+            {translateText("Format")}
             <KeyboardShortcut
               className="ml-2 hidden h-4 sm:inline-flex"
               keys={

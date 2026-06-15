@@ -9,6 +9,7 @@ import { ChatMessage, type ViewMode } from "./ChatMessage";
 import { SectionMedia } from "./SectionMedia";
 import { type ChatMlMessage, shouldRenderMessage } from "./chat-message-utils";
 import { type MediaReturnType } from "@/src/features/media/validation";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const COLLAPSE_THRESHOLD = 3;
 
@@ -43,6 +44,8 @@ export function ChatMessageList({
   collapseLongHistory = true,
   inputMessageCount,
 }: ChatMessageListProps) {
+  const { t } = useI18n();
+
   // Filter messages to only those with renderable content
   const messagesToRender = useMemo(
     () => messages.filter(shouldRenderMessage),
@@ -123,8 +126,10 @@ export function ChatMessageList({
                   className="underline"
                 >
                   {isCollapsed
-                    ? `Show ${messagesToRender.length - COLLAPSE_THRESHOLD} more ...`
-                    : "Hide history"}
+                    ? t("ioPreview.showMoreMessages", {
+                        count: messagesToRender.length - COLLAPSE_THRESHOLD,
+                      })
+                    : t("ioPreview.hideHistory")}
                 </Button>
               )}
             </Fragment>
@@ -134,7 +139,7 @@ export function ChatMessageList({
         {/* Additional input section */}
         {additionalInput && (
           <PrettyJsonView
-            title="Additional Input"
+            title={t("ioPreview.additionalInput")}
             json={additionalInput}
             currentView={shouldRenderMarkdown ? "pretty" : "json"}
           />

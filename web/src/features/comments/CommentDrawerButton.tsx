@@ -14,6 +14,7 @@ import { MessageCircleIcon, MessageCircleOff } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { type SelectionData } from "./contexts/InlineCommentSelectionContext";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function CommentDrawerButton({
   projectId,
@@ -43,6 +44,7 @@ export function CommentDrawerButton({
   onOpenChange?: (open: boolean) => void;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [isMentionDropdownOpen, setIsMentionDropdownOpen] = useState(false);
   const [internalIsDrawerOpen, setInternalIsDrawerOpen] = useState(false);
   const hasAutoOpenedRef = useRef(false); // Track if we've already auto-opened for current deep link
@@ -167,7 +169,7 @@ export function CommentDrawerButton({
               <MessageCircleIcon
                 className={size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"}
               />
-              <span>Add comment</span>
+              <span>{t("comments.addComment")}</span>
               <span className="bg-primary/50 text-primary-foreground flex h-3.5 w-fit items-center justify-center rounded-sm px-1 text-xs shadow-xs">
                 {count > 99 ? "99+" : count}
               </span>
@@ -177,7 +179,7 @@ export function CommentDrawerButton({
               <MessageCircleIcon
                 className={size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"}
               />
-              <span>Add comment</span>
+              <span>{t("comments.addComment")}</span>
             </div>
           )}
         </Button>
@@ -199,7 +201,7 @@ export function CommentDrawerButton({
         >
           <DrawerHeader className="bg-background sr-only shrink-0 rounded-sm">
             <DrawerTitle>
-              <Header title="Comments"></Header>
+              <Header title={t("comments.title")}></Header>
             </DrawerTitle>
           </DrawerHeader>
           <div

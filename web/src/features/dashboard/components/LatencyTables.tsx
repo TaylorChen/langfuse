@@ -13,6 +13,7 @@ import { Popup } from "@/src/components/layouts/doc-popup";
 import { type QueryType, type ViewVersion } from "@langfuse/shared/query";
 import { mapLegacyUiTableFilterToView } from "@/src/features/dashboard/lib/dashboardUiTableToViewMapping";
 import { useScheduledDashboardExecuteQuery } from "@/src/hooks/useDashboardQueryScheduler";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const LatencyTables = ({
   projectId,
@@ -31,6 +32,7 @@ export const LatencyTables = ({
   metricsVersion?: ViewVersion;
   schedulerId?: string;
 }) => {
+  const { translateText } = useI18n();
   const generationsLatenciesQuery: QueryType = {
     view: "observations",
     dimensions: [{ field: "name" }],
@@ -203,12 +205,12 @@ export const LatencyTables = ({
     <>
       <DashboardCard
         className="col-span-1 xl:col-span-2"
-        title="Trace latency percentiles"
+        title={translateText("Trace latency percentiles")}
         isLoading={isLoading || tracesLatencies.isPending}
       >
         <DashboardTable
           headers={[
-            "Trace Name",
+            translateText("Trace Name"),
             <RightAlignedCell key="p50">p50</RightAlignedCell>,
             <RightAlignedCell key="p90">p90</RightAlignedCell>,
             <RightAlignedCell key="p95">
@@ -223,12 +225,12 @@ export const LatencyTables = ({
       </DashboardCard>
       <DashboardCard
         className="col-span-1 xl:col-span-2"
-        title="Generation latency percentiles"
+        title={translateText("Generation latency percentiles")}
         isLoading={isLoading || generationsLatencies.isPending}
       >
         <DashboardTable
           headers={[
-            "Generation Name",
+            translateText("Generation Name"),
             <RightAlignedCell key="p50">p50</RightAlignedCell>,
             <RightAlignedCell key="p90">p90</RightAlignedCell>,
             <RightAlignedCell key="p95">
@@ -243,7 +245,7 @@ export const LatencyTables = ({
       </DashboardCard>
       <DashboardCard
         className="col-span-1 xl:col-span-2"
-        title="Observation latency percentiles"
+        title={translateText("Observation latency percentiles")}
         isLoading={isLoading || observationsLatencies.isPending}
       >
         <DashboardTable

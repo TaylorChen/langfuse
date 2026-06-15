@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { type ParsedUrlQuery } from "querystring";
 import { type ReactNode } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type TabDefinition = {
   value: string;
@@ -71,6 +72,20 @@ const PageHeader = ({
   breadcrumbBadges,
 }: PageHeaderProps) => {
   const router = useRouter();
+  const { translateText } = useI18n();
+  const translatedTitle = translateText(title);
+  const translatedBreadcrumb = breadcrumb?.map((item) => ({
+    ...item,
+    name: translateText(item.name),
+  }));
+  const translatedTitleTooltip = titleTooltip
+    ? translateText(titleTooltip)
+    : undefined;
+  const translatedHelp =
+    help && typeof help.description === "string"
+      ? { ...help, description: translateText(help.description) }
+      : help;
+
   return (
     <div
       className={cn([
@@ -99,7 +114,7 @@ const PageHeader = ({
               <EnvLabel />
             </div>
             <div className="flex items-center gap-2">
-              <BreadcrumbComponent items={breadcrumb} />
+              <BreadcrumbComponent items={translatedBreadcrumb} />
               {breadcrumbBadges}
             </div>
           </div>
@@ -123,7 +138,7 @@ const PageHeader = ({
                 )}
                 <div className="relative inline-block max-w-md md:max-w-none">
                   <h2 className="line-clamp-1 text-lg leading-7 font-semibold">
-                    {titleTooltip ? (
+                    {translatedTitleTooltip ? (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -131,30 +146,30 @@ const PageHeader = ({
                               className="cursor-help wrap-break-word"
                               data-testid="page-header-title"
                             >
-                              {title}
+                              {translatedTitle}
                             </span>
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="max-w-xs">
-                            {titleTooltip}
+                            {translatedTitleTooltip}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     ) : (
                       <span
                         className="wrap-break-word"
-                        title={title}
+                        title={translatedTitle}
                         data-testid="page-header-title"
                       >
-                        {title}
+                        {translatedTitle}
                       </span>
                     )}
-                    {help && (
+                    {translatedHelp && (
                       <span className="whitespace-nowrap">
                         &nbsp;
                         <DocPopup
-                          description={help.description}
-                          href={help.href}
-                          className={help.className}
+                          description={translatedHelp.description}
+                          href={translatedHelp.href}
+                          className={translatedHelp.className}
                         />
                       </span>
                     )}
@@ -188,6 +203,7 @@ const PageHeader = ({
                 )}
               >
                 {tabsProps.tabs.map((tab) => {
+                  const translatedLabel = translateText(tab.label);
                   const tabClassName = cn(
                     "hover:bg-muted/50 focus-visible:ring-ring inline-flex h-full items-center justify-center rounded-none border-b-4 border-transparent px-2 py-0.5 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden",
                     tab.value === tabsProps.activeTab
@@ -206,7 +222,7 @@ const PageHeader = ({
                         className={tabClassName}
                         disabled={tab.disabled}
                       >
-                        {tab.label}
+                        {translatedLabel}
                       </button>
                     );
                   }
@@ -220,7 +236,7 @@ const PageHeader = ({
                       }}
                       className={tabClassName}
                     >
-                      {tab.label}
+                      {translatedLabel}
                     </Link>
                   );
                 })}

@@ -11,6 +11,7 @@ import type {
   SchemaValidationError,
 } from "./types";
 import { wizardReducer, initialWizardState } from "./wizardReducer";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export type UseAddToDatasetWizardProps = {
   projectId: string;
@@ -26,6 +27,7 @@ export type UseAddToDatasetWizardProps = {
 };
 
 export function useAddToDatasetWizard(props: UseAddToDatasetWizardProps) {
+  const { t } = useI18n();
   const {
     projectId,
     selectedObservationIds,
@@ -69,7 +71,7 @@ export function useAddToDatasetWizard(props: UseAddToDatasetWizardProps) {
       dispatch({ type: "SUBMIT_SUCCESS", batchActionId: data.id });
     },
     onError: (error) => {
-      showErrorToast("Failed to schedule action", error.message);
+      showErrorToast(t("batchActions.failedToScheduleAction"), error.message);
       dispatch({ type: "SUBMIT_ERROR" });
     },
   });
@@ -270,44 +272,51 @@ export function useAddToDatasetWizard(props: UseAddToDatasetWizardProps) {
   const nextButtonLabel = useMemo(() => {
     switch (state.step) {
       case "select":
-        return "Continue";
+        return t("common.continue");
       case "create":
         return state.createStep.isCreating
-          ? "Creating..."
-          : "Create & Continue";
+          ? t("batchActions.creating")
+          : t("batchActions.createAndContinue");
       case "input-mapping":
       case "output-mapping":
       case "metadata-mapping":
-        return "Next";
+        return t("common.next");
       case "preview":
-        return state.submission.isSubmitting ? "Adding..." : "Add to Dataset";
+        return state.submission.isSubmitting
+          ? t("batchActions.adding")
+          : t("batchActions.addToDataset");
       default:
-        return "Continue";
+        return t("common.continue");
     }
-  }, [state.step, state.createStep.isCreating, state.submission.isSubmitting]);
+  }, [
+    state.step,
+    state.createStep.isCreating,
+    state.submission.isSubmitting,
+    t,
+  ]);
 
   const dialogDescription = useMemo(() => {
     switch (state.step) {
       case "choice":
-        return "Choose where to add your observations";
+        return t("batchActions.chooseDatasetTarget");
       case "select":
-        return "Select an existing dataset";
+        return t("batchActions.selectExistingDataset");
       case "create":
-        return "Create a new dataset";
+        return t("batchActions.createANewDataset");
       case "input-mapping":
-        return "Configure dataset item input mapping";
+        return t("batchActions.configureInputMapping");
       case "output-mapping":
-        return "Configure dataset item expected output mapping";
+        return t("batchActions.configureExpectedOutputMapping");
       case "metadata-mapping":
-        return "Configure dataset item metadata mapping";
+        return t("batchActions.configureMetadataMapping");
       case "preview":
-        return "Review and confirm your configuration";
+        return t("batchActions.reviewDatasetConfiguration");
       case "status":
-        return "Your bulk action status";
+        return t("batchActions.bulkActionStatus");
       default:
         return "";
     }
-  }, [state.step]);
+  }, [state.step, t]);
 
   const showBackButton = state.step !== "choice" && state.step !== "status";
   const canClose = !state.submission.isSubmitting;

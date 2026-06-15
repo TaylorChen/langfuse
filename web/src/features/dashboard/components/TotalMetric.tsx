@@ -1,3 +1,4 @@
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { cn } from "@/src/utils/tailwind";
 import { type ReactNode } from "react";
 
@@ -12,6 +13,10 @@ export const TotalMetric = ({
   description?: ReactNode;
   children?: ReactNode;
 }) => {
+  const { translateText } = useI18n();
+  const translatedDescription =
+    typeof description === "string" ? translateText(description) : description;
+
   return (
     <div
       className={cn(
@@ -20,7 +25,7 @@ export const TotalMetric = ({
       )}
     >
       <div className="text-3xl font-bold">{metric}</div>
-      <p className="text-muted-foreground text-sm">{description}</p>
+      <p className="text-muted-foreground text-sm">{translatedDescription}</p>
       {children}
     </div>
   );

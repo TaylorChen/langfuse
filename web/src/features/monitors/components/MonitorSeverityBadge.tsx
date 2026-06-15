@@ -3,6 +3,7 @@ import { PauseCircle } from "lucide-react";
 import { Badge, type BadgeProps } from "@/src/components/ui/badge";
 import { cn } from "@/src/utils/tailwind";
 import { type MonitorSeverity } from "@langfuse/shared/monitors";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /** severityVariant maps each MonitorSeverity to the underlying Badge variant. */
 const severityVariant: Record<MonitorSeverity, BadgeProps["variant"]> = {
@@ -24,16 +25,6 @@ const severityClassName: Record<MonitorSeverity, string> = {
   ALERT: "bg-orange-600 text-white hover:bg-orange-600",
 };
 
-/** severityLabel maps each MonitorSeverity to its display text. */
-const severityLabel: Record<MonitorSeverity, string> = {
-  UNKNOWN: "PENDING",
-  NO_DATA: "NO DATA",
-  PAUSED: "PAUSED",
-  OK: "OK",
-  WARNING: "WARNING",
-  ALERT: "ALERT",
-};
-
 /** MonitorSeverityBadge displays the Monitor's severity, including loading states for pending monitors. */
 export function MonitorSeverityBadge({
   severity,
@@ -42,6 +33,16 @@ export function MonitorSeverityBadge({
   severity: MonitorSeverity;
   className?: string;
 }) {
+  const { t } = useI18n();
+  const severityLabel: Record<MonitorSeverity, string> = {
+    UNKNOWN: t("monitors.severityPending"),
+    NO_DATA: t("monitors.severityNoData"),
+    PAUSED: t("monitors.severityPaused"),
+    OK: t("monitors.severityOk"),
+    WARNING: t("monitors.severityWarning"),
+    ALERT: t("monitors.severityAlert"),
+  };
+
   return (
     <Badge
       variant={severityVariant[severity]}

@@ -26,6 +26,7 @@ import {
   toFullMetricString,
 } from "@/src/features/widgets/chart-library/utils";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /** computeMetricExtent returns the [min, max] of all numeric metric values across the data, for sizing the eq/neq band. */
 const computeMetricExtent = (
@@ -181,6 +182,7 @@ export const LineChartTimeSeries: React.FC<ChartProps> = ({
   showDataPointDots = true,
   thresholds,
 }) => {
+  const { translateText } = useI18n();
   const metricExtent = useMemo(() => computeMetricExtent(data), [data]);
   const [highlightedDimension, setHighlightedDimension] = useState<
     string | null
@@ -218,7 +220,9 @@ export const LineChartTimeSeries: React.FC<ChartProps> = ({
                   )}
                   aria-pressed={isHighlighted}
                   aria-label={
-                    isHighlighted ? `Show only ${dimension}` : "Show all series"
+                    isHighlighted
+                      ? translateText("Show only {dimension}", { dimension })
+                      : translateText("Show all series")
                   }
                 >
                   <div

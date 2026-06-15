@@ -14,6 +14,7 @@ import {
   issueTextVariants,
   type IssueVariant,
 } from "@/src/features/batch-actions/components/AddObservationsToDatasetDialog/components/IssueBanner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const STEP_FOR_FIELD: Record<string, DialogStep> = {
   input: "input-mapping",
@@ -21,8 +22,18 @@ const STEP_FOR_FIELD: Record<string, DialogStep> = {
   metadata: "metadata-mapping",
 };
 
-const fieldLabel = (field: string) =>
-  field === "expectedOutput" ? "expected output" : field;
+const getFieldLabel = (field: string, t: ReturnType<typeof useI18n>["t"]) => {
+  switch (field) {
+    case "input":
+      return t("common.input");
+    case "expectedOutput":
+      return t("common.expectedOutput");
+    case "metadata":
+      return t("common.metadata");
+    default:
+      return field;
+  }
+};
 
 export function FinalPreviewStep({
   dataset,
@@ -31,6 +42,7 @@ export function FinalPreviewStep({
   totalCount,
   onEditStep,
 }: FinalPreviewStepProps) {
+  const { t } = useI18n();
   const previewResult = useMemo(() => {
     if (!observationData) return null;
 
@@ -64,24 +76,28 @@ export function FinalPreviewStep({
   return (
     <div className="h-[62vh] space-y-6 p-6">
       <div>
-        <h3 className="text-lg font-semibold">Review Configuration</h3>
+        <h3 className="text-lg font-semibold">
+          {t("batchActions.reviewConfiguration")}
+        </h3>
         <p className="text-muted-foreground text-sm">
-          Adding {totalCount} observation{totalCount !== 1 ? "s" : ""} to
-          dataset &quot;
-          {dataset.name}&quot;
+          {t("batchActions.addingObservationsToDatasetNamed", {
+            count: totalCount,
+            dataset: dataset.name,
+          })}
         </p>
       </div>
 
       {errorFields.length > 0 && (
         <IssueBanner
           variant="error"
-          title="Some JSONPaths are invalid"
-          description="Items using these mappings will be skipped during processing."
+          title={t("batchActions.someJsonPathsInvalid")}
+          description={t("batchActions.invalidJsonPathsSkipped")}
         >
           <EditMappingActions
             variant="error"
             fields={errorFields}
             onEditStep={onEditStep}
+            t={t}
           />
         </IssueBanner>
       )}
@@ -89,49 +105,53 @@ export function FinalPreviewStep({
       {missFields.length > 0 && (
         <IssueBanner
           variant="warning"
-          title="Some JSONPaths did not match the preview observation"
-          description="Observations with failed mappings will be skipped during processing."
+          title={t("batchActions.someJsonPathsDidNotMatch")}
+          description={t("batchActions.failedMappingsSkipped")}
         >
           <EditMappingActions
             variant="warning"
             fields={missFields}
             onEditStep={onEditStep}
+            t={t}
           />
         </IssueBanner>
       )}
 
       <div className="text-muted-foreground text-sm">
-        Sample dataset item preview (from first selected observation):
+        {t("batchActions.sampleDatasetItemPreview")}
       </div>
 
       {!observationData ? (
         <div className="bg-muted/30 flex h-64 items-center justify-center rounded-md border p-4">
           <p className="text-muted-foreground text-sm">
-            No observation data available for preview
+            {t("batchActions.noObservationDataForPreview")}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           <PreviewCard
-            label="Input"
+            label={t("common.input")}
             data={previewResult?.input}
             onEdit={() => onEditStep("input-mapping")}
             pathErrors={errorsByField["input"]}
             pathMisses={missesByField["input"]}
+            t={t}
           />
           <PreviewCard
-            label="Expected Output"
+            label={t("common.expectedOutput")}
             data={previewResult?.expectedOutput}
             onEdit={() => onEditStep("output-mapping")}
             pathErrors={errorsByField["expectedOutput"]}
             pathMisses={missesByField["expectedOutput"]}
+            t={t}
           />
           <PreviewCard
-            label="Metadata"
+            label={t("common.metadata")}
             data={previewResult?.metadata}
             onEdit={() => onEditStep("metadata-mapping")}
             pathErrors={errorsByField["metadata"]}
             pathMisses={missesByField["metadata"]}
+            t={t}
           />
         </div>
       )}
@@ -143,10 +163,12 @@ function EditMappingActions({
   variant,
   fields,
   onEditStep,
+  t,
 }: {
   variant: IssueVariant;
   fields: string[];
   onEditStep: (step: DialogStep) => void;
+  t: ReturnType<typeof useI18n>["t"];
 }) {
   return (
     <div className="flex flex-wrap gap-2 pt-1">
@@ -164,7 +186,9 @@ function EditMappingActions({
             if (step) onEditStep(step);
           }}
         >
-          Edit {fieldLabel(field)} mapping
+          {t("batchActions.editFieldMapping", {
+            field: getFieldLabel(field, t),
+          })}
         </Button>
       ))}
     </div>
@@ -177,6 +201,7 @@ type PreviewCardProps = {
   onEdit: () => void;
   pathErrors?: MappingError[];
   pathMisses?: MappingError[];
+  t: ReturnType<typeof useI18n>["t"];
 };
 
 function PreviewCard({
@@ -185,6 +210,7 @@ function PreviewCard({
   onEdit,
   pathErrors = [],
   pathMisses = [],
+  t,
 }: PreviewCardProps) {
   const variant: IssueVariant | null =
     pathErrors.length > 0 ? "error" : pathMisses.length > 0 ? "warning" : null;
@@ -208,7 +234,7 @@ function PreviewCard({
           className="h-7 gap-1 text-xs"
         >
           <Pencil className="h-3 w-3" />
-          Edit
+          {t("common.edit")}
         </Button>
       </div>
       <div className="max-h-62 overflow-auto">
@@ -225,13 +251,17 @@ function PreviewCard({
           <p className="text-xs">
             {[
               pathErrors.length > 0 &&
-                `${pathErrors.length} path${pathErrors.length !== 1 ? "s have" : " has"} invalid syntax`,
+                t("batchActions.invalidSyntaxPathCount", {
+                  count: pathErrors.length,
+                }),
               pathMisses.length > 0 &&
-                `${pathMisses.length} path${pathMisses.length !== 1 ? "s" : ""} did not match in preview observation`,
+                t("batchActions.previewMissPathCount", {
+                  count: pathMisses.length,
+                }),
             ]
               .filter(Boolean)
               .join("; ")}
-            . These items will be skipped during processing.
+            {t("batchActions.itemsWillBeSkipped")}
           </p>
         </div>
       )}

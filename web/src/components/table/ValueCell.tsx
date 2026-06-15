@@ -5,6 +5,7 @@ import { type JsonTableRow } from "@/src/components/table/utils/jsonExpansionUti
 import { copyTextToClipboard } from "@/src/utils/clipboard";
 import { Button } from "@/src/components/ui/button";
 import { Copy, Check } from "lucide-react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const MAX_STRING_LENGTH_FOR_LINK_DETECTION = 1500;
 export const MAX_CELL_DISPLAY_CHARS = 2000;
@@ -59,9 +60,16 @@ function getValueType(value: unknown): JsonTableRow["type"] {
   return typeof value as JsonTableRow["type"];
 }
 
-function renderArrayValue(arr: unknown[]): JSX.Element {
+function renderArrayValue(
+  arr: unknown[],
+  translateText: (text: string) => string,
+): JSX.Element {
   if (arr.length === 0) {
-    return <span className={PREVIEW_TEXT_CLASSES}>empty list</span>;
+    return (
+      <span className={PREVIEW_TEXT_CLASSES}>
+        {translateText("empty list")}
+      </span>
+    );
   }
 
   if (arr.length <= SMALL_ARRAY_THRESHOLD) {
@@ -99,18 +107,34 @@ function renderArrayValue(arr: unknown[]): JSX.Element {
       .join(", ");
     return (
       <span className={PREVIEW_TEXT_CLASSES}>
-        [{preview}, ...{arr.length - ARRAY_PREVIEW_ITEMS} more]
+        [{preview},{" "}
+        {translateText("{count} more").replace(
+          "{count}",
+          String(arr.length - ARRAY_PREVIEW_ITEMS),
+        )}
+        ]
       </span>
     );
   }
 }
 
-function renderObjectValue(obj: Record<string, unknown>): JSX.Element {
+function renderObjectValue(
+  obj: Record<string, unknown>,
+  translateText: (text: string) => string,
+): JSX.Element {
   const keys = Object.keys(obj);
   if (keys.length === 0) {
-    return <span className={PREVIEW_TEXT_CLASSES}>empty object</span>;
+    return (
+      <span className={PREVIEW_TEXT_CLASSES}>
+        {translateText("empty object")}
+      </span>
+    );
   }
-  return <span className={PREVIEW_TEXT_CLASSES}>{keys.length} items</span>;
+  return (
+    <span className={PREVIEW_TEXT_CLASSES}>
+      {translateText("{count} items").replace("{count}", String(keys.length))}
+    </span>
+  );
 }
 
 function getValueStringLength(value: unknown): number {
@@ -166,6 +190,7 @@ export const ValueCell = memo(
     toggleCellExpansion: (cellId: string) => void;
     preserveStringWhitespace?: boolean;
   }) => {
+    const { translateText } = useI18n();
     const { value, type } = row.original;
     const cellId = `${row.id}-value`;
     const isCellExpanded = expandedCells.has(cellId);
@@ -249,7 +274,7 @@ export const ValueCell = memo(
           const arrayValue = value as unknown[];
           // Arrays always show previews, never truncate
           return {
-            content: renderArrayValue(arrayValue),
+            content: renderArrayValue(arrayValue, translateText),
             needsTruncation: false,
           };
         }
@@ -257,7 +282,7 @@ export const ValueCell = memo(
           const objectValue = value as Record<string, unknown>;
           // Objects always show previews, never truncate
           return {
-            content: renderObjectValue(objectValue),
+            content: renderObjectValue(objectValue, translateText),
             needsTruncation: false,
           };
         }
@@ -295,8 +320,13 @@ export const ValueCell = memo(
             }}
           >
             {isCellExpanded
-              ? "\n...collapse"
-              : `\n...expand (${getValueStringLength(value) - MAX_CELL_DISPLAY_CHARS} more characters)`}
+              ? `\n...${translateText("collapse")}`
+              : `\n...${translateText("expand")} (${translateText(
+                  "{count} more characters",
+                ).replace(
+                  "{count}",
+                  String(getValueStringLength(value) - MAX_CELL_DISPLAY_CHARS),
+                )})`}
           </div>
         )}
 
@@ -306,8 +336,8 @@ export const ValueCell = memo(
           size="icon"
           className="bg-background/80 hover:bg-background absolute top-0 right-0 h-5 w-5 border p-0.5 opacity-0 shadow-xs transition-opacity duration-200 group-hover:opacity-100"
           onClick={handleCopy}
-          title="Copy value"
-          aria-label="Copy cell value"
+          title={translateText("Copy value")}
+          aria-label={translateText("Copy cell value")}
         >
           {showCopySuccess ? (
             <Check className="h-2.5 w-2.5 text-green-600" />

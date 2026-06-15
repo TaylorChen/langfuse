@@ -15,9 +15,17 @@ import {
 } from "@/src/components/ui/select";
 import { PriceUnit } from "@/src/features/models/validation";
 import { usePriceUnitMultiplier } from "@/src/features/models/hooks/usePriceUnitMultiplier";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const PriceUnitSelector = () => {
   const { priceUnit, setPriceUnit } = usePriceUnitMultiplier();
+  const { t } = useI18n();
+  const getUnitLabel = (unit: PriceUnit) =>
+    unit === PriceUnit.PerUnit
+      ? t("models.perUnit")
+      : unit === PriceUnit.Per1KUnits
+        ? t("models.per1KUnits")
+        : t("models.per1MUnits");
 
   return (
     <Popover>
@@ -32,12 +40,12 @@ export const PriceUnitSelector = () => {
           onValueChange={(value: PriceUnit) => setPriceUnit(value)}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select unit" />
+            <SelectValue placeholder={t("models.selectUnit")} />
           </SelectTrigger>
           <SelectContent>
             {Object.values(PriceUnit).map((unit) => (
               <SelectItem key={unit} value={unit}>
-                {unit}
+                {getUnitLabel(unit)}
               </SelectItem>
             ))}
           </SelectContent>

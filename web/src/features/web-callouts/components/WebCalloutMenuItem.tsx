@@ -10,6 +10,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
 import { api } from "@/src/utils/api";
@@ -22,6 +23,7 @@ type WebCalloutTarget = {
 };
 
 function useWebCalloutAction(props: WebCalloutTarget) {
+  const { t } = useI18n();
   const endpoint = api.webCallouts.enabled.useQuery(
     { projectId: props.projectId },
     {
@@ -34,12 +36,12 @@ function useWebCalloutAction(props: WebCalloutTarget) {
       if (!callout?.enabled) return;
 
       showSuccessToast({
-        title: callout.toastMessage,
-        description: callout.name,
+        title: getDisplayToastMessage(callout.toastMessage, t),
+        description: getDisplayEndpointName(callout.name, t),
       });
     },
     onError: (error) => {
-      showErrorToast("Web callout failed", error.message);
+      showErrorToast(t("webCallouts.calloutFailed"), error.message);
     },
   });
 
@@ -59,11 +61,28 @@ function useWebCalloutAction(props: WebCalloutTarget) {
   };
 
   return {
-    endpointName: endpoint.data?.name ?? "Web callout",
+    endpointName: getDisplayEndpointName(endpoint.data?.name, t),
     isLoading: invokeMutation.isPending,
     isVisible: endpoint.data?.enabled === true,
     invokeCallout,
   };
+}
+
+function getDisplayEndpointName(
+  name: string | null | undefined,
+  t: ReturnType<typeof useI18n>["t"],
+) {
+  if (!name) return t("webCallouts.defaultName");
+  return name === "Default" ? t("webCallouts.defaultEndpointName") : name;
+}
+
+function getDisplayToastMessage(
+  message: string,
+  t: ReturnType<typeof useI18n>["t"],
+) {
+  return message === "Callout sent"
+    ? t("webCallouts.defaultToastMessage")
+    : message;
 }
 
 export function WebCalloutMenuItem({
@@ -75,6 +94,7 @@ export function WebCalloutMenuItem({
 }: WebCalloutTarget & {
   withSeparator?: boolean;
 }) {
+  const { t } = useI18n();
   const action = useWebCalloutAction({
     projectId,
     traceId,
@@ -101,7 +121,7 @@ export function WebCalloutMenuItem({
           className="max-w-[260px] min-w-0 truncate"
           title={action.endpointName}
         >
-          <span>Call </span>
+          <span>{t("webCallouts.callAction")} </span>
           <span className="font-semibold">{action.endpointName}</span>
         </span>
       </DropdownMenuItem>
@@ -116,6 +136,7 @@ export function WebCalloutButton({
   observationId,
   sessionId,
 }: WebCalloutTarget) {
+  const { t } = useI18n();
   const action = useWebCalloutAction({
     projectId,
     traceId,
@@ -127,7 +148,7 @@ export function WebCalloutButton({
     return null;
   }
 
-  const label = `Call ${action.endpointName}`;
+  const label = t("webCallouts.callNamed", { name: action.endpointName });
 
   return (
     <Tooltip>

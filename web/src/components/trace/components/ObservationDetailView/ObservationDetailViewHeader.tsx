@@ -60,6 +60,7 @@ import {
 } from "@/src/components/ui/drawer";
 import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
 import { DualAnnotationContent } from "@/src/features/scores/components/DualAnnotationContent";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export interface ObservationDetailViewHeaderProps {
   observation: ObservationReturnTypeWithMetadata;
@@ -101,6 +102,7 @@ export const ObservationDetailViewHeader = memo(
     subtreeMetrics,
     treeNodeTotalCost,
   }: ObservationDetailViewHeaderProps) {
+    const { translateText } = useI18n();
     const { isAnnotationMode } = useViewPreferences();
     const { isBetaEnabled: isV4Enabled } = useV4Beta();
     const { trace, serverScores } = useTraceData();
@@ -178,7 +180,7 @@ export const ObservationDetailViewHeader = memo(
                         ) : (
                           <SquarePen className="mr-1.5 h-3.5 w-3.5" />
                         )}
-                        <span>Annotate</span>
+                        <span>{translateText("Annotate")}</span>
                       </Button>
                     </DrawerTrigger>
                     <DrawerContent className="p-3">

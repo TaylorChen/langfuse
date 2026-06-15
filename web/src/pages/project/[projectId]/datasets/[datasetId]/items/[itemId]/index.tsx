@@ -14,12 +14,14 @@ import { Button } from "@/src/components/ui/button";
 import useSessionStorage from "@/src/components/useSessionStorage";
 import { History, PanelRightOpen } from "lucide-react";
 import { useState } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 function DatasetItemContent() {
   const router = useRouter();
   const projectId = router.query.projectId as string;
   const datasetId = router.query.datasetId as string;
   const itemId = router.query.itemId as string;
+  const { t } = useI18n();
 
   const { selectedVersion, resetToLatest } = useDatasetVersion();
   const isViewingOldVersion = selectedVersion !== null;
@@ -103,19 +105,19 @@ function DatasetItemContent() {
               onClick={() => setIsVersionPanelOpen(!isVersionPanelOpen)}
               title={
                 isVersionPanelOpen
-                  ? "Hide version history"
-                  : "Show version history"
+                  ? t("datasets.hideVersionHistory")
+                  : t("datasets.showVersionHistory")
               }
             >
               {isVersionPanelOpen ? (
                 <>
                   <History className="mr-2 h-4 w-4" />
-                  Hide Version History
+                  {t("datasets.hideVersionHistory")}
                 </>
               ) : (
                 <>
                   <PanelRightOpen className="mr-2 h-4 w-4" />
-                  Show Version History
+                  {t("datasets.showVersionHistory")}
                 </>
               )}
             </Button>
@@ -133,7 +135,7 @@ function DatasetItemContent() {
                     onCheckedChange={setShowDiffMode}
                   />
                   <Label htmlFor="diff-mode" className="cursor-pointer text-sm">
-                    Show diff with latest version
+                    {t("datasets.showDiffWithLatest")}
                   </Label>
                 </div>
               </div>
@@ -144,7 +146,7 @@ function DatasetItemContent() {
               selectedVersion &&
               !itemChangedAtVersion && (
                 <div className="text-muted-foreground mb-4 text-sm">
-                  Item unchanged in this version
+                  {t("datasets.itemUnchangedInVersion")}
                 </div>
               )}
 

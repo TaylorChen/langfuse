@@ -64,6 +64,7 @@ import { TableSelectionManager } from "@/src/features/table/components/TableSele
 import { useScoreColumns } from "@/src/features/scores/hooks/useScoreColumns";
 import { scoreFilters } from "@/src/features/scores/lib/scoreColumns";
 import { BatchExportTableButton } from "@/src/components/BatchExportTableButton";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export type SessionTableRow = {
   id: string;
@@ -96,6 +97,7 @@ export default function SessionsTable({
   omittedFilter = [],
   isBetaEnabled = false,
 }: SessionTableProps) {
+  const { translateText } = useI18n();
   const sessionsFilterConfig = useMemo(
     () => getSessionFilterConfig(omittedFilter),
     [omittedFilter],
@@ -330,12 +332,18 @@ export default function SessionsTable({
 
   const addToQueueMutation = api.annotationQueueItems.createMany.useMutation({
     onSuccess: (data) => {
+      const queueName = data.queueName ?? "";
       showSuccessToast({
-        title: "Sessions added to queue",
-        description: `Selected sessions will be added to queue "${data.queueName}". This may take a minute.`,
+        title: translateText("Sessions added to queue"),
+        description: translateText(
+          'Selected sessions will be added to queue "{queueName}". This may take a minute.',
+        ).replace("{queueName}", queueName),
         link: {
           href: `/project/${projectId}/annotation-queues/${data.queueId}`,
-          text: `View queue "${data.queueName}"`,
+          text: translateText('View queue "{queueName}"').replace(
+            "{queueName}",
+            queueName,
+          ),
         },
       });
     },
@@ -433,9 +441,11 @@ export default function SessionsTable({
     {
       id: ActionId.SessionAddToAnnotationQueue,
       type: BatchActionType.Create,
-      label: "Add to Annotation Queue",
-      description: "Add selected sessions to an annotation queue.",
-      targetLabel: "Annotation Queue",
+      label: translateText("Add to Annotation Queue"),
+      description: translateText(
+        "Add selected sessions to an annotation queue.",
+      ),
+      targetLabel: translateText("Annotation Queue"),
       execute: handleAddToAnnotationQueue,
       accessCheck: {
         scope: "annotationQueues:CUD",
@@ -473,7 +483,7 @@ export default function SessionsTable({
     {
       accessorKey: "id",
       id: "id",
-      header: "ID",
+      header: translateText("ID"),
       size: 200,
       isFixedPosition: true,
       cell: ({ row }) => {
@@ -490,7 +500,7 @@ export default function SessionsTable({
     {
       accessorKey: "createdAt",
       id: "createdAt",
-      header: "Created At",
+      header: translateText("Created At"),
       size: 150,
       enableHiding: true,
       enableSorting: true,
@@ -502,7 +512,7 @@ export default function SessionsTable({
     {
       accessorKey: "sessionDuration",
       id: "sessionDuration",
-      header: "Duration",
+      header: translateText("Duration"),
       size: 130,
       enableHiding: true,
       loadingCell: <TableTextLoadingCell />,
@@ -520,7 +530,7 @@ export default function SessionsTable({
     },
     {
       accessorKey: "environment",
-      header: "Environment",
+      header: translateText("Environment"),
       id: "environment",
       size: 150,
       enableHiding: true,
@@ -540,7 +550,7 @@ export default function SessionsTable({
     },
     {
       accessorKey: "scores",
-      header: "Scores",
+      header: translateText("Scores"),
       id: "scores",
       enableHiding: true,
       defaultHidden: true,
@@ -553,7 +563,7 @@ export default function SessionsTable({
       accessorKey: "userIds",
       enableColumnFilter: !omittedFilter.includes("userIds"),
       id: "userIds",
-      header: "User IDs",
+      header: translateText("User IDs"),
       size: 200,
       enableHiding: true,
       loadingCell: <TableTextLoadingCell />,
@@ -578,10 +588,10 @@ export default function SessionsTable({
     {
       accessorKey: "countTraces",
       id: "countTraces",
-      header: "Traces",
+      header: translateText("Traces"),
       size: 100,
       headerTooltip: {
-        description: "The number of traces in the session.",
+        description: translateText("The number of traces in the session."),
       },
       enableHiding: true,
       enableSorting: true,
@@ -598,7 +608,7 @@ export default function SessionsTable({
     {
       accessorKey: "inputCost",
       id: "inputCost",
-      header: "Input Cost",
+      header: translateText("Input Cost"),
       size: 110,
       enableHiding: true,
       defaultHidden: true,
@@ -617,7 +627,7 @@ export default function SessionsTable({
     {
       accessorKey: "outputCost",
       id: "outputCost",
-      header: "Output Cost",
+      header: translateText("Output Cost"),
       size: 110,
       enableHiding: true,
       enableSorting: true,
@@ -636,7 +646,7 @@ export default function SessionsTable({
     {
       accessorKey: "totalCost",
       id: "totalCost",
-      header: "Total Cost",
+      header: translateText("Total Cost"),
       size: 110,
       enableHiding: true,
       enableSorting: true,
@@ -654,7 +664,7 @@ export default function SessionsTable({
     {
       accessorKey: "inputTokens",
       id: "inputTokens",
-      header: "Input Tokens",
+      header: translateText("Input Tokens"),
       size: 110,
       enableHiding: true,
       defaultHidden: true,
@@ -674,7 +684,7 @@ export default function SessionsTable({
     {
       accessorKey: "outputTokens",
       id: "outputTokens",
-      header: "Output Tokens",
+      header: translateText("Output Tokens"),
       size: 110,
       enableHiding: true,
       defaultHidden: true,
@@ -694,7 +704,7 @@ export default function SessionsTable({
     {
       accessorKey: "totalTokens",
       id: "totalTokens",
-      header: "Total Tokens",
+      header: translateText("Total Tokens"),
       size: 110,
       enableHiding: true,
       defaultHidden: true,
@@ -714,7 +724,7 @@ export default function SessionsTable({
     {
       accessorKey: "usage",
       id: "usage",
-      header: "Usage",
+      header: translateText("Usage"),
       size: 220,
       enableHiding: true,
       enableSorting: true,
@@ -742,7 +752,7 @@ export default function SessionsTable({
     {
       accessorKey: "traceTags",
       id: "traceTags",
-      header: "Trace Tags",
+      header: translateText("Trace Tags"),
       size: 250,
       enableHiding: true,
       defaultHidden: true,
@@ -927,8 +937,9 @@ export default function SessionsTable({
               highlightAllRows={selectAll}
               setRowSelection={setSelectedRows}
               help={{
-                description:
+                description: translateText(
                   "A session is a collection of related traces, such as a conversation or thread. To begin, add a sessionId to the trace.",
+                ),
                 href: "https://langfuse.com/docs/observability/features/sessions",
               }}
               rowHeight={rowHeight}

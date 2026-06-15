@@ -51,6 +51,7 @@ import {
 } from "@/src/components/ui/table";
 import Header from "@/src/components/layouts/header";
 import { useHasEntitlement } from "@/src/features/entitlements/hooks";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
 import { useHasOrganizationAccess } from "@/src/features/rbac/utils/checkOrganizationAccess";
@@ -90,23 +91,31 @@ const providerLabel = (id: string) =>
 // Loose form schema; the strict validation lives in SsoProviderSchema and runs
 // at submit time. Keeping the form schema permissive lets users mid-edit a
 // field without immediate noise from required-field errors on every render.
-const formSchema = z.object({
-  authProvider: z.enum(SSO_PROVIDERS.map((p) => p.id) as [string, ...string[]]),
-  authConfig: z.object({
-    clientId: z.string().min(1, "Required"),
-    clientSecret: z.string().min(1, "Required"),
-    issuer: z.string().optional(),
-    tenantId: z.string().optional(),
-    baseUrl: z.string().optional(),
-    // Required by CustomProviderSchema; optional in the form so other
-    // providers don't carry a stray field. The strict provider schema
-    // enforces presence at submit for `custom`.
-    name: z.string().optional(),
-    idToken: z.boolean().optional(),
-  }),
-});
+type TranslateText = (
+  text: string,
+  values?: Record<string, string | number | undefined>,
+) => string;
 
-type FormValues = z.infer<typeof formSchema>;
+const createFormSchema = (translateText: TranslateText) =>
+  z.object({
+    authProvider: z.enum(
+      SSO_PROVIDERS.map((p) => p.id) as [string, ...string[]],
+    ),
+    authConfig: z.object({
+      clientId: z.string().min(1, translateText("Required")),
+      clientSecret: z.string().min(1, translateText("Required")),
+      issuer: z.string().optional(),
+      tenantId: z.string().optional(),
+      baseUrl: z.string().optional(),
+      // Required by CustomProviderSchema; optional in the form so other
+      // providers don't carry a stray field. The strict provider schema
+      // enforces presence at submit for `custom`.
+      name: z.string().optional(),
+      idToken: z.boolean().optional(),
+    }),
+  });
+
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
 type AuthConfigFormField = `authConfig.${
   | "clientId"
@@ -126,6 +135,7 @@ type SsoConfigRow = {
 };
 
 export const SSOSettings = ({ orgId }: { orgId: string }) => {
+  const { translateText } = useI18n();
   const hasEntitlement = useHasEntitlement("cloud-multi-tenant-sso");
   const hasAccess = useHasOrganizationAccess({
     organizationId: orgId,
@@ -134,10 +144,11 @@ export const SSOSettings = ({ orgId }: { orgId: string }) => {
 
   const heading = (
     <>
-      <Header title="SSO Configuration" />
+      <Header title={translateText("SSO Configuration")} />
       <p className="text-muted-foreground mb-4 text-sm">
-        Configure Single Sign-On per verified domain. Once active, every user
-        signing in with that domain is redirected to your identity provider.
+        {translateText(
+          "Configure Single Sign-On per verified domain. Once active, every user signing in with that domain is redirected to your identity provider.",
+        )}
       </p>
     </>
   );
@@ -150,10 +161,11 @@ export const SSOSettings = ({ orgId }: { orgId: string }) => {
           {heading}
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Not available</AlertTitle>
+            <AlertTitle>{translateText("Not available")}</AlertTitle>
             <AlertDescription>
-              Enterprise SSO is not available on your plan. Please upgrade to
-              access this feature.
+              {translateText(
+                "Enterprise SSO is not available on your plan. Please upgrade to access this feature.",
+              )}
             </AlertDescription>
           </Alert>
         </div>
@@ -168,9 +180,11 @@ export const SSOSettings = ({ orgId }: { orgId: string }) => {
         <div>
           {heading}
           <Alert>
-            <AlertTitle>Access Denied</AlertTitle>
+            <AlertTitle>{translateText("Access Denied")}</AlertTitle>
             <AlertDescription>
-              You do not have permission to configure SSO for this organization.
+              {translateText(
+                "You do not have permission to configure SSO for this organization.",
+              )}
             </AlertDescription>
           </Alert>
         </div>
@@ -190,6 +204,7 @@ export const SSOSettings = ({ orgId }: { orgId: string }) => {
 };
 
 function SsoConfigsTable({ orgId }: { orgId: string }) {
+  const { translateText } = useI18n();
   const verifiedDomainsQuery = api.verifiedDomain.list.useQuery({ orgId });
   const ssoConfigsQuery = api.ssoConfig.get.useQuery({ orgId });
 
@@ -207,7 +222,9 @@ function SsoConfigsTable({ orgId }: { orgId: string }) {
     return (
       <Card className="overflow-hidden">
         <p className="text-muted-foreground px-6 py-12 text-center text-sm">
-          Verify a domain in the section above to configure SSO for it.
+          {translateText(
+            "Verify a domain in the section above to configure SSO for it.",
+          )}
         </p>
       </Card>
     );
@@ -218,10 +235,14 @@ function SsoConfigsTable({ orgId }: { orgId: string }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-primary pl-2.5">Domain</TableHead>
-            <TableHead className="text-primary">Provider</TableHead>
+            <TableHead className="text-primary pl-2.5">
+              {translateText("Domain")}
+            </TableHead>
+            <TableHead className="text-primary">
+              {translateText("Provider")}
+            </TableHead>
             <TableHead className="text-primary hidden md:table-cell">
-              Updated
+              {translateText("Updated")}
             </TableHead>
             <TableHead />
           </TableRow>
@@ -250,6 +271,8 @@ function SsoConfigRow({
   domain: string;
   config: SsoConfigRow | null;
 }) {
+  const { translateText } = useI18n();
+
   return (
     <TableRow className="hover:bg-primary-foreground">
       <TableCell density="comfortable" className="font-mono">
@@ -259,7 +282,7 @@ function SsoConfigRow({
         {config ? (
           <Badge variant="default">{providerLabel(config.authProvider)}</Badge>
         ) : (
-          <Badge variant="secondary">Not configured</Badge>
+          <Badge variant="secondary">{translateText("Not configured")}</Badge>
         )}
       </TableCell>
       <TableCell density="comfortable" className="hidden md:table-cell">
@@ -287,6 +310,7 @@ function SsoConfigDialog({
   domain: string;
   existing: SsoConfigRow | null;
 }) {
+  const { translateText } = useI18n();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
@@ -311,7 +335,7 @@ function SsoConfigDialog({
   }, [existing]);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(createFormSchema(translateText)),
     defaultValues,
   });
   // Reset the form when the dialog reopens against new defaults (e.g. user
@@ -336,8 +360,12 @@ function SsoConfigDialog({
     onSuccess: () => {
       utils.ssoConfig.get.invalidate({ orgId });
       showSuccessToast({
-        title: existing ? "SSO updated" : "SSO configured",
-        description: `Active for @${domain} within 1 hour.`,
+        title: existing
+          ? translateText("SSO updated")
+          : translateText("SSO configured"),
+        description: translateText("Active for @{domain} within 1 hour.", {
+          domain,
+        }),
       });
       setDialogOpen(false);
       setConfirmOpen(false);
@@ -346,7 +374,9 @@ function SsoConfigDialog({
     },
     onError: (err) => {
       showErrorToast(
-        existing ? "Update failed" : "SSO configuration failed",
+        existing
+          ? translateText("Update failed")
+          : translateText("SSO configuration failed"),
         err.message,
       );
     },
@@ -375,7 +405,7 @@ function SsoConfigDialog({
       const formField = formPath.startsWith("authConfig.")
         ? (formPath as AuthConfigFormField)
         : "authProvider";
-      form.setError(formField, { message: firstIssue.message });
+      form.setError(formField, { message: translateText(firstIssue.message) });
       // Defensive fallback: if a future schema path doesn't map cleanly to
       // a registered form field, surface a toast so the user is never left
       // with a silently-closing dialog and no feedback.
@@ -391,8 +421,10 @@ function SsoConfigDialog({
       ];
       if (!FORM_FIELDS.includes(formField)) {
         showErrorToast(
-          existing ? "Update failed" : "SSO configuration failed",
-          firstIssue.message,
+          existing
+            ? translateText("Update failed")
+            : translateText("SSO configuration failed"),
+          translateText(firstIssue.message),
         );
       }
       setConfirmOpen(false);
@@ -406,15 +438,17 @@ function SsoConfigDialog({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
           <Button size="sm" variant={existing ? "outline" : "default"}>
-            {existing ? "Update" : "Configure SSO"}
+            {existing
+              ? translateText("Update")
+              : translateText("Configure SSO")}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>
               {existing
-                ? `Update SSO for ${domain}`
-                : `Configure SSO for ${domain}`}
+                ? translateText("Update SSO for {domain}", { domain })
+                : translateText("Configure SSO for {domain}", { domain })}
             </DialogTitle>
           </DialogHeader>
           <Form {...form}>
@@ -425,14 +459,18 @@ function SsoConfigDialog({
                   name="authProvider"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Provider</FormLabel>
+                      <FormLabel>{translateText("Provider")}</FormLabel>
                       <FormControl>
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select an SSO provider" />
+                            <SelectValue
+                              placeholder={translateText(
+                                "Select an SSO provider",
+                              )}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {SSO_PROVIDERS.map((p) => (
@@ -456,7 +494,7 @@ function SsoConfigDialog({
                     name="authConfig.name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Display Name</FormLabel>
+                        <FormLabel>{translateText("Display Name")}</FormLabel>
                         <FormControl>
                           <Input placeholder="Acme SSO" {...field} />
                         </FormControl>
@@ -471,7 +509,7 @@ function SsoConfigDialog({
                   name="authConfig.clientId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Client ID</FormLabel>
+                      <FormLabel>{translateText("Client ID")}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -485,13 +523,15 @@ function SsoConfigDialog({
                   name="authConfig.clientSecret"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Client Secret</FormLabel>
+                      <FormLabel>{translateText("Client Secret")}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
                           autoComplete="off"
                           placeholder={
-                            existing ? "Re-enter to update" : undefined
+                            existing
+                              ? translateText("Re-enter to update")
+                              : undefined
                           }
                           {...field}
                         />
@@ -507,7 +547,7 @@ function SsoConfigDialog({
                     name="authConfig.issuer"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Issuer URL</FormLabel>
+                        <FormLabel>{translateText("Issuer URL")}</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="https://example.okta.com"
@@ -526,7 +566,7 @@ function SsoConfigDialog({
                     name="authConfig.tenantId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tenant ID</FormLabel>
+                        <FormLabel>{translateText("Tenant ID")}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -542,7 +582,7 @@ function SsoConfigDialog({
                     name="authConfig.baseUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Base URL</FormLabel>
+                        <FormLabel>{translateText("Base URL")}</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="https://github.acme.com"
@@ -572,11 +612,14 @@ function SsoConfigDialog({
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel>
-                              Use id_token claims only (skip userinfo)
+                              {translateText(
+                                "Use id_token claims only (skip userinfo)",
+                              )}
                             </FormLabel>
                             <FormDescription>
-                              Leave off for IdPs that release email only via the
-                              userinfo endpoint.
+                              {translateText(
+                                "Leave off for IdPs that release email only via the userinfo endpoint.",
+                              )}
                             </FormDescription>
                           </div>
                         </FormItem>
@@ -591,10 +634,10 @@ function SsoConfigDialog({
                   variant="ghost"
                   onClick={() => setDialogOpen(false)}
                 >
-                  Cancel
+                  {translateText("Cancel")}
                 </Button>
                 <Button type="submit" loading={saveMutation.isPending}>
-                  Save
+                  {translateText("Save")}
                 </Button>
               </DialogFooter>
             </form>
@@ -607,35 +650,39 @@ function SsoConfigDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>
               {existing
-                ? `Replace SSO for @${domain}?`
-                : `Activate SSO for @${domain}?`}
+                ? translateText("Replace SSO for @{domain}?", { domain })
+                : translateText("Activate SSO for @{domain}?", { domain })}
             </AlertDialogTitle>
             <AlertDialogDescription>
               <span className="block">
-                Saving will activate SSO for{" "}
-                <span className="font-medium">@{domain}</span> within 1 hour.
-                Every user at that domain will be redirected to your identity
-                provider on sign-in &mdash; they will not be able to use Google,
-                GitHub, password, or any other method until SSO is deleted.
+                {translateText(
+                  "Saving will activate SSO for @{domain} within 1 hour. Every user at that domain will be redirected to your identity provider on sign-in - they will not be able to use Google, GitHub, password, or any other method until SSO is deleted.",
+                  { domain },
+                )}
               </span>
               {existing ? (
                 <span className="mt-2 block">
-                  The new credentials will replace the active configuration.
+                  {translateText(
+                    "The new credentials will replace the active configuration.",
+                  )}
                 </span>
               ) : null}
               <span className="mt-2 block">
-                Tip: sign in via the new SSO in a second browser to confirm it
-                works before closing this tab.
+                {translateText(
+                  "Tip: sign in via the new SSO in a second browser to confirm it works before closing this tab.",
+                )}
               </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{translateText("Cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirm}
               disabled={saveMutation.isPending}
             >
-              {existing ? "Replace" : "Activate SSO"}
+              {existing
+                ? translateText("Replace")
+                : translateText("Activate SSO")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -645,14 +692,18 @@ function SsoConfigDialog({
 }
 
 function CallbackUrlPanel({ callbackUrl }: { callbackUrl: string }) {
+  const { translateText } = useI18n();
+
   return (
     <div>
-      <p className="mb-2 text-sm font-medium">Callback URL</p>
+      <p className="mb-2 text-sm font-medium">
+        {translateText("Callback URL")}
+      </p>
       <Card className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>URL</TableHead>
+              <TableHead>{translateText("URL")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -667,7 +718,9 @@ function CallbackUrlPanel({ callbackUrl }: { callbackUrl: string }) {
         </Table>
       </Card>
       <p className="text-muted-foreground mt-2 text-xs">
-        Add this URL as an authorized redirect URI in your identity provider.
+        {translateText(
+          "Add this URL as an authorized redirect URI in your identity provider.",
+        )}
       </p>
     </div>
   );
@@ -680,18 +733,21 @@ function DeleteSsoConfigButton({
   orgId: string;
   domain: string;
 }) {
+  const { translateText } = useI18n();
   const utils = api.useUtils();
 
   const deleteMutation = api.ssoConfig.delete.useMutation({
     onSuccess: () => {
       utils.ssoConfig.get.invalidate({ orgId });
       showSuccessToast({
-        title: "SSO disabled",
-        description: `SSO for @${domain} has been removed.`,
+        title: translateText("SSO disabled"),
+        description: translateText("SSO for @{domain} has been removed.", {
+          domain,
+        }),
       });
     },
     onError: (err) => {
-      showErrorToast("Failed to remove SSO", err.message);
+      showErrorToast(translateText("Failed to remove SSO"), err.message);
     },
   });
 
@@ -701,26 +757,29 @@ function DeleteSsoConfigButton({
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label={`Delete SSO for ${domain}`}
+          aria-label={translateText("Delete SSO for {domain}", { domain })}
         >
           <TrashIcon className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove SSO for @{domain}?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {translateText("Remove SSO for @{domain}?", { domain })}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Users at this domain will be able to sign in with any enabled method
-            again. Active sessions are not invalidated.
+            {translateText(
+              "Users at this domain will be able to sign in with any enabled method again. Active sessions are not invalidated.",
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{translateText("Cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => deleteMutation.mutate({ orgId, domain })}
             disabled={deleteMutation.isPending}
           >
-            Remove
+            {translateText("Remove")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

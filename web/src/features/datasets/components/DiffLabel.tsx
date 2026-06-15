@@ -3,6 +3,7 @@ import {
   type CategoricalDiff,
   type NumericDiff,
 } from "@/src/features/datasets/lib/calculateBaselineDiff";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { cn } from "@/src/utils/tailwind";
 
 const getVariant = (direction: "+" | "-", preferNegativeDirection: boolean) => {
@@ -27,6 +28,8 @@ export function DiffLabel({
   className?: string;
   preferNegativeDiff?: boolean;
 }) {
+  const { translateText } = useI18n();
+
   if (diff.type === "NUMERIC") {
     return (
       <Badge
@@ -42,7 +45,7 @@ export function DiffLabel({
   if (diff.isDifferent)
     return (
       <Badge size="sm" variant="warning" className="font-semibold">
-        Varies
+        {translateText("Varies")}
       </Badge>
     );
 }

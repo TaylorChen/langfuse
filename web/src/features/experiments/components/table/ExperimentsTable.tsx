@@ -61,6 +61,7 @@ import {
 } from "@/src/components/ui/accordion";
 import { ExperimentChartsGrid } from "../ExperimentChartsGrid";
 import { useExperimentChartsAccordion } from "../../hooks/useExperimentChartsAccordion";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function ExperimentsTable({
   projectId,
@@ -69,6 +70,7 @@ export default function ExperimentsTable({
   sessionFilterContextId,
 }: ExperimentsTableProps) {
   const router = useRouter();
+  const { translateText } = useI18n();
   const filterConfig = useMemo(
     () =>
       getExperimentsFilterConfig(
@@ -262,7 +264,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "name",
       id: "name",
-      header: getExperimentsColumnName("name"),
+      header: translateText(getExperimentsColumnName("name")),
       size: 200,
       isPinnedLeft: true,
       cell: ({ row }) => {
@@ -273,7 +275,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "description",
       id: "description",
-      header: getExperimentsColumnName("description"),
+      header: translateText(getExperimentsColumnName("description")),
       size: 300,
       enableHiding: true,
       cell: ({ row }) => {
@@ -290,7 +292,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "itemCount",
       id: "itemCount",
-      header: getExperimentsColumnName("itemCount"),
+      header: translateText(getExperimentsColumnName("itemCount")),
       size: 100,
       cell: ({ row }) => {
         const value: number = row.getValue("itemCount");
@@ -300,7 +302,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "errorCount",
       id: "errorCount",
-      header: getExperimentsColumnName("errorCount"),
+      header: translateText(getExperimentsColumnName("errorCount")),
       size: 100,
       cell: ({ row }) => {
         const value: number = row.getValue("errorCount");
@@ -318,7 +320,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "startTime",
       id: "startTime",
-      header: getExperimentsColumnName("startTime"),
+      header: translateText(getExperimentsColumnName("startTime")),
       size: 150,
       enableHiding: true,
       enableSorting: true,
@@ -330,7 +332,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "datasetId",
       id: "datasetId",
-      header: getExperimentsColumnName("experimentDatasetId"),
+      header: translateText(getExperimentsColumnName("experimentDatasetId")),
       size: 150,
       cell: ({ row }) => {
         const datasetId: string | undefined = row.getValue("datasetId");
@@ -361,7 +363,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "prompts",
       id: "prompts",
-      header: getExperimentsColumnName("prompts"),
+      header: translateText(getExperimentsColumnName("prompts")),
       size: 100,
       enableHiding: true,
       cell: ({ row }) => {
@@ -397,11 +399,13 @@ export default function ExperimentsTable({
     {
       accessorKey: "latencyAvg",
       id: "latencyAvg",
-      header: getExperimentsColumnName("latencyAvg"),
+      header: translateText(getExperimentsColumnName("latencyAvg")),
       size: 100,
       enableHiding: true,
       headerTooltip: {
-        description: "Average duration of the root span per experiment item.",
+        description: translateText(
+          "Average duration of the root span per experiment item.",
+        ),
       },
       cell: ({ row }) => {
         const value: number | undefined = row.getValue("latencyAvg");
@@ -412,7 +416,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "totalCost",
       id: "totalCost",
-      header: getExperimentsColumnName("totalCost"),
+      header: translateText(getExperimentsColumnName("totalCost")),
       size: 100,
       enableHiding: true,
       cell: ({ row }) => {
@@ -423,7 +427,7 @@ export default function ExperimentsTable({
     },
     {
       accessorKey: "traceItemScores",
-      header: "Trace Item Scores",
+      header: translateText("Trace Item Scores"),
       id: "traceItemScores",
       enableHiding: true,
       defaultHidden: true,
@@ -436,7 +440,7 @@ export default function ExperimentsTable({
     },
     {
       accessorKey: "observationItemScores",
-      header: "Observation Item Scores",
+      header: translateText("Observation Item Scores"),
       id: "observationItemScores",
       enableHiding: true,
       defaultHidden: true,
@@ -449,7 +453,7 @@ export default function ExperimentsTable({
     },
     {
       accessorKey: "experimentScores",
-      header: "Experiment-Level Scores",
+      header: translateText("Experiment-Level Scores"),
       id: "experimentScores",
       enableHiding: true,
       defaultHidden: true,
@@ -463,7 +467,7 @@ export default function ExperimentsTable({
     {
       accessorKey: "metadata",
       id: "metadata",
-      header: getExperimentsColumnName("metadata"),
+      header: translateText(getExperimentsColumnName("metadata")),
       size: 100,
       enableHiding: true,
       cell: ({ row }) => {
@@ -580,13 +584,13 @@ export default function ExperimentsTable({
     actions.push({
       id: ActionId.ExperimentCompare,
       type: BatchActionType.Create,
-      label: "Compare",
-      description: "Compare selected experiments",
+      label: translateText("Compare"),
+      description: translateText("Compare selected experiments"),
       icon: <GitCompareArrows className="h-4 w-4 sm:mr-2" />,
       customDialog: true,
       disabled: tooManySelected,
       disabledReason: tooManySelected
-        ? "Select only up to 5 experiments to compare"
+        ? translateText("Select only up to 5 experiments to compare")
         : undefined,
       accessCheck: {
         scope: "project:read",
@@ -598,8 +602,8 @@ export default function ExperimentsTable({
       actions.push({
         id: ActionId.ObservationBatchEvaluation,
         type: BatchActionType.Create,
-        label: "Run Evaluator",
-        description: "Run evaluators on selected experiments",
+        label: translateText("Run Evaluator"),
+        description: translateText("Run evaluators on selected experiments"),
         icon: <LightbulbIcon className="h-4 w-4 sm:mr-2" />,
         customDialog: true,
         accessCheck: {
@@ -609,7 +613,7 @@ export default function ExperimentsTable({
     }
 
     return actions;
-  }, [selectedExperimentIds.length, hasEvalAccess]);
+  }, [selectedExperimentIds.length, hasEvalAccess, translateText]);
 
   const shouldShowActions =
     selectedExperimentIds.length > 0 && tableActions.length > 0;
@@ -673,7 +677,9 @@ export default function ExperimentsTable({
               <AccordionItem value="charts" className="border-t">
                 <AccordionTrigger className="px-3 pt-2 pb-1 hover:no-underline">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Charts</span>
+                    <span className="text-sm font-medium">
+                      {translateText("Charts")}
+                    </span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="max-h-[40dvh] overflow-x-auto px-3 pt-1 pb-1">

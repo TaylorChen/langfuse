@@ -30,16 +30,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/src/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group";
 import { usePromptNameValidation } from "@/src/features/prompts/hooks/usePromptNameValidation";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 enum CopySettings {
   SINGLE_VERSION = "single_version",
   ALL_VERSIONS = "all_versions",
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  isCopySingleVersion: z.enum(CopySettings),
-});
+const createFormSchema = (translateText: (text: string) => string) =>
+  z.object({
+    name: z.string().min(1, translateText("Name is required")),
+    isCopySingleVersion: z.enum(CopySettings),
+  });
 
 const DuplicatePromptForm: React.FC<{
   projectId: string;
@@ -50,6 +52,8 @@ const DuplicatePromptForm: React.FC<{
 }> = ({ projectId, promptId, promptName, promptVersion, onFormSuccess }) => {
   const capture = usePostHogClientCapture();
   const router = useRouter();
+  const { t, translateText } = useI18n();
+  const formSchema = createFormSchema(translateText);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -117,7 +121,7 @@ const DuplicatePromptForm: React.FC<{
             name="name"
             render={({ field }) => (
               <FormItem className="flex flex-col gap-2">
-                <FormLabel>Name</FormLabel>
+                <FormLabel>{t("prompts.nameLabel")}</FormLabel>
                 <FormControl>
                   <Input {...field} type="text" />
                 </FormControl>
@@ -130,7 +134,7 @@ const DuplicatePromptForm: React.FC<{
             name="isCopySingleVersion"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Settings</FormLabel>
+                <FormLabel>{t("prompts.settings")}</FormLabel>
                 <FormControl>
                   <RadioGroup
                     {...field}
@@ -143,7 +147,9 @@ const DuplicatePromptForm: React.FC<{
                         <RadioGroupItem value={CopySettings.SINGLE_VERSION} />
                       </FormControl>
                       <FormLabel className="font-normal">
-                        Copy only version {promptVersion}
+                        {t("prompts.copyOnlyVersion", {
+                          version: promptVersion,
+                        })}
                       </FormLabel>
                     </FormItem>
                     <FormItem className="flex items-center space-y-0 space-x-3">
@@ -151,7 +157,7 @@ const DuplicatePromptForm: React.FC<{
                         <RadioGroupItem value={CopySettings.ALL_VERSIONS} />
                       </FormControl>
                       <FormLabel className="font-normal">
-                        Copy all prompt versions and labels
+                        {t("prompts.copyAllVersionsAndLabels")}
                       </FormLabel>
                     </FormItem>
                   </RadioGroup>
@@ -167,7 +173,7 @@ const DuplicatePromptForm: React.FC<{
             loading={duplicatePrompt.isPending}
             className="mt-auto w-full"
           >
-            Submit
+            {t("prompts.submit")}
           </Button>
         </DialogFooter>
       </form>
@@ -188,6 +194,7 @@ export const DuplicatePromptButton: React.FC<{
   });
   const promptLimit = useEntitlementLimit("prompt-management-count-prompts");
   const capture = usePostHogClientCapture();
+  const { t } = useI18n();
 
   const allPromptNames = api.prompts.allNames.useQuery(
     {
@@ -209,18 +216,20 @@ export const DuplicatePromptButton: React.FC<{
           hasAccess={hasAccess}
           variant="outline"
           limit={promptLimit}
-          title="Duplicate prompt"
+          title={t("prompts.duplicatePrompt")}
           limitValue={allPromptNames.data?.length ?? undefined}
           onClick={() => {
             capture("prompt_detail:duplicate_button_click");
           }}
         >
-          <span className="hidden md:ml-1 md:inline">Duplicate</span>
+          <span className="hidden md:ml-1 md:inline">
+            {t("prompts.duplicate")}
+          </span>
         </ActionButton>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] min-h-0">
         <DialogHeader>
-          <DialogTitle>Duplicate prompt</DialogTitle>
+          <DialogTitle>{t("prompts.duplicatePrompt")}</DialogTitle>
         </DialogHeader>
         <DuplicatePromptForm
           projectId={projectId}

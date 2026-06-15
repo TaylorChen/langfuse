@@ -5,11 +5,13 @@ import Page from "@/src/components/layouts/page";
 import { SessionsOnboarding } from "@/src/components/onboarding/SessionsOnboarding";
 import { api } from "@/src/utils/api";
 import { useV4Beta } from "@/src/features/events/hooks/useV4Beta";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function Sessions() {
   const router = useRouter();
   const projectId = router.query.projectId as string;
   const { isBetaEnabled } = useV4Beta();
+  const { translateText } = useI18n();
 
   const { data: hasAnySession, isLoading } = api.sessions.hasAny.useQuery(
     { projectId },
@@ -49,9 +51,10 @@ export default function Sessions() {
         help: {
           description: (
             <>
-              A session is a collection of related traces, such as a
-              conversation or thread. To begin, add a sessionId to the trace.
-              See{" "}
+              {translateText(
+                "A session is a collection of related traces, such as a conversation or thread. To begin, add a sessionId to the trace.",
+              )}{" "}
+              {translateText("See")}{" "}
               <a
                 href="https://langfuse.com/docs/observability/features/sessions"
                 target="_blank"
@@ -59,9 +62,9 @@ export default function Sessions() {
                 className="decoration-primary/30 hover:decoration-primary underline"
                 onClick={(e) => e.stopPropagation()}
               >
-                docs
+                {translateText("Docs")}
               </a>{" "}
-              to learn more.
+              {translateText("to learn more.")}
             </>
           ),
           href: "https://langfuse.com/docs/observability/features/sessions",

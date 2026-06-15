@@ -15,6 +15,7 @@ import { Input } from "@/src/components/ui/input";
 import useProjectIdFromURL from "@/src/hooks/useProjectIdFromURL";
 import { Trash, Folder, FileText } from "lucide-react";
 import Spinner from "@/src/components/design-system/Spinner/Spinner";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function DeleteFolder({ folderPath }: { folderPath: string }) {
   const projectId = useProjectIdFromURL();
@@ -23,6 +24,7 @@ export function DeleteFolder({ folderPath }: { folderPath: string }) {
   const [confirmName, setConfirmName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const hasAccess = useHasProjectAccess({ projectId, scope: "prompts:CUD" });
+  const { t } = useI18n();
 
   const prompts = api.prompts.all.useQuery(
     {
@@ -71,30 +73,33 @@ export function DeleteFolder({ folderPath }: { folderPath: string }) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="break-all">
-            Delete All Prompts in Folder &quot;
-            <i className="font-normal">{folderName}</i>&quot;
+            {t("prompts.deleteFolderTitle", { folder: folderName })}
           </DialogTitle>
         </DialogHeader>
         <DialogBody>
           <p className="text-muted-foreground text-sm">
-            This action permanently deletes the folder{" "}
+            {t("prompts.deleteFolderDescriptionPrefix")}{" "}
             <code className="bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold break-all">
               {folderPath}
             </code>{" "}
-            and <b>all prompts inside it recursively</b>. This cannot be undone.
-            If a prompt is still used in your application, your application will
-            break.
+            {t("prompts.deleteFolderDescriptionMiddle")}{" "}
+            <b>{t("prompts.allPromptsInsideRecursively")}</b>.{" "}
+            {t("prompts.deleteFolderDescriptionSuffix")}
           </p>
 
           <div className="bg-muted/50 rounded-md border p-4">
-            <h4 className="mb-2 text-sm font-medium">Prompts to delete:</h4>
+            <h4 className="mb-2 text-sm font-medium">
+              {t("prompts.promptsToDelete")}
+            </h4>
             {prompts.isLoading ? (
               <div className="flex items-center justify-center py-4">
                 <Spinner size="sm" variant="muted" />
               </div>
             ) : prompts.isError ? (
               <div className="py-2 text-xs text-red-500">
-                Failed to load prompts: {prompts.error.message}
+                {t("prompts.failedToLoadPrompts", {
+                  error: prompts.error.message,
+                })}
               </div>
             ) : (
               <ul className="max-h-32 space-y-1 overflow-y-auto text-xs">
@@ -115,12 +120,14 @@ export function DeleteFolder({ folderPath }: { folderPath: string }) {
                 ))}
                 {(prompts.data?.totalCount ?? 0) > 100 && (
                   <li className="text-muted-foreground pt-1 italic">
-                    And {(prompts.data?.totalCount ?? 0) - 100} more prompts...
+                    {t("prompts.andMorePrompts", {
+                      count: (prompts.data?.totalCount ?? 0) - 100,
+                    })}
                   </li>
                 )}
                 {prompts.data?.prompts.length === 0 && (
                   <li className="text-muted-foreground italic">
-                    No prompts found in this folder.
+                    {t("prompts.noPromptsInFolder")}
                   </li>
                 )}
               </ul>
@@ -129,19 +136,19 @@ export function DeleteFolder({ folderPath }: { folderPath: string }) {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              To confirm, type the full path of the folder to delete:
+              {t("prompts.confirmDeleteFolderPath")}
             </label>
             <Input
               value={confirmName}
               onChange={(e) => setConfirmName(e.target.value)}
-              placeholder="folder to delete (full path)"
+              placeholder={t("prompts.folderToDeletePlaceholder")}
               className="h-9"
             />
           </div>
 
           {error && (
             <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              <p className="font-medium">Error:</p>
+              <p className="font-medium">{t("common.error")}:</p>
               <p className="whitespace-pre-wrap">{error}</p>
             </div>
           )}
@@ -152,7 +159,7 @@ export function DeleteFolder({ folderPath }: { folderPath: string }) {
             variant="ghost"
             onClick={() => setIsOpen(false)}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -167,7 +174,7 @@ export function DeleteFolder({ folderPath }: { folderPath: string }) {
               });
             }}
           >
-            Delete Folder
+            {t("prompts.deleteFolder")}
           </Button>
         </DialogFooter>
       </DialogContent>

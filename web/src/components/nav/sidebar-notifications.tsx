@@ -10,6 +10,7 @@ import { X } from "lucide-react";
 import useLocalStorage from "../useLocalStorage";
 import Link from "next/link";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
@@ -21,7 +22,9 @@ type SidebarNotification = {
   link?: string;
   // defaults to "Learn more" if no linkContent and no linkTitle
   linkTitle?: string;
-  linkContent?: React.ReactNode;
+  linkContent?:
+    | React.ReactNode
+    | ((translateText: (text: string) => string) => React.ReactNode);
   // Time-to-live in milliseconds from createdAt. Defaults to TWO_WEEKS_MS.
   ttlMs?: number;
 };
@@ -77,10 +80,10 @@ export const notifications: SidebarNotification[] = [
     description:
       "See the latest releases and help grow the community on GitHub",
     link: "https://github.com/langfuse/langfuse",
-    linkContent: (
+    linkContent: (translateText) => (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        alt="Langfuse GitHub stars"
+        alt={translateText("Langfuse GitHub stars")}
         src="https://img.shields.io/github/stars/langfuse/langfuse?label=langfuse&style=social"
       />
     ),
@@ -91,6 +94,7 @@ const STORAGE_KEY = "dismissed-sidebar-notifications";
 
 export function SidebarNotifications() {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
 
   const [dismissedNotifications, setDismissedNotifications] = useLocalStorage<
     string[]
@@ -161,14 +165,18 @@ export function SidebarNotifications() {
               });
               dismissNotification(frontNotification.id);
             }}
-            title="Dismiss"
+            title={translateText("Dismiss")}
           >
             <X className="h-3.5 w-3.5" />
           </Button>
           <CardHeader className="px-3 pt-2.5 pr-6 pb-0">
-            <CardTitle className="text-sm">{frontNotification.title}</CardTitle>
+            <CardTitle className="text-sm">
+              {translateText(frontNotification.title)}
+            </CardTitle>
             <CardDescription className="mt-1">
-              {frontNotification.description}
+              {typeof frontNotification.description === "string"
+                ? translateText(frontNotification.description)
+                : frontNotification.description}
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 pt-1.5 pb-2.5">
@@ -183,7 +191,9 @@ export function SidebarNotifications() {
                     });
                   }}
                 >
-                  {frontNotification.linkContent}
+                  {typeof frontNotification.linkContent === "function"
+                    ? frontNotification.linkContent(translateText)
+                    : frontNotification.linkContent}
                 </Link>
               ) : (
                 <Button
@@ -201,7 +211,8 @@ export function SidebarNotifications() {
                       });
                     }}
                   >
-                    {frontNotification.linkTitle ?? "Learn more"} &rarr;
+                    {translateText(frontNotification.linkTitle ?? "Learn more")}{" "}
+                    &rarr;
                   </Link>
                 </Button>
               ))}

@@ -8,6 +8,7 @@ import { type DashboardWidgetChartType } from "@langfuse/shared";
 import { type metricAggregations, type views } from "@langfuse/shared/query";
 import { type z } from "zod";
 import { type WidgetChartConfig } from "@/src/features/widgets/utils";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function EditWidget() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function EditWidget() {
     widgetId: string;
     dashboardId?: string;
   };
+  const { t, translateText } = useI18n();
 
   // Fetch the widget details
   const utils = api.useUtils();
@@ -37,8 +39,8 @@ export default function EditWidget() {
     },
     onSuccess: () => {
       showSuccessToast({
-        title: "Widget updated successfully",
-        description: "Your widget has been updated.",
+        title: t("widget.updatedTitle"),
+        description: t("widget.updatedDescription"),
       });
       // Navigate back to dashboard if provided else widgets list
       if (dashboardId) {
@@ -50,7 +52,7 @@ export default function EditWidget() {
       }
     },
     onError: (error) => {
-      showErrorToast("Failed to update widget", error.message);
+      showErrorToast(t("widget.updateError"), error.message);
     },
   });
 
@@ -90,9 +92,9 @@ export default function EditWidget() {
     <Page
       withPadding
       headerProps={{
-        title: "Edit Widget",
+        title: t("widget.editTitle"),
         help: {
-          description: "Edit an existing widget",
+          description: t("widget.editDescription"),
         },
       }}
     >
@@ -123,7 +125,7 @@ export default function EditWidget() {
         />
       ) : (
         <div className="flex h-[300px] items-center justify-center">
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{translateText("Loading...")}</p>
         </div>
       )}
     </Page>

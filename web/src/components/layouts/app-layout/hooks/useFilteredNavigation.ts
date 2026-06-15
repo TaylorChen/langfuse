@@ -19,6 +19,8 @@ import type { NavigationItem } from "@/src/components/layouts/utilities/routes";
 import { applyNavigationFilters } from "../utils/navigationFilters";
 import type { NavigationFilterContext } from "../utils/navigationFilters.types";
 import { isPathActive } from "../utils/pathClassification";
+import { type TranslationKey } from "@/src/features/i18n/messages";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 /** Organization type from user session (can be null when not in project/org context) */
 type Organization = User["organizations"][number] | null | undefined;
@@ -28,6 +30,36 @@ type GroupedNavigation = {
   ungrouped: NavigationItem[];
   grouped: Partial<Record<RouteGroup, NavigationItem[]>> | null;
   flattened: NavigationItem[];
+};
+
+const routeTitleKeys: Record<string, TranslationKey> = {
+  "Go to...": "navigation.goTo",
+  Organizations: "navigation.organizations",
+  Projects: "navigation.projects",
+  Home: "navigation.home",
+  Dashboards: "navigation.dashboards",
+  Tracing: "navigation.tracing",
+  Sessions: "navigation.sessions",
+  Users: "navigation.users",
+  Monitors: "navigation.monitors",
+  Prompts: "navigation.prompts",
+  Playground: "navigation.playground",
+  Scores: "navigation.scores",
+  Evaluators: "navigation.evaluators",
+  "Human Annotation": "navigation.humanAnnotation",
+  Datasets: "navigation.datasets",
+  Experiments: "navigation.experiments",
+  Upgrade: "navigation.upgrade",
+  "Cloud Status": "navigation.cloudStatus",
+  "Preview (fast)": "navigation.previewFast",
+  Settings: "navigation.settings",
+  "Book a call": "navigation.bookCall",
+  Assistant: "navigation.assistant",
+  Support: "navigation.support",
+};
+
+const routeLabelKeys: Record<string, TranslationKey> = {
+  Beta: "navigation.beta",
 };
 
 /**
@@ -81,6 +113,7 @@ export function useFilteredNavigation(
   organization: Organization,
 ) {
   const router = useRouter();
+  const { t } = useI18n();
   const entitlements = useEntitlements();
   const uiCustomization = useUiCustomization();
   const { isLangfuseCloud } = useLangfuseCloudRegion();
@@ -135,6 +168,13 @@ export function useFilteredNavigation(
 
       return {
         ...route,
+        title: routeTitleKeys[route.title]
+          ? t(routeTitleKeys[route.title])
+          : route.title,
+        label:
+          typeof route.label === "string" && routeLabelKeys[route.label]
+            ? t(routeLabelKeys[route.label])
+            : route.label,
         url,
         isActive: isPathActive(route.pathname, router.pathname),
         items: items && items.length > 0 ? items : undefined,
@@ -163,5 +203,11 @@ export function useFilteredNavigation(
         ...secondaryNavigation.flattened,
       ],
     };
-  }, [filteredRoutes, routerProjectId, routerOrganizationId, router.pathname]);
+  }, [
+    filteredRoutes,
+    routerProjectId,
+    routerOrganizationId,
+    router.pathname,
+    t,
+  ]);
 }

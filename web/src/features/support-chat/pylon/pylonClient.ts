@@ -201,18 +201,18 @@ export function buildPylonIssueBodyHtml(params: {
   const escapedMessage = escapeHtml(params.message);
 
   const lines: string[] = [
-    `<p>Hi there,</p>`,
-    `<p>thanks for reaching out! We've received your request and will follow up as soon as possible.</p>`,
-    `<p>To help us move faster, feel free to reply to this email with:</p>`,
+    `<p>你好，</p>`,
+    `<p>感谢联系！我们已收到你的请求，会尽快跟进。</p>`,
+    `<p>为了帮助我们更快处理，你可以直接回复这封邮件并补充：</p>`,
     `<ul>`,
-    `<li>any error messages or screenshots</li>`,
-    `<li>links to where you're seeing the issue (trace, page, dataset)</li>`,
-    `<li>steps to reproduce (if relevant)</li>`,
+    `<li>相关错误信息或截图</li>`,
+    `<li>出现问题的位置链接（追踪、页面、数据集）</li>`,
+    `<li>复现步骤（如适用）</li>`,
     `</ul>`,
-    `<p>Thanks,</p>`,
-    `<p>Team Langfuse</p>`,
+    `<p>谢谢，</p>`,
+    `<p>Langfuse 团队</p>`,
     `<hr>`,
-    `<p><b>${escapedEmail} wrote:</b></p>`,
+    `<p><b>${escapedEmail} 写道：</b></p>`,
     `<blockquote>${escapedMessage.replace(/\n/g, "<br>")}</blockquote>`,
   ];
 

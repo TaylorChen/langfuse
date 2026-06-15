@@ -2,6 +2,7 @@ import { api } from "@/src/utils/api";
 import { showSuccessToast } from "@/src/features/notifications/showSuccessToast";
 import { showErrorToast } from "@/src/features/notifications/showErrorToast";
 import { type DefaultViewScope } from "@langfuse/shared/src/server";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface UseDefaultViewMutationsProps {
   tableName: string;
@@ -13,6 +14,7 @@ export function useDefaultViewMutations({
   projectId,
 }: UseDefaultViewMutationsProps) {
   const utils = api.useUtils();
+  const { translateText } = useI18n();
 
   const setAsDefault = api.TableViewPresets.setAsDefault.useMutation({
     onSuccess: (_, variables) => {
@@ -24,14 +26,16 @@ export function useDefaultViewMutations({
         projectId,
         viewName: tableName,
       });
-      const scopeLabel = variables.scope === "user" ? "your" : "project";
       showSuccessToast({
-        title: "Default view set",
-        description: `Set as ${scopeLabel} default`,
+        title: translateText("Default view set"),
+        description:
+          variables.scope === "user"
+            ? translateText("Set as your default")
+            : translateText("Set as project default"),
       });
     },
     onError: (error) => {
-      showErrorToast("Failed to set default", error.message);
+      showErrorToast(translateText("Failed to set default"), error.message);
     },
   });
 
@@ -45,14 +49,16 @@ export function useDefaultViewMutations({
         projectId,
         viewName: tableName,
       });
-      const scopeLabel = variables.scope === "user" ? "Your" : "Project";
       showSuccessToast({
-        title: "Default cleared",
-        description: `${scopeLabel} default view cleared`,
+        title: translateText("Default cleared"),
+        description:
+          variables.scope === "user"
+            ? translateText("Your default view cleared")
+            : translateText("Project default view cleared"),
       });
     },
     onError: (error) => {
-      showErrorToast("Failed to clear default", error.message);
+      showErrorToast(translateText("Failed to clear default"), error.message);
     },
   });
 

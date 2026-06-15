@@ -14,6 +14,7 @@ import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePos
 import { api } from "@/src/utils/api";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const DeleteDatasetRunButton = ({
   projectId,
@@ -34,6 +35,7 @@ export const DeleteDatasetRunButton = ({
   });
   const utils = api.useUtils();
   const router = useRouter();
+  const { translateText } = useI18n();
   const mutDelete = api.datasets.deleteDatasetRuns.useMutation({
     onSuccess: () => {
       redirectUrl ? router.push(redirectUrl) : utils.datasets.invalidate();
@@ -49,7 +51,7 @@ export const DeleteDatasetRunButton = ({
     >
       <div className="flex w-full flex-row items-center gap-1">
         <Trash className="h-4 w-4" />
-        <span className="text-sm font-normal">Delete</span>
+        <span className="text-sm font-normal">{translateText("Delete")}</span>
       </div>
     </Button>
   );
@@ -66,10 +68,13 @@ export const DeleteDatasetRunButton = ({
       <DialogTrigger asChild>{button}</DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="mb-4">Please confirm</DialogTitle>
+          <DialogTitle className="mb-4">
+            {translateText("Please confirm")}
+          </DialogTitle>
           <DialogDescription className="text-md p-0">
-            This action cannot be undone. Traces linked to this run must be
-            deleted manually.
+            {translateText(
+              "This action cannot be undone. Traces linked to this run must be deleted manually.",
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -88,7 +93,7 @@ export const DeleteDatasetRunButton = ({
               setIsDialogOpen(false);
             }}
           >
-            Delete Dataset Run
+            {translateText("Delete Dataset Run")}
           </Button>
         </DialogFooter>
       </DialogContent>

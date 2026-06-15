@@ -9,11 +9,13 @@ import {
   getDashboardTabs,
   DASHBOARD_TABS,
 } from "@/src/features/navigation/utils/dashboard-tabs";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function Widgets() {
   const router = useRouter();
   const { projectId } = router.query as { projectId: string };
   const capture = usePostHogClientCapture();
+  const { t } = useI18n();
   const hasCUDAccess = useHasProjectAccess({
     projectId,
     scope: "prompts:CUD",
@@ -22,9 +24,9 @@ export default function Widgets() {
   return (
     <Page
       headerProps={{
-        title: "Widgets",
+        title: t("navigation.widgets"),
         help: {
-          description: "Manage and create widgets for your dashboard.",
+          description: t("widget.indexDescription"),
           href: "https://langfuse.com/docs/metrics/features/custom-dashboards",
         },
         tabsProps: {
@@ -41,7 +43,7 @@ export default function Widgets() {
               capture("dashboard:new_widget_form_open");
             }}
           >
-            New widget
+            {t("widget.newWidget")}
           </ActionButton>
         ),
       }}

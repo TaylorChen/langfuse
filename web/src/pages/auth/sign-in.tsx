@@ -28,7 +28,7 @@ import { TbBrandAzure, TbBrandOauth } from "react-icons/tb";
 import { signIn } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { CloudPrivacyNotice } from "@/src/features/auth/components/AuthCloudPrivacyNotice";
@@ -48,12 +48,13 @@ import { getSafeRedirectPath } from "@/src/utils/redirect";
 import { useI18n } from "@/src/features/i18n/I18nProvider";
 import { LanguageSwitcher } from "@/src/features/i18n/LanguageSwitcher";
 
-const credentialAuthForm = z.object({
-  email: z.email(),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters long",
-  }),
-});
+const createCredentialAuthForm = (translateText: (text: string) => string) =>
+  z.object({
+    email: z.email(translateText("Invalid email address")),
+    password: z.string().min(8, {
+      message: translateText("Password must be at least 8 characters long"),
+    }),
+  });
 
 // Also used in src/pages/auth/sign-up.tsx
 export type PageProps = {
@@ -200,6 +201,7 @@ export function SSOButtons({
   lastUsedMethod?: NextAuthProvider | null;
   onProviderSelect?: (provider: NextAuthProvider) => void;
 }) {
+  const { translateText } = useI18n();
   const capture = usePostHogClientCapture();
   const [providerSigningIn, setProviderSigningIn] =
     useState<NextAuthProvider | null>(null);
@@ -241,7 +243,7 @@ export function SSOButtons({
             <div className="border-border my-6 border-t"></div>
           ) : (
             <div className="text-muted-foreground my-6 text-center text-xs">
-              or {action} with
+              {translateText("or {action} with", { action })}
             </div>
           )
         ) : null}
@@ -433,7 +435,7 @@ export function SSOButtons({
                 label="WorkOS (organization)"
                 onClick={() => {
                   const organization = window.prompt(
-                    "Please enter your organization ID",
+                    translateText("Please enter your organization ID"),
                   );
                   if (organization) {
                     capture("sign_in:button_click", { provider: "workos" });
@@ -453,7 +455,7 @@ export function SSOButtons({
                 label="WorkOS (connection)"
                 onClick={() => {
                   const connection = window.prompt(
-                    "Please enter your connection ID",
+                    translateText("Please enter your connection ID"),
                   );
                   if (connection) {
                     capture("sign_in:button_click", { provider: "workos" });
@@ -539,7 +541,7 @@ export default function SignIn({
   runningOnHuggingFaceSpaces,
 }: PageProps) {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, translateText } = useI18n();
   useHuggingFaceRedirect(runningOnHuggingFaceSpaces);
 
   // handle NextAuth error codes: https://next-auth.js.org/configuration/pages#sign-in-page
@@ -555,8 +557,11 @@ export default function SignIn({
   // Use error_description from IdP if available, otherwise use mapped error or error code
   const errorMessage = nextAuthErrorDescription
     ? nextAuthErrorDescription
-    : (signInErrors.find((e) => e.code === nextAuthError)?.description ??
-      nextAuthError);
+    : signInErrors.find((e) => e.code === nextAuthError)?.description
+      ? translateText(
+          signInErrors.find((e) => e.code === nextAuthError)?.description ?? "",
+        )
+      : nextAuthError;
 
   useEffect(() => {
     // log unexpected sign in errors to Sentry
@@ -593,6 +598,10 @@ export default function SignIn({
     ([name, enabled]) => enabled && name !== "sso", // sso is just a flag, not an actual provider
   );
   const hasMultipleAuthMethods = availableProviders.length > 1;
+  const credentialAuthForm = useMemo(
+    () => createCredentialAuthForm(translateText),
+    [translateText],
+  );
 
   // Read query params for targetPath and email pre-population
   const queryTargetPath = router.query.targetPath as string | undefined;
@@ -628,7 +637,7 @@ export default function SignIn({
         redirect: false,
       });
       if (result === undefined) {
-        setCredentialsFormError("An unexpected error occurred.");
+        setCredentialsFormError(translateText("An unexpected error occurred."));
         captureException(new Error("Sign in result is undefined"));
       } else if (!result.ok) {
         if (!result.error) {
@@ -639,13 +648,13 @@ export default function SignIn({
           );
         }
         setCredentialsFormError(
-          result?.error ?? "An unexpected error occurred.",
+          result?.error ?? translateText("An unexpected error occurred."),
         );
       }
     } catch (error) {
       captureException(error);
       console.error(error);
-      setCredentialsFormError("An unexpected error occurred.");
+      setCredentialsFormError(translateText("An unexpected error occurred."));
     }
   }
 
@@ -663,11 +672,11 @@ export default function SignIn({
     credentialsForm.clearErrors();
 
     // Ensure email is valid before hitting the API
-    const emailSchema = z.email();
+    const emailSchema = z.email(t("auth.signUp.invalidEmail"));
     const email = emailSchema.safeParse(credentialsForm.getValues("email"));
     if (!email.success) {
       credentialsForm.setError("email", {
-        message: "Invalid email address",
+        message: t("auth.signUp.invalidEmail"),
       });
       setContinueLoading(false);
       return;
@@ -714,9 +723,7 @@ export default function SignIn({
       }, 100);
     } catch (error) {
       console.error(error);
-      setCredentialsFormError(
-        "Unable to check SSO configuration. Please try again.",
-      );
+      setCredentialsFormError(t("auth.signUp.ssoCheckError"));
     } finally {
       setContinueLoading(false);
     }
@@ -740,13 +747,14 @@ export default function SignIn({
 
         {isLangfuseCloud && (
           <div className="bg-card mt-4 -mb-4 rounded-lg p-3 text-center text-sm sm:mx-auto sm:w-full sm:max-w-[480px] sm:rounded-lg sm:px-6">
-            If you are experiencing issues signing in, please force refresh this
-            page (CMD + SHIFT + R) or clear your browser cache.{" "}
+            {translateText(
+              "If you are experiencing issues signing in, please force refresh this page (CMD + SHIFT + R) or clear your browser cache.",
+            )}{" "}
             <a
               href="mailto:support@langfuse.com"
               className="text-primary-accent hover:text-hover-primary-accent cursor-pointer text-xs font-medium whitespace-nowrap"
             >
-              (contact us)
+              {translateText("(contact us)")}
             </a>
           </div>
         )}
@@ -803,7 +811,7 @@ export default function SignIn({
                                 href="/auth/reset-password"
                                 className="text-primary-accent hover:text-hover-primary-accent ml-1 text-xs"
                                 tabIndex={-1}
-                                title="What is this?"
+                                title={translateText("What is this?")}
                               >
                                 {t("auth.signIn.forgotPassword")}
                               </Link>

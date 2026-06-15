@@ -14,6 +14,7 @@ import { trpcErrorToast } from "@/src/utils/trpcErrorToast";
 import { type RouterInput } from "@/src/utils/types";
 import { CheckIcon, Globe, Link, Share2 } from "lucide-react";
 import { useState } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const PublishTraceSwitch = (props: {
   traceId: string;
@@ -167,6 +168,7 @@ const Base = (props: {
 }) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { translateText } = useI18n();
 
   const copyUrl = () => {
     setIsCopied(true);
@@ -213,23 +215,27 @@ const Base = (props: {
             {props.isPublic ? (
               <>
                 <Label className="text-base capitalize">
-                  {props.itemName} Shared
+                  {translateText("{itemName} Shared", {
+                    itemName: props.itemName,
+                  })}
                 </Label>
                 <span className="text-muted-foreground text-sm">
-                  This {props.itemName} is public. Anyone with the link can view
-                  this {props.itemName}.
+                  {translateText(
+                    "This {itemName} is public. Anyone with the link can view this {itemName}.",
+                    { itemName: props.itemName },
+                  )}
                 </span>
                 <div className="mr-2 flex items-center justify-end gap-2 text-sm">
                   <Button variant="outline" size="sm" onClick={copyUrl}>
                     {isCopied ? (
                       <>
                         <CheckIcon size={12} className="mr-1" />
-                        Copied
+                        {translateText("Copied")}
                       </>
                     ) : (
                       <>
                         <Link size={12} className="mr-1" />
-                        Copy
+                        {translateText("Copy")}
                       </>
                     )}
                   </Button>
@@ -239,18 +245,22 @@ const Base = (props: {
                     loading={props.isLoading}
                     onClick={handleOnClick}
                   >
-                    Unshare
+                    {translateText("Unshare")}
                   </Button>
                 </div>
               </>
             ) : (
               <>
                 <Label className="text-base capitalize">
-                  {props.itemName} Private
+                  {translateText("{itemName} Private", {
+                    itemName: props.itemName,
+                  })}
                 </Label>
                 <span className="text-muted-foreground text-sm">
-                  This {props.itemName} is private. Only authorized project
-                  members can view this {props.itemName}.
+                  {translateText(
+                    "This {itemName} is private. Only authorized project members can view this {itemName}.",
+                    { itemName: props.itemName },
+                  )}
                 </span>
                 <div className="mr-2 flex items-center justify-end gap-2 text-sm">
                   <Button
@@ -259,7 +269,7 @@ const Base = (props: {
                     loading={props.isLoading}
                     onClick={handleOnClick}
                   >
-                    Share
+                    {translateText("Share")}
                   </Button>
                 </div>
               </>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import DocPopup from "@/src/components/layouts/doc-popup";
 import { type Status, StatusBadge } from "./status-badge";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type HeaderProps = {
   title: string;
@@ -45,17 +46,24 @@ function HeaderTitle({
 }
 
 function BaseHeader({ ...props }: HeaderProps & { level: "h3" | "h4" | "h5" }) {
+  const { translateText } = useI18n();
+  const translatedTitle = translateText(props.title);
+  const translatedHelp =
+    props.help && typeof props.help.description === "string"
+      ? { ...props.help, description: translateText(props.help.description) }
+      : props.help;
+
   return (
     <div className={cn(props.className, props.level === "h3" && "mb-2")}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3 md:gap-5">
           <div className="flex min-w-0 flex-row items-center">
-            <HeaderTitle title={props.title} level={props.level} />
-            {props.help ? (
+            <HeaderTitle title={translatedTitle} level={props.level} />
+            {translatedHelp ? (
               <DocPopup
-                description={props.help.description}
-                href={props.help.href}
-                className={props.help.className}
+                description={translatedHelp.description}
+                href={translatedHelp.href}
+                className={translatedHelp.className}
               />
             ) : null}
           </div>

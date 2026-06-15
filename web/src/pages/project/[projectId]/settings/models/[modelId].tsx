@@ -36,9 +36,11 @@ import {
 } from "@/src/components/ui/hover-card";
 import { CodeMirrorEditor } from "@/src/components/editor";
 import { useEffect } from "react";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export default function ModelDetailPage() {
   const router = useRouter();
+  const { translateText } = useI18n();
   const { priceUnit, priceUnitMultiplier } = usePriceUnitMultiplier();
   const projectId = router.query.projectId as string;
   const modelId = router.query.modelId as string;
@@ -99,10 +101,12 @@ export default function ModelDetailPage() {
   if (!isLoading && !model) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
-        <div className="mb-4 text-xl font-medium">Model not found</div>
+        <div className="mb-4 text-xl font-medium">
+          {translateText("Model not found")}
+        </div>
         <Button variant="outline" asChild>
           <Link href={`/project/${projectId}/settings/models`}>
-            Return to Models page
+            {translateText("Return to Models page")}
           </Link>
         </Button>
       </div>
@@ -112,7 +116,7 @@ export default function ModelDetailPage() {
   const isLangfuseModel = !Boolean(model?.projectId);
 
   if (isLoading || !model) {
-    return <div className="p-3">Loading...</div>;
+    return <div className="p-3">{translateText("Loading...")}</div>;
   }
 
   return (
@@ -121,16 +125,16 @@ export default function ModelDetailPage() {
       headerProps={{
         title: model.modelName,
         help: {
-          description: "Model configuration and pricing details",
+          description: translateText("Model configuration and pricing details"),
           href: "https://langfuse.com/docs/model-usage-and-cost",
         },
         breadcrumb: [
           {
-            name: "Settings",
+            name: translateText("Settings"),
             href: `/project/${router.query.projectId as string}/settings`,
           },
           {
-            name: "Models",
+            name: translateText("Models"),
             href: `/project/${router.query.projectId as string}/settings/models`,
           },
           { name: model.modelName },
@@ -163,36 +167,38 @@ export default function ModelDetailPage() {
       <div className="grid grid-cols-2 gap-6 p-2">
         <Card>
           <CardHeader>
-            <CardTitle>Model configuration</CardTitle>
+            <CardTitle>{translateText("Model configuration")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div>
               <div className="text-muted-foreground text-sm font-medium">
-                Match Pattern
+                {translateText("Match Pattern")}
               </div>
               <div className="mt-1 font-mono text-sm">{model.matchPattern}</div>
             </div>
 
             <div>
               <div className="text-muted-foreground text-sm font-medium">
-                Maintained by
+                {translateText("Maintained by")}
               </div>
               <div className="mt-1 text-sm">
-                {isLangfuseModel ? "Langfuse" : "User"}
+                {isLangfuseModel ? "Langfuse" : translateText("User")}
               </div>
             </div>
 
             <div>
               <div className="text-muted-foreground text-sm font-medium">
-                Tokenizer
+                {translateText("Tokenizer")}
               </div>
-              <div className="mt-1 text-sm">{model.tokenizerId || "None"}</div>
+              <div className="mt-1 text-sm">
+                {model.tokenizerId || translateText("None")}
+              </div>
             </div>
 
             {model.tokenizerId && (
               <div>
                 <div className="text-muted-foreground text-sm font-medium">
-                  Tokenizer Config
+                  {translateText("Tokenizer Config")}
                 </div>
                 <pre className="bg-muted mt-1 rounded p-2 text-sm">
                   <JSONView json={model.tokenizerConfig} />
@@ -205,18 +211,18 @@ export default function ModelDetailPage() {
         <Card id="pricing-section">
           <CardHeader>
             <div className="flex flex-col gap-2">
-              <CardTitle>Pricing</CardTitle>
+              <CardTitle>{translateText("Pricing")}</CardTitle>
               {model.pricingTiers.length > 1 && (
                 <div className="flex items-center gap-4">
                   <label className="text-muted-foreground text-sm font-medium">
-                    Pricing Tier
+                    {translateText("Pricing Tier")}
                   </label>
                   <Select
                     value={activeTier?.id ?? ""}
                     onValueChange={setSelectedTierId}
                   >
                     <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Select tier" />
+                      <SelectValue placeholder={translateText("Select tier")} />
                     </SelectTrigger>
                     <SelectContent>
                       {model.pricingTiers.map((tier) => (
@@ -235,7 +241,7 @@ export default function ModelDetailPage() {
                           size="sm"
                         >
                           <InfoIcon className="h-3 w-3" />
-                          <span>Conditions</span>
+                          <span>{translateText("Conditions")}</span>
                         </Button>
                       </HoverCardTrigger>
                       <HoverCardContent
@@ -243,11 +249,12 @@ export default function ModelDetailPage() {
                         collisionPadding={20}
                       >
                         <p className="text-sm font-medium">
-                          Pricing Tier Conditions
+                          {translateText("Pricing Tier Conditions")}
                         </p>
                         <p className="text-muted-foreground pt-2 text-sm">
-                          This tier is applied when the following conditions are
-                          met:
+                          {translateText(
+                            "This tier is applied when the following conditions are met:",
+                          )}
                         </p>
                         <div className="mt-2">
                           <CodeMirrorEditor
@@ -272,9 +279,11 @@ export default function ModelDetailPage() {
           <CardContent>
             <div className="flex flex-col gap-2">
               <div className="border-border text-muted-foreground grid grid-cols-2 gap-2 border-b text-sm font-medium">
-                <span>Usage Type</span>
+                <span>{translateText("Usage Type")}</span>
                 <span className="flex items-center gap-2">
-                  <span>Price {priceUnit}</span>
+                  <span>
+                    {translateText("Price")} {priceUnit}
+                  </span>
                   <PriceUnitSelector />
                 </span>
               </div>
@@ -303,13 +312,13 @@ export default function ModelDetailPage() {
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Model observations</span>
+              <span>{translateText("Model observations")}</span>
               <Button variant="ghost" asChild>
                 <Link
                   href={`/project/${projectId}/observations`}
                   className="flex items-center gap-1"
                 >
-                  <span className="text-sm">View all</span>
+                  <span className="text-sm">{translateText("View all")}</span>
                   <SquareArrowOutUpRight className="h-4 w-4" />
                 </Link>
               </Button>

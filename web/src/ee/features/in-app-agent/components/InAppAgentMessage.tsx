@@ -23,6 +23,7 @@ import {
 } from "@/src/components/ui/popover";
 import { useElementSize } from "@/src/hooks/useElementSize";
 import { useWatchedPromiseCallback } from "@/src/hooks/useWatchedPromiseCallback";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export type InAppAgentMessageRole = "assistant" | "user";
 
@@ -185,6 +186,7 @@ function MessageFeedbackControls({
     comment?: string | null;
   }) => Promise<void>;
 }) {
+  const { translateText } = useI18n();
   const [committedComment, setCommittedComment] = useState(
     feedback?.comment?.trim() ?? "",
   );
@@ -274,7 +276,7 @@ function MessageFeedbackControls({
         <div className="flex w-full min-w-0 items-center gap-1">
           <PopoverAnchor className="inline-flex">
             <FeedbackButton
-              label="Good response"
+              label={translateText("Good response")}
               isSelected={selectedValue === "thumbs_up"}
               disabled={isDisabled}
               onClick={() => handleSelectFeedback("thumbs_up")}
@@ -288,7 +290,7 @@ function MessageFeedbackControls({
             </FeedbackButton>
           </PopoverAnchor>
           <FeedbackButton
-            label="Bad response"
+            label={translateText("Bad response")}
             isSelected={selectedValue === "thumbs_down"}
             disabled={isDisabled}
             onClick={() => handleSelectFeedback("thumbs_down")}
@@ -307,7 +309,7 @@ function MessageFeedbackControls({
               disabled={isDisabled}
               onClick={() => setIsCommentPopoverOpen(true)}
             >
-              Comment: {committedComment}
+              {translateText("Comment")}: {committedComment}
             </button>
           ) : null}
         </div>
@@ -327,7 +329,7 @@ function MessageFeedbackControls({
                 value={comment}
                 onChange={(event) => setComment(event.target.value)}
                 disabled={isDisabled}
-                placeholder="Optional feedback comment"
+                placeholder={translateText("Optional feedback comment")}
                 rows={3}
                 maxLength={500}
                 className={cn(
@@ -342,7 +344,9 @@ function MessageFeedbackControls({
                   handleSubmitComment().catch(() => undefined);
                 }}
               >
-                {isSubmittingComment ? "Saving..." : "Save comment"}
+                {isSubmittingComment
+                  ? translateText("Saving...")
+                  : translateText("Save comment")}
               </CommentButton>
             </div>
           </PopoverContent>
@@ -409,7 +413,17 @@ function ToolCallGroup({
   isLoading?: boolean;
   isCompact?: boolean;
 }) {
-  const label = `${isLoading ? "Calling" : "Called"} ${tools.length} ${tools.length === 1 ? "tool" : "tools"}`;
+  const { translateText } = useI18n();
+  const label = translateText(
+    isLoading
+      ? tools.length === 1
+        ? "Calling {count} tool"
+        : "Calling {count} tools"
+      : tools.length === 1
+        ? "Called {count} tool"
+        : "Called {count} tools",
+    { count: tools.length },
+  );
 
   const paddingX = cn(isCompact ? "px-2.5" : "px-3");
   const iconSize = isCompact ? "size-3" : "size-4";
@@ -434,10 +448,10 @@ function ToolCallGroup({
         )}
         <span className="min-w-0 flex-1 truncate">{label}</span>
         <span className="text-muted-foreground text-xs group-open/tool-group:hidden">
-          Show
+          {translateText("Show")}
         </span>
         <span className="text-muted-foreground hidden text-xs group-open/tool-group:inline">
-          Hide
+          {translateText("Hide")}
         </span>
       </summary>
       <div
@@ -454,22 +468,27 @@ function ToolCallGroup({
 }
 
 function ToolCallDetails({ tool }: { tool: InAppAgentToolCallContent }) {
-  const resultLabel = tool.error ? "Error" : "Result";
+  const { translateText } = useI18n();
+  const resultLabel = tool.error
+    ? translateText("Error")
+    : translateText("Result");
 
   return (
     <details className="group/tool min-w-0">
       <summary className="flex cursor-pointer list-none items-center gap-2 text-xs leading-none font-medium [&::-webkit-details-marker]:hidden">
         <Wrench className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
-        <span className="min-w-0 flex-1 truncate">Used {tool.name}</span>
+        <span className="min-w-0 flex-1 truncate">
+          {translateText("Used {toolName}", { toolName: tool.name })}
+        </span>
         <span className="text-muted-foreground text-xs group-open/tool:hidden">
-          Show
+          {translateText("Show")}
         </span>
         <span className="text-muted-foreground hidden text-xs group-open/tool:inline">
-          Hide
+          {translateText("Hide")}
         </span>
       </summary>
       <div className="mt-2 space-y-2">
-        <ToolPayload label="Arguments" value={tool.args} />
+        <ToolPayload label={translateText("Arguments")} value={tool.args} />
         {tool.result !== undefined || tool.error !== undefined ? (
           <ToolPayload
             label={resultLabel}
@@ -609,13 +628,18 @@ function MessageText({
 
 function ThinkingIndicator({
   className,
-  label = "Thinking...",
+  label,
   isCompact = false,
 }: {
   className?: string;
   label?: string;
   isCompact?: boolean;
 }) {
+  const { translateText } = useI18n();
+  const displayLabel = label
+    ? translateText(label)
+    : translateText("Thinking...");
+
   return (
     <div
       className={cn(
@@ -627,7 +651,7 @@ function ThinkingIndicator({
       <Loader2
         className={cn("animate-spin", isCompact ? "h-3 w-3" : "h-3.5 w-3.5")}
       />
-      <span>{label}</span>
+      <span>{displayLabel}</span>
     </div>
   );
 }

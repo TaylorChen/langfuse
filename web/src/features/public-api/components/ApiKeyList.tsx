@@ -29,8 +29,8 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import { TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
-import startCase from "lodash/startCase";
 import { useLangfuseEnvCode } from "@/src/features/public-api/hooks/useLangfuseEnvCode";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type ApiKeyScope = "project" | "organization";
 type ApiKeyEntity = { id: string; note: string | null };
@@ -38,6 +38,11 @@ type ApiKeyEntity = { id: string; note: string | null };
 export function ApiKeyList(props: { entityId: string; scope: ApiKeyScope }) {
   const { entityId, scope } = props;
   const envCode = useLangfuseEnvCode();
+  const { t } = useI18n();
+  const scopeLabel =
+    scope === "project"
+      ? t("apiKeys.projectScope")
+      : t("apiKeys.organizationScope");
 
   if (!entityId) {
     throw new Error(
@@ -72,11 +77,11 @@ export function ApiKeyList(props: { entityId: string; scope: ApiKeyScope }) {
   if (!hasAccess) {
     return (
       <div>
-        <Header title="API Keys" />
+        <Header title={t("apiKeys.title")} />
         <Alert>
-          <AlertTitle>Access Denied</AlertTitle>
+          <AlertTitle>{t("apiKeys.accessDenied")}</AlertTitle>
           <AlertDescription>
-            You do not have permission to view API keys for this {scope}.
+            {t("apiKeys.accessDeniedDescription", { scope: scopeLabel })}
           </AlertDescription>
         </Alert>
       </div>
@@ -86,9 +91,9 @@ export function ApiKeyList(props: { entityId: string; scope: ApiKeyScope }) {
   return (
     <div className="space-y-4">
       <Header
-        title={startCase(`${scope} API keys`)}
+        title={t("apiKeys.scopedTitle", { scope: scopeLabel })}
         help={{
-          description: `Learn more about ${scope} API keys`,
+          description: t("apiKeys.learnMore", { scope: scopeLabel }),
           href:
             scope === "project"
               ? "https://langfuse.com/docs/api#authentication"
@@ -99,18 +104,24 @@ export function ApiKeyList(props: { entityId: string; scope: ApiKeyScope }) {
       <CodeView
         content={envCode}
         title=".env"
-        copiedToClipboardMessage="Secrets are not included, create a new key to copy them."
+        copiedToClipboardMessage={t("apiKeys.secretsNotIncluded")}
       />
       <Card className="mb-4 overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="text-primary hidden md:table-cell">
-                Created
+                {t("apiKeys.created")}
               </TableHead>
-              <TableHead className="text-primary">Note</TableHead>
-              <TableHead className="text-primary">Public Key</TableHead>
-              <TableHead className="text-primary">Secret Key</TableHead>
+              <TableHead className="text-primary">
+                {t("apiKeys.note")}
+              </TableHead>
+              <TableHead className="text-primary">
+                {t("apiKeys.publicKey")}
+              </TableHead>
+              <TableHead className="text-primary">
+                {t("apiKeys.secretKey")}
+              </TableHead>
               {/* <TableHead className="text-primary">Last used</TableHead> */}
               <TableHead />
             </TableRow>
@@ -123,7 +134,7 @@ export function ApiKeyList(props: { entityId: string; scope: ApiKeyScope }) {
                   colSpan={5}
                   className="text-center"
                 >
-                  None
+                  {t("apiKeys.none")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -181,6 +192,7 @@ function DeleteApiKeyButton(props: {
 }) {
   const { entityId, apiKeyId, scope } = props;
   const capture = usePostHogClientCapture();
+  const { t } = useI18n();
 
   const hasProjectAccess = useHasProjectAccess({
     projectId: props.entityId,
@@ -246,10 +258,11 @@ function DeleteApiKeyButton(props: {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="mb-5">Delete API key</DialogTitle>
+          <DialogTitle className="mb-5">
+            {t("apiKeys.deleteApiKey")}
+          </DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this API key? This action cannot be
-            undone.
+            {t("apiKeys.deleteApiKeyDescription")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -260,10 +273,10 @@ function DeleteApiKeyButton(props: {
               mutDeleteOrgApiKey.isPending || mutDeleteProjectApiKey.isPending
             }
           >
-            Permanently delete
+            {t("apiKeys.permanentlyDelete")}
           </Button>
           <Button variant="ghost" onClick={() => setOpen(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -281,6 +294,7 @@ function ApiKeyNote({
   scope: ApiKeyScope;
 }) {
   const utils = api.useUtils();
+  const { t } = useI18n();
 
   const hasProjectAccess = useHasProjectAccess({
     projectId: entityId,
@@ -341,7 +355,7 @@ function ApiKeyNote({
       onClick={() => setIsEditing(true)}
       className="hover:bg-secondary/50 -mx-2 cursor-pointer rounded px-2 py-1"
     >
-      {note || "Click to add note"}
+      {note || t("apiKeys.clickToAddNote")}
     </div>
   );
 }

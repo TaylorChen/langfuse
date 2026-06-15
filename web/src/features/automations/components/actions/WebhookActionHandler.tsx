@@ -105,14 +105,20 @@ export class WebhookActionHandler implements BaseActionHandler<WebhookActionForm
     };
   }
 
-  validateFormData(formData: WebhookActionFormData): {
+  validateFormData(
+    formData: WebhookActionFormData,
+    translateText: (
+      text: string,
+      values?: Record<string, string | number | undefined>,
+    ) => string = (text) => text,
+  ): {
     isValid: boolean;
     errors?: string[];
   } {
     const errors: string[] = [];
 
     if (!formData.webhook?.url) {
-      errors.push("Webhook URL is required");
+      errors.push(translateText("Webhook URL is required"));
     }
 
     // Validate headers
@@ -123,14 +129,30 @@ export class WebhookActionHandler implements BaseActionHandler<WebhookActionForm
         // Only validate non-empty headers
         if (header.name.trim() || header.value.trim()) {
           if (!header.name.trim()) {
-            errors.push(`Header ${index + 1}: Name cannot be empty`);
+            errors.push(
+              translateText("Header {index}: Name cannot be empty", {
+                index: index + 1,
+              }),
+            );
           }
           if (!header.value.trim() && !header.isSecret) {
-            errors.push(`Header ${index + 1}: Value cannot be empty`);
+            errors.push(
+              translateText("Header {index}: Value cannot be empty", {
+                index: index + 1,
+              }),
+            );
           }
           if (header.wasSecret !== header.isSecret && !header.value.trim()) {
             errors.push(
-              `Header ${index + 1}: A value must be provided when making a header ${header.wasSecret ? "public" : "secret"}`,
+              translateText(
+                "Header {index}: A value must be provided when making a header {visibility}",
+                {
+                  index: index + 1,
+                  visibility: header.wasSecret
+                    ? translateText("public")
+                    : translateText("secret"),
+                },
+              ),
             );
           }
 
@@ -140,7 +162,10 @@ export class WebhookActionHandler implements BaseActionHandler<WebhookActionForm
             defaultHeaderKeys.includes(header.name.trim().toLowerCase())
           ) {
             errors.push(
-              `Header ${index + 1}: "${header.name}" is automatically added by Langfuse and cannot be customized`,
+              translateText(
+                'Header {index}: "{headerName}" is automatically added by Langfuse and cannot be customized',
+                { index: index + 1, headerName: header.name },
+              ),
             );
           }
         }
@@ -155,7 +180,9 @@ export class WebhookActionHandler implements BaseActionHandler<WebhookActionForm
       const uniqueHeaderNames = new Set(headerNames);
       if (uniqueHeaderNames.size < headerNames.length) {
         errors.push(
-          "Duplicate header names are not allowed (case-insensitive)",
+          translateText(
+            "Duplicate header names are not allowed (case-insensitive)",
+          ),
         );
       }
     }

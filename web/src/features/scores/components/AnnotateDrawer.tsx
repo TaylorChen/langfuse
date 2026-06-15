@@ -11,6 +11,7 @@ import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAcces
 import { type AnnotateDrawerProps } from "@/src/features/scores/types";
 import { type ScoreTarget } from "@/src/features/scores/types";
 import { AnnotationForm } from "@/src/features/scores/components/AnnotationForm";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export function AnnotateDrawer<Target extends ScoreTarget>({
   projectId,
@@ -27,6 +28,7 @@ export function AnnotateDrawer<Target extends ScoreTarget>({
   size?: "default" | "sm" | "xs" | "lg" | "icon" | "icon-xs" | "icon-sm";
 }) {
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const hasAccess = useHasProjectAccess({
     projectId,
     scope: "scores:CUD",
@@ -62,7 +64,7 @@ export function AnnotateDrawer<Target extends ScoreTarget>({
               }
             />
           )}
-          <span>Annotate</span>
+          <span>{translateText("Annotate")}</span>
         </Button>
       </DrawerTrigger>
       <DrawerContent className="p-3">
@@ -74,7 +76,9 @@ export function AnnotateDrawer<Target extends ScoreTarget>({
         />
         {hasNonAnnotationScores && (
           <div className="text-muted-foreground mt-4 text-xs">
-            API and eval scores visible on left. Add manual annotations above.
+            {translateText(
+              "API and eval scores visible on left. Add manual annotations above.",
+            )}
           </div>
         )}
       </DrawerContent>

@@ -10,6 +10,7 @@ import { Copy, Check } from "lucide-react";
 import { type JSONTheme } from "../types";
 import { safeStringify } from "../utils/jsonTypes";
 import { cn } from "@/src/utils/tailwind";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 interface CopyButtonProps {
   value: unknown;
@@ -19,6 +20,7 @@ interface CopyButtonProps {
 
 export function CopyButton({ value, theme, className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
+  const { translateText } = useI18n();
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -55,8 +57,8 @@ export function CopyButton({ value, theme, className }: CopyButtonProps) {
         marginLeft: "4px",
         opacity: 0.3,
       }}
-      aria-label={copied ? "Copied!" : "Copy value"}
-      title={copied ? "Copied!" : "Copy value"}
+      aria-label={translateText(copied ? "Copied!" : "Copy value")}
+      title={translateText(copied ? "Copied!" : "Copy value")}
     >
       <Icon size={9} />
     </button>

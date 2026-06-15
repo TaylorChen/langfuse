@@ -12,6 +12,7 @@ import {
   AgUiMessageSchema,
   type AgUiMessage,
 } from "@/src/ee/features/in-app-agent/schema";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type ControlledInAppAgentWindowBaseProps = {
   zIndex?: number;
@@ -34,6 +35,7 @@ type ControlledInAppAgentWindowProps = ControlledInAppAgentWindowBaseProps &
 export function ControlledInAppAgentWindow(
   props: ControlledInAppAgentWindowProps,
 ) {
+  const { translateText } = useI18n();
   const {
     conversations,
     error,
@@ -213,13 +215,13 @@ export function ControlledInAppAgentWindow(
           role: "assistant",
           content: hasAssistantAnswer
             ? { type: "loading" }
-            : { type: "loading", label: "Connecting..." },
+            : { type: "loading", label: translateText("Connecting...") },
         } satisfies InAppAgentWindowMessage,
       ];
     }
 
     return mappedMessages;
-  }, [error, isRunning, messages]);
+  }, [error, isRunning, messages, translateText]);
 
   const closeButtonProps =
     props.showCloseButton === false

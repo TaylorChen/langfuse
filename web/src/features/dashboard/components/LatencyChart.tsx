@@ -21,6 +21,7 @@ import type { DatabaseRow } from "@/src/server/api/services/sqlInterface";
 import { Chart } from "@/src/features/widgets/chart-library/Chart";
 import { timeSeriesToDataPoints } from "@/src/features/dashboard/lib/chart-data-adapters";
 import { useScheduledDashboardExecuteQuery } from "@/src/hooks/useDashboardQueryScheduler";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 export const GenerationLatencyChart = ({
   className,
@@ -43,6 +44,7 @@ export const GenerationLatencyChart = ({
   metricsVersion?: ViewVersion;
   schedulerId?: string;
 }) => {
+  const { translateText } = useI18n();
   const {
     allModels,
     selectedModels,
@@ -160,8 +162,8 @@ export const GenerationLatencyChart = ({
   return (
     <DashboardCard
       className={className}
-      title="Model latencies"
-      description="Latencies (seconds) per LLM generation"
+      title={translateText("Model latencies")}
+      description={translateText("Latencies (seconds) per LLM generation")}
       isLoading={
         isLoading || (latencies.isPending && selectedModels.length > 0)
       }

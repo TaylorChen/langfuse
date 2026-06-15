@@ -50,6 +50,7 @@ import {
 import { useSyncMessageSearchMessages } from "@/src/components/ChatMessages/MessageSearch";
 import { getFinalModelParams } from "@/src/utils/getFinalModelParams";
 import { STREAMING_PREF_KEY } from "@/src/features/playground/page/storage/keys";
+import { useI18n } from "@/src/features/i18n/I18nProvider";
 
 type PlaygroundContextType = {
   windowId: string;
@@ -99,6 +100,7 @@ export const PlaygroundProvider: React.FC<PlaygroundProviderProps> = ({
 }) => {
   const effectiveWindowId = windowId || MULTI_WINDOW_CONFIG.DEFAULT_WINDOW_ID;
   const capture = usePostHogClientCapture();
+  const { translateText } = useI18n();
   const projectId = useProjectIdFromURL();
   const { playgroundCache, setPlaygroundCache } = usePlaygroundCache(windowId);
   const [promptVariables, setPromptVariables] = useState<PromptVariable[]>([]);
@@ -330,7 +332,9 @@ export const PlaygroundProvider: React.FC<PlaygroundProviderProps> = ({
         );
 
         if (finalMessages.length === 0) {
-          throw new Error("Please add at least one message with content.");
+          throw new Error(
+            translateText("Please add at least one message with content."),
+          );
         }
 
         const leftOverVariables = extractVariables(
@@ -340,16 +344,22 @@ export const PlaygroundProvider: React.FC<PlaygroundProviderProps> = ({
         );
 
         if (!modelParams.provider.value || !modelParams.model.value) {
-          throw new Error("Please select a model");
+          throw new Error(translateText("Please select a model"));
         }
 
         if (leftOverVariables.length > 0) {
-          throw Error("Error replacing variables. Please check your inputs.");
+          throw Error(
+            translateText(
+              "Error replacing variables. Please check your inputs.",
+            ),
+          );
         }
 
         if (tools.length > 0 && structuredOutputSchema) {
           throw new Error(
-            "Cannot use both tools and structured output at the same time",
+            translateText(
+              "Cannot use both tools and structured output at the same time",
+            ),
           );
         }
 
@@ -438,8 +448,10 @@ export const PlaygroundProvider: React.FC<PlaygroundProviderProps> = ({
         });
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "An error occurred";
-        showErrorToast("Error", errorMessage);
+          err instanceof Error
+            ? err.message
+            : translateText("An error occurred");
+        showErrorToast(translateText("Error"), errorMessage);
       } finally {
         setIsStreaming(false);
       }
@@ -454,6 +466,7 @@ export const PlaygroundProvider: React.FC<PlaygroundProviderProps> = ({
       setPlaygroundCache,
       structuredOutputSchema,
       projectId,
+      translateText,
     ],
   );
 
