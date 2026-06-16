@@ -136,6 +136,18 @@ When adding or changing user-facing copy, keep the English and localized
 message catalogs in sync and add literal translations for static UI strings
 that are translated through `translateText`.
 
+<p align="center">
+  <img width="720" alt="Langfuse Simplified Chinese sign-in page" src="./web/public/assets/i18n/zh-cn-sign-in-desktop.png">
+</p>
+
+<p align="center">
+  <img width="320" alt="Langfuse Simplified Chinese mobile sign-in page" src="./web/public/assets/i18n/zh-cn-sign-in-mobile.png">
+</p>
+
+<p align="center">
+  <img width="720" alt="Langfuse Simplified Chinese sign-up page" src="./web/public/assets/i18n/zh-cn-sign-up-desktop.png">
+</p>
+
 ## 🔌 Integrations
 
 <img width="2400" alt="integrations" src="https://github.com/user-attachments/assets/b85c9a45-68f0-4f76-b545-0e8632abef9f" />

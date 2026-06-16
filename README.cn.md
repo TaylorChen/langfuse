@@ -152,6 +152,18 @@ Langfuse Web 应用支持本地化路由。英文使用默认路由，简体中�
 新增或修改面向用户的文案时，请保持英文和本地化消息表同步；通过
 `translateText` 翻译的静态界面文案，也需要补充到 literal 翻译表中。
 
+<p align="center">
+  <img width="720" alt="Langfuse 简体中文登录页" src="./web/public/assets/i18n/zh-cn-sign-in-desktop.png">
+</p>
+
+<p align="center">
+  <img width="320" alt="Langfuse 简体中文移动端登录页" src="./web/public/assets/i18n/zh-cn-sign-in-mobile.png">
+</p>
+
+<p align="center">
+  <img width="720" alt="Langfuse 简体中文注册页" src="./web/public/assets/i18n/zh-cn-sign-up-desktop.png">
+</p>
+
 ## 🔌 集成
 
 ![Langfuse 集成](https://langfuse.com/images/docs/github-readme/github-integrations.png)
