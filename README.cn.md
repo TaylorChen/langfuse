@@ -138,6 +138,20 @@ Langfuse 是一个 **开源 LLM 工程** 平台。它帮助团队协作 **开发
 
 请参阅 [自托管文档](https://langfuse.com/self-hosting) 了解更多关于架构和配置选项的信息。
 
+## 🌐 国际化
+
+Langfuse Web 应用支持本地化路由。英文使用默认路由，简体中文使用
+`/zh-CN` 路由，例如 `/zh-CN/auth/sign-in`。
+
+界面翻译主要维护在：
+
+- `web/src/features/i18n/messages/en.ts`
+- `web/src/features/i18n/messages/zh-CN.ts`
+- `web/src/features/i18n/literals.ts`
+
+新增或修改面向用户的文案时，请保持英文和本地化消息表同步；通过
+`translateText` 翻译的静态界面文案，也需要补充到 literal 翻译表中。
+
 ## 🔌 集成
 
 ![Langfuse 集成](https://langfuse.com/images/docs/github-readme/github-integrations.png)
